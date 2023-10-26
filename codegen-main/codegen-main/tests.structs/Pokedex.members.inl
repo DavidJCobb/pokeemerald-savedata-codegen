@@ -1,0 +1,9 @@
+   u8 order;
+   u8 mode;
+   u8 nationalMagic;
+   u8 unknown2;
+   u32 unownPersonality;
+   u32 spindaPersonality;
+   u32 unknown3;
+   u8 owned[52];
+   u8 seen[52];

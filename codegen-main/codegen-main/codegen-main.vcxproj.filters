@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lu\strings\from_integer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\c_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\integral_constant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\structure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="registry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\singleton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\constant_definition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\strings\char_to_integer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\strings\to_integer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\parsing_scaffold.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\for_each_child_element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\get_attribute.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\get_sole_child_element_of_name.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lu\rapidxml_helpers\get_element_text_content.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\heritable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\semantic_type_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ast\integral_constant.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\c_type.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\structure.inl">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="registry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ast\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+   u8 id : 5;
+   u8 lvlMode : 2;
+   u8 numQuestions;
+   u8 number;
+   struct ApprenticeMon party[3];
+   u16 speechWon[6];
+   u8 playerId[4];
+   u8 playerName[8];
+   u8 language;
+   u32 checksum;

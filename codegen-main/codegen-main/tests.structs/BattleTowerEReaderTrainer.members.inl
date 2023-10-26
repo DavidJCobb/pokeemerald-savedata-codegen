@@ -1,0 +1,10 @@
+   u8 unk0;
+   u8 facilityClass;
+   u16 winStreak;
+   u8 name[8];
+   u8 trainerId[4];
+   u16 greeting[6];
+   u16 farewellPlayerLost[6];
+   u16 farewellPlayerWon[6];
+   struct BattleTowerPokemon party[3];
+   u32 checksum;

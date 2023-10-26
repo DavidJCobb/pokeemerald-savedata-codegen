@@ -1,0 +1,7 @@
+*.obj
+*.tlog
+*.pdb
+*.lastbuildstate
+
+codegen-main/.vs/
+codegen-main/codegen-main/x64/

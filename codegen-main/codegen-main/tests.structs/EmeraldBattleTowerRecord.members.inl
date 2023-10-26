@@ -1,0 +1,11 @@
+   u8 lvlMode;
+   u8 facilityClass;
+   u16 winStreak;
+   u8 name[8];
+   u8 trainerId[4];
+   u16 greeting[6];
+   u16 speechWon[6];
+   u16 speechLost[6];
+   struct BattleTowerPokemon party[3];
+   u8 language;
+   u32 checksum;
