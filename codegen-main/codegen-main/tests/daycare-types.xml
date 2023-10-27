@@ -19,8 +19,8 @@
             <u8 name="trainerId">
                <array-rank extent="TRAINER_ID_LENGTH" />
             </u8>
-            <u16 name="species" common-type="$pokemon-species-id" />
-            <u16 name="itemId" common-type="$global-item-id" />
+            <u16 name="species" inherit="$pokemon-species-id" />
+            <u16 name="itemId" inherit="$global-item-id" />
          </fields>
       </struct>
       <struct name="DaycareMail" header="global.h">

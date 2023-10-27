@@ -5,7 +5,7 @@
 // TODO:
 // void lu_BitstreamRead_BerryPickingResults(struct lu_BitstreamState* state, struct BerryPickingResults* dst);
 
-void lu_BitstreamWrite_BerryPickingResults(struct lu_BitstreamState* state, struct BerryPickingResults* src) {
+void lu_BitstreamWrite_BerryPickingResults(struct lu_BitstreamState* state, const struct BerryPickingResults* src) {
    lu_BitstreamWrite_u32(state, src.bestScore, 32);
    lu_BitstreamWrite_u32(state, src.berriesPicked, 32);
    lu_BitstreamWrite_u32(state, src.berriesPickedInRow, 32);

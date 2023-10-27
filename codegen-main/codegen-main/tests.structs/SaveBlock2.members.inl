@@ -17,14 +17,14 @@
    struct Pokedex pokedex;
    struct Time localTimeOffset;
    struct Time lastBerryTreeUpdate;
-   u32 gcnLinkFlags;
+   u32 gcnLinkFlags; // Read by Pokemon Colosseum/XD
    u32 encryptionKey;
    struct PlayersApprentice playerApprentice;
    struct Apprentice apprentices[4];
    struct BerryCrush berryCrush;
    struct PokemonJumpRecords pokeJump;
    struct BerryPickingResults berryPick;
-   struct RankingHall1P hallRecords1P[9][2][3];
-   struct RankingHall2P hallRecords2P[2][3];
-   struct u16 contestLinkResults[5][4];
+   struct RankingHall1P hallRecords1P[9][2][3]; // From record mixing.
+   struct RankingHall2P hallRecords2P[2][3]; // From record mixing.
+   u16 contestLinkResults[5][4]; // From record mixing.
    struct BattleFrontier frontier;

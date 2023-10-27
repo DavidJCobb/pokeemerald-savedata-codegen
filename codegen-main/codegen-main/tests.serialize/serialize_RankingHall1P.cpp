@@ -7,7 +7,7 @@
 // TODO:
 // void lu_BitstreamRead_RankingHall1P(struct lu_BitstreamState* state, struct RankingHall1P* dst);
 
-void lu_BitstreamWrite_RankingHall1P(struct lu_BitstreamState* state, struct RankingHall1P* src) {
+void lu_BitstreamWrite_RankingHall1P(struct lu_BitstreamState* state, const struct RankingHall1P* src) {
    {
       u16 i;
       for (i = 0; i < 4; ++i) { 

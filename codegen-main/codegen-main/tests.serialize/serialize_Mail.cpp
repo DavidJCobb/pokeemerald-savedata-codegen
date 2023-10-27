@@ -7,7 +7,7 @@
 // TODO:
 // void lu_BitstreamRead_Mail(struct lu_BitstreamState* state, struct Mail* dst);
 
-void lu_BitstreamWrite_Mail(struct lu_BitstreamState* state, struct Mail* src) {
+void lu_BitstreamWrite_Mail(struct lu_BitstreamState* state, const struct Mail* src) {
    {
       u16 i;
       for (i = 0; i < 9; ++i) { 
@@ -21,6 +21,6 @@ void lu_BitstreamWrite_Mail(struct lu_BitstreamState* state, struct Mail* src) {
             lu_BitstreamWrite_u8(state, src.trainerId[i], 8);
       }
    }
-   lu_BitstreamWrite_u16(state, src.species, 16);
+   lu_BitstreamWrite_u16(state, src.species, 11);
    lu_BitstreamWrite_u16(state, src.itemId, 16);
 }

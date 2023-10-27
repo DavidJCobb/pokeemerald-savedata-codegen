@@ -18,9 +18,6 @@
     <ClInclude Include="lu\strings\from_integer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ast\c_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ast\integral_constant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -69,18 +66,24 @@
     <ClInclude Include="ast\semantic_type_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ast\integral_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\integral_constant.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="ast\c_type.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="ast\member.inl">
       <Filter>Header Files</Filter>
     </None>
     <None Include="ast\structure.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\integral_type.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\heritable.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

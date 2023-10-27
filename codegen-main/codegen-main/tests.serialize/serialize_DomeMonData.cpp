@@ -5,7 +5,7 @@
 // TODO:
 // void lu_BitstreamRead_DomeMonData(struct lu_BitstreamState* state, struct DomeMonData* dst);
 
-void lu_BitstreamWrite_DomeMonData(struct lu_BitstreamState* state, struct DomeMonData* src) {
+void lu_BitstreamWrite_DomeMonData(struct lu_BitstreamState* state, const struct DomeMonData* src) {
    {
       u16 i;
       for (i = 0; i < 4; ++i) { 

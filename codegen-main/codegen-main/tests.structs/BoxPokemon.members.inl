@@ -11,6 +11,6 @@
    u16 checksum;
    u16 unknown;
    union {
-      u32 raw[(NUM_SUBSTRUCT_BYTES * 4) / 4];
-      union PokemonSubstruct substructs[4];
+   u32 raw[(NUM_SUBSTRUCT_BYTES * 4) / 4]; // *4 because there are 4 substructs, /4 because it's u32, not u8
+   union PokemonSubstruct substructs[4];
 } secure;

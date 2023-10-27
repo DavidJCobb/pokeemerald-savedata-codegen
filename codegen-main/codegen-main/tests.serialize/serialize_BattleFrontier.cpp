@@ -2,6 +2,7 @@
 
 // dependencies
 #include "./serialize_EmeraldBattleTowerRecord.h"
+#include "./serialize_EmeraldBattleTowerRecord.h"
 #include "./serialize_BattleTowerInterview.h"
 #include "./serialize_BattleTowerEReaderTrainer.h"
 #include "./serialize_BattleDomeTrainer.h"
@@ -16,20 +17,20 @@
 // TODO:
 // void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct BattleFrontier* dst);
 
-void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct BattleFrontier* src) {
-   lu_BitstreamWrite_EmeraldBattleTowerRecord(&src.towerPlayer);
+void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const struct BattleFrontier* src) {
+   lu_BitstreamWrite_EmeraldBattleTowerRecord(state, &src.towerPlayer);
    {
       u16 i;
       for (i = 0; i < 5; ++i) { 
-            lu_BitstreamWrite_EmeraldBattleTowerRecord(&src.towerRecords[i]);
+            lu_BitstreamWrite_EmeraldBattleTowerRecord(state, &src.towerRecords[i]);
       }
    }
-   lu_BitstreamWrite_BattleTowerInterview(&src.towerInterview);
-   lu_BitstreamWrite_BattleTowerEReaderTrainer(&src.ereaderTrainer);
+   lu_BitstreamWrite_BattleTowerInterview(state, &src.towerInterview);
+   lu_BitstreamWrite_BattleTowerEReaderTrainer(state, &src.ereaderTrainer);
    lu_BitstreamWrite_u8(state, src.challengeStatus, 8);
-   lu_BitstreamWrite_u8(state, src.lvlMode, 8);
-   lu_BitstreamWrite_u8(state, src.challengePaused, 8);
-   lu_BitstreamWrite_u8(state, src.disableRecordBattle, 8);
+   lu_BitstreamWrite_u8(state, src.lvlMode, 2);
+   lu_BitstreamWrite_bool(state, src.challengePaused);
+   lu_BitstreamWrite_bool(state, src.disableRecordBattle);
    {
       u16 i;
       for (i = 0; i < 4; ++i) { 
@@ -65,14 +66,14 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
    lu_BitstreamWrite_u16(state, src.towerNumWins, 16);
    lu_BitstreamWrite_u8(state, src.towerBattleOutcome, 8);
    lu_BitstreamWrite_u8(state, src.towerLvlMode, 8);
-   lu_BitstreamWrite_u8(state, src.domeAttemptedSingles50, 8);
-   lu_BitstreamWrite_u8(state, src.domeAttemptedSinglesOpen, 8);
-   lu_BitstreamWrite_u8(state, src.domeHasWonSingles50, 8);
-   lu_BitstreamWrite_u8(state, src.domeHasWonSinglesOpen, 8);
-   lu_BitstreamWrite_u8(state, src.domeAttemptedDoubles50, 8);
-   lu_BitstreamWrite_u8(state, src.domeAttemptedDoublesOpen, 8);
-   lu_BitstreamWrite_u8(state, src.domeHasWonDoubles50, 8);
-   lu_BitstreamWrite_u8(state, src.domeHasWonDoublesOpen, 8);
+   lu_BitstreamWrite_bool(state, src.domeAttemptedSingles50);
+   lu_BitstreamWrite_bool(state, src.domeAttemptedSinglesOpen);
+   lu_BitstreamWrite_bool(state, src.domeHasWonSingles50);
+   lu_BitstreamWrite_bool(state, src.domeHasWonSinglesOpen);
+   lu_BitstreamWrite_bool(state, src.domeAttemptedDoubles50);
+   lu_BitstreamWrite_bool(state, src.domeAttemptedDoublesOpen);
+   lu_BitstreamWrite_bool(state, src.domeHasWonDoubles50);
+   lu_BitstreamWrite_bool(state, src.domeHasWonDoublesOpen);
    lu_BitstreamWrite_u8(state, src.domeUnused, 8);
    lu_BitstreamWrite_u8(state, src.domeLvlMode, 8);
    lu_BitstreamWrite_u8(state, src.domeBattleMode, 8);
@@ -103,7 +104,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
    {
       u16 i;
       for (i = 0; i < 16; ++i) { 
-            lu_BitstreamWrite_BattleDomeTrainer(&src.domeTrainers[i]);
+            lu_BitstreamWrite_BattleDomeTrainer(state, &src.domeTrainers[i]);
       }
    }
    {
@@ -206,9 +207,9 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
          }
       }
    }
-   lu_BitstreamWrite_u8(state, src.pikeHintedRoomIndex, 8);
-   lu_BitstreamWrite_u8(state, src.pikeHintedRoomType, 8);
-   lu_BitstreamWrite_u8(state, src.pikeHealingRoomsDisabled, 8);
+   lu_BitstreamWrite_u8(state, src.pikeHintedRoomIndex, 3);
+   lu_BitstreamWrite_u8(state, src.pikeHintedRoomType, 3);
+   lu_BitstreamWrite_bool(state, src.pikeHealingRoomsDisabled);
    {
       u16 i;
       for (i = 0; i < 3; ++i) { 
@@ -239,7 +240,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
       }
    }
    lu_BitstreamWrite_u8(state, src.pyramidTrainerFlags, 8);
-   lu_BitstreamWrite_PyramidBag(&src.pyramidBag);
+   lu_BitstreamWrite_PyramidBag(state, &src.pyramidBag);
    lu_BitstreamWrite_u8(state, src.pyramidLightRadius, 8);
    lu_BitstreamWrite_u16(state, src.verdanturfTentPrize, 16);
    lu_BitstreamWrite_u16(state, src.fallaborTentPrize, 16);
@@ -247,7 +248,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
    {
       u16 i;
       for (i = 0; i < 6; ++i) { 
-            lu_BitstreamWrite_RentalMon(&src.rentalMons[i]);
+            lu_BitstreamWrite_RentalMon(state, &src.rentalMons[i]);
       }
    }
    lu_BitstreamWrite_u16(state, src.battlePoints, 16);
@@ -274,14 +275,14 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, struct Ba
          }
       }
    }
-   lu_BitstreamWrite_u8(state, src.unk_EF9, 8);
-   lu_BitstreamWrite_u8(state, src.savedGame, 8);
+   lu_BitstreamWrite_u8(state, src.unk_EF9, 7);
+   lu_BitstreamWrite_bool(state, src.savedGame);
    lu_BitstreamWrite_u8(state, src.unused_EFA, 8);
    lu_BitstreamWrite_u8(state, src.unused_EFB, 8);
    {
       u16 i;
       for (i = 0; i < 3; ++i) { 
-            lu_BitstreamWrite_DomeMonData(&src.domePlayerPartyData[i]);
+            lu_BitstreamWrite_DomeMonData(state, &src.domePlayerPartyData[i]);
       }
    }
 }

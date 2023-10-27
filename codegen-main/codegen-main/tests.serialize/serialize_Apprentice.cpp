@@ -10,15 +10,15 @@
 // TODO:
 // void lu_BitstreamRead_Apprentice(struct lu_BitstreamState* state, struct Apprentice* dst);
 
-void lu_BitstreamWrite_Apprentice(struct lu_BitstreamState* state, struct Apprentice* src) {
-   lu_BitstreamWrite_u8(state, src.id, 8);
-   lu_BitstreamWrite_u8(state, src.lvlMode, 8);
+void lu_BitstreamWrite_Apprentice(struct lu_BitstreamState* state, const struct Apprentice* src) {
+   lu_BitstreamWrite_u8(state, src.id, 5);
+   lu_BitstreamWrite_u8(state, src.lvlMode, 2);
    lu_BitstreamWrite_u8(state, src.numQuestions, 8);
    lu_BitstreamWrite_u8(state, src.number, 8);
    {
       u16 i;
       for (i = 0; i < 3; ++i) { 
-            lu_BitstreamWrite_ApprenticeMon(&src.party[i]);
+            lu_BitstreamWrite_ApprenticeMon(state, &src.party[i]);
       }
    }
    {

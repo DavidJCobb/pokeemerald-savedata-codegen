@@ -238,7 +238,7 @@
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
                <array-rank extent="HALL_RECORDS_COUNT" />
             </field>
-            <field name="contestLinkResults" c-type="u16" c-type-decl="struct">
+            <field name="contestLinkResults" c-type="u16">
                <line-comment>From record mixing.</line-comment>
                <array-rank extent="CONTEST_CATEGORIES_COUNT" />
                <array-rank extent="CONTESTANT_COUNT" />

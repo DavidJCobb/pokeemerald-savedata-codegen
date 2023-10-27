@@ -170,63 +170,117 @@ void registry::_parse_heritables(parse_wrapper& scaffold, rapidxml::xml_node<>& 
    using namespace rapidxml;
 
    lu::rapidxml_helpers::for_each_child_element(base_node, [this, &scaffold](std::string_view tagname, xml_node<>& node) {
-      auto  heritable = std::make_unique<ast::heritable>();
-      auto& semantic  = heritable->semantic_info;
-
-      if (tagname == "string") {
-         semantic.emplace<ast::semantic::string_info>();
-      } else if (tagname == "number") {
-         semantic.emplace<ast::semantic::number_info>();
-      } else {
-         auto pn = ast::c_type::primitive_from_string(tagname);
-         if (pn.has_value()) {
-            heritable->number_c_type = pn.value();
-            semantic.emplace<ast::semantic::number_info>();
-         } else {
-            scaffold.warn(std::string("Unrecognized child node (tagname ") + std::string(tagname) + ")", node); // can't wait for P2591...
+      auto heritable = std::make_unique<ast::heritable>();
+      heritable->tagname = tagname;
+      
+      lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &heritable](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
+         if (attr_name == "name") {
+            heritable->name = attr_value;
             return;
          }
-      }
+         if (attr_name == "do-not-serialize") {
+            if (attr_value == "true") {
+               heritable->attributes.do_not_serialize = true;
+            } else if (attr_value == "false") {
+               heritable->attributes.do_not_serialize = false;
+            } else {
+               scaffold.warn("Heritable: Unrecognized attribute value for `do-not-serialize` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+            }
+            return;
+         }
+         if (attr_name == "c-alignment") {
+            auto value = _size_or_constant_name_to_size(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: `c-alignment` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            if (value.value() == 0) {
+               scaffold.error("Heritable: `c-alignment` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            heritable->attributes.c_alignment = value.value();
+            return;
+         }
 
-      if (std::holds_alternative<ast::semantic::number_info>(semantic)) {
-         auto& casted = std::get<ast::semantic::number_info>(semantic);
-         lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &heritable, &casted](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
-            if (attr_name == "name") {
-               heritable->name = attr_value;
-            } else if (attr_name == "min") {
-               auto value = _int_or_constant_name_to_int(attr_value);
-               if (!value.has_value()) {
-                  scaffold.error(std::string("Heritable: Number min value is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-               }
-               casted.min = value.value();
-            } else if (attr_name == "max") {
-               auto value = _int_or_constant_name_to_int(attr_value);
-               if (!value.has_value()) {
-                  scaffold.error(std::string("Heritable: Number max value is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-               }
-               casted.max = value.value();
+         if (attr_name == "c-type") {
+            heritable->attributes.c_type = attr_value;
+            return;
+         }
+         if (attr_name == "c-type-decl") {
+            heritable->attributes.c_type_decl = attr_value;
+            return;
+         }
+
+         if (attr_name == "min") {
+            auto value = _int_or_constant_name_to_int(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: Number `min` value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
             }
-         });
-      } else if (std::holds_alternative<ast::semantic::string_info>(semantic)) {
-         auto& casted = std::get<ast::semantic::string_info>(semantic);
-         lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &heritable, &casted](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
-            if (attr_name == "name") {
-               heritable->name = attr_value;
-            } else if (attr_name == "char-type") {
-               auto prim = ast::c_type::primitive_from_string(attr_value);
-               if (!prim.has_value()) {
-                  scaffold.error(std::string("Heritable: String char type is unrecognized (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-               }
-               casted.char_type = prim.value();
-            } else if (attr_name == "length") {
-               auto value = _size_or_constant_name_to_size(attr_value);
-               if (!value.has_value()) {
-                  scaffold.error(std::string("Heritable: String max length is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-               }
-               casted.max_length = value.value();
+            heritable->attributes.min = value.value();
+            return;
+         }
+         if (attr_name == "max") {
+            auto value = _int_or_constant_name_to_int(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: Number `max` value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
             }
-         });
-      }
+            heritable->attributes.max = value.value();
+            return;
+         }
+         if (attr_name == "serialization-bitcount") {
+            auto value = _size_or_constant_name_to_size(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: `serialization-bitcount` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            if (value.value() < 0) {
+               scaffold.error("Heritable: `serialization-bitcount` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            if (value.value() == 0) {
+               scaffold.error("Heritable: `serialization-bitcount` attribute value cannot be zero (to prevent serialization, use `do-not-serialize=\"true\"` instead) (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            heritable->attributes.serialization_bitcount = value.value();
+            return;
+         }
+         if (attr_name == "c-bitfield") {
+            auto value = _size_or_constant_name_to_size(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: `c-bitfield` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            if (value.value() < 0) {
+               scaffold.error("Heritable: `c-bitfield` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            if (value.value() == 0) {
+               scaffold.error("Heritable: `c-bitfield` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+            }
+            heritable->attributes.c_bitfield = value.value();
+            return;
+         }
+         if (attr_name == "is-checksum") {
+            if (attr_value == "true") {
+               heritable->attributes.is_checksum = true;
+            } else if (attr_value == "false") {
+               heritable->attributes.is_checksum = false;
+            } else {
+               scaffold.warn("Heritable: Unrecognized attribute value for `is-checksum` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+            }
+            return;
+         }
+
+         if (attr_name == "char-type") {
+            auto integral = ast::integral_type_from_string(attr_value);
+            if (!integral.has_value()) {
+               scaffold.error("Heritable: `char-type` attribute value is not a valid integral type (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+            }
+            heritable->attributes.char_type = integral.value();
+            return;
+         }
+         if (attr_name == "length") {
+            auto value = _size_or_constant_name_to_size(attr_value);
+            if (!value.has_value()) {
+               scaffold.error("Heritable: `length` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+            }
+            heritable->attributes.length = value.value();
+            return;
+         }
+      });
 
       if (heritable->name.empty()) {
          scaffold.error("Heritable defined with empty or missing name", node);
@@ -244,8 +298,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    const auto tagname = std::string_view(node.name(), node.name_size());
 
    if (tagname == "union") {
-      auto  field      = std::make_unique<ast::member>();
-      auto& union_info = field->c_union.emplace();
+      auto field = std::make_unique<ast::inlined_union_member>();
 
       if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "name")) {
          field->name = std::string_view(attr->value(), attr->value_size());
@@ -253,168 +306,438 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.error("Field: Anonymous unions are not allowed in GCC C90.", node);
       }
       if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "member-to-serialize")) {
-         union_info.member_to_serialize = std::string_view(attr->value(), attr->value_size());
+         field->member_to_serialize = std::string_view(attr->value(), attr->value_size());
       } else {
          scaffold.error("Field: You must specify a union member to serialize.", node);
       }
 
-      lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &union_info](std::string_view tagname, xml_node<>& node) {
+      lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field](std::string_view tagname, xml_node<>& node) {
          bool is_checksum;
-         auto field = this->_parse_member(scaffold, node, is_checksum);
+         auto nested = this->_parse_member(scaffold, node, is_checksum);
          if (is_checksum) {
             scaffold.error("Field: Checksums nested in unions are not supported.", node);
          }
-         union_info.members.push_back(*field);
+         field->members.push_back(std::move(nested));
       });
       {
          bool found = false;
-         for (const auto& m : union_info.members) {
-            if (m.name == union_info.member_to_serialize) {
+         for (const auto& m : field->members) {
+            if (m->name == field->member_to_serialize) {
                found = true;
                break;
             }
          }
          if (!found) {
-            scaffold.error(std::string("Field: You must specify a union member to serialize (member \"") + union_info.member_to_serialize + "\") was not found.", node);
+            scaffold.error("Field: You must specify a union member to serialize (member \""s + field->member_to_serialize + "\") was not found.", node);
          }
       }
 
       return field;
    }
 
-   auto field = std::make_unique<ast::member>();
-   {
-      auto prim = ast::c_type::primitive_from_string(tagname);
-      if (prim.has_value()) {
-         if (prim.value() != ast::c_type::primitive::bool8)
-            field->semantic_info.emplace<ast::semantic::number_info>();
-         field->c_type_info.name = prim.value();
-      } else {
-         if (tagname != "field") {
-            scaffold.warn(std::string("Unrecognized child node (tagname ") + std::string(tagname) + ")", node); // can't wait for P2591...
-            return nullptr;
-         }
-      }
-   }
+   struct {
+      std::string name;
+      std::optional<bool> do_not_serialize;
+      std::optional<size_t> c_alignment;
 
-   ast::heritable* inherit_from = nullptr;
+      std::string c_type;
+      std::string c_type_decl;
+      std::string inherit;
 
-   lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &field, &inherit_from, &out_is_checksum](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
+      // attributes for numbers
+      std::optional<std::intmax_t>  min;
+      std::optional<std::uintmax_t> max;
+      std::optional<std::size_t>    c_bitfield;
+      std::optional<std::size_t>    serialization_bitcount;
+      std::optional<bool> is_checksum;
+
+      // attributes for strings
+      std::string char_type;
+      std::optional<std::size_t> length;
+
+      // attributes for inlined unions (we handle them in the special-case above, but 
+      // we should still grab their attributes for more robust user warnings).
+      std::string member_to_serialize;
+   } attributes;
+
+   lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &attributes](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
       if (attr_name == "name") {
-         field->name = attr_value;
-      } else if (attr_name == "c-bitfield") {
+         attributes.name = attr_value;
+         return;
+      }
+      if (attr_name == "do-not-serialize") {
+         if (attr_value == "true") {
+            attributes.do_not_serialize = true;
+         } else if (attr_value == "false") {
+            attributes.do_not_serialize = false;
+         } else {
+            scaffold.warn("Field: Unrecognized attribute value for `do-not-serialize` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+         }
+         return;
+      }
+      if (attr_name == "c-alignment") {
          auto value = _size_or_constant_name_to_size(attr_value);
          if (!value.has_value()) {
-            scaffold.error(std::string("Field: Bitfield bitcount is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
+            scaffold.error("Field: `c-alignment` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         field->c_type_info.bitfield_size = value.value();
-      } else if (attr_name == "c-type") {
-         field->c_type_info.set_type_name(attr_value);
-      } else if (attr_name == "c-type-decl") {
-         if (attr_value == "struct") {
-            field->c_type_info.is_struct = true;
-         } else if (attr_value == "union") {
-            field->c_type_info.is_union = true;
-         } else {
-            scaffold.error(std::string("Field: Unrecognized c-type-decl (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
+         if (value.value() == 0) {
+            scaffold.error("Field: `c-alignment` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-      } else if (attr_name == "do-not-serialize") {
-         if (attr_value == "true") {
-            field->skip_when_serializing = true;
-         } else if (attr_value == "false") {
-            field->skip_when_serializing = false;
-         } else {
-            scaffold.warn(std::string("Field: Unrecognized attribute value for `do-not-serialize` (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-         }
-      } else if (attr_name == "inherit") {
-         auto av = std::string(attr_value);
-         if (this->heritables.contains(av)) {
-            inherit_from = this->heritables[av].get();
-         } else {
-            scaffold.warn(std::string("Field: Failed to find heritable (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-         }
-      } else if (attr_name == "is-checksum") {
-         if (attr_value == "true") {
-            out_is_checksum = true;
-         }
-      } else if (attr_name == "min") {
-         auto value = _int_or_constant_name_to_int(attr_value);
-         if (!value.has_value()) {
-            scaffold.error(std::string("Field: Number min value is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-         }
-
-         auto& si = field->semantic_info;
-         if (std::holds_alternative<std::monostate>(si)) {
-            si.emplace<ast::semantic::number_info>();
-         }
-         if (!std::holds_alternative<ast::semantic::number_info>(si)) {
-            scaffold.warn(std::string("Field: Unrecognized attribute (name: ") + std::string(attr_name) + ") (field is not a number)", attr); // can't wait for P2591...
-            return;
-         }
-
-         std::get<ast::semantic::number_info>(si).min = value.value();
-      } else if (attr_name == "max") {
-         auto value = _int_or_constant_name_to_int(attr_value);
-         if (!value.has_value()) {
-            scaffold.error(std::string("Field: Number max value is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
-         }
-
-         auto& si = field->semantic_info;
-         if (std::holds_alternative<std::monostate>(si)) {
-            si.emplace<ast::semantic::number_info>();
-         }
-         if (!std::holds_alternative<ast::semantic::number_info>(si)) {
-            scaffold.warn(std::string("Field: Unrecognized attribute (name: ") + std::string(attr_name) + ") (field is not a number)", attr); // can't wait for P2591...
-            return;
-         }
-
-         std::get<ast::semantic::number_info>(si).max = value.value();
-      } else {
-         scaffold.warn(std::string("Field: Unrecognized attribute (name: ") + std::string(attr_name) + ")", attr); // can't wait for P2591...
+         attributes.c_alignment = value.value();
+         return;
       }
+
+      if (attr_name == "c-type") {
+         attributes.c_type = attr_value;
+         return;
+      }
+      if (attr_name == "c-type-decl") {
+         attributes.c_type_decl = attr_value;
+         return;
+      }
+      if (attr_name == "inherit") {
+         attributes.inherit = attr_value;
+         return;
+      }
+
+      if (attr_name == "min") {
+         auto value = _int_or_constant_name_to_int(attr_value);
+         if (!value.has_value()) {
+            scaffold.error("Field: `min` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+         }
+         attributes.min = value.value();
+         return;
+      }
+      if (attr_name == "max") {
+         auto value = _int_or_constant_name_to_int(attr_value);
+         if (!value.has_value()) {
+            scaffold.error("Field: `max` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+         }
+         attributes.max = value.value();
+         return;
+      }
+      if (attr_name == "serialization-bitcount") {
+         auto value = _size_or_constant_name_to_size(attr_value);
+         if (!value.has_value()) {
+            scaffold.error("Field: `serialization-bitcount` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+         }
+         if (value.value() < 0) {
+            scaffold.error("Field: `serialization-bitcount` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+         }
+         if (value.value() == 0) {
+            scaffold.error("Field: `serialization-bitcount` attribute value cannot be zero (to prevent serialization, use `do-not-serialize=\"true\"` instead) (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+         }
+         attributes.serialization_bitcount = value.value();
+         return;
+      }
+      if (attr_name == "c-bitfield") {
+         auto value = _size_or_constant_name_to_size(attr_value);
+         if (!value.has_value()) {
+            scaffold.error("Field: `c-bitfield` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+         }
+         if (value.value() == 0) {
+            scaffold.error("Field: `c-bitfield` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
+         }
+         attributes.c_bitfield = value.value();
+         return;
+      }
+      if (attr_name == "is-checksum") {
+         if (attr_value == "true") {
+            attributes.is_checksum = true;
+         } else if (attr_value == "false") {
+            attributes.is_checksum = false;
+         } else {
+            scaffold.warn("Field: Unrecognized attribute value for `is-checksum` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+         }
+         return;
+      }
+
+      if (attr_name == "char-type") {
+         attributes.char_type = attr_value;
+         return;
+      }
+      if (attr_name == "length") {
+         auto value = _int_or_constant_name_to_int(attr_value);
+         if (!value.has_value()) {
+            scaffold.error("Field: `length` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+         }
+         attributes.length = value.value();
+         return;
+      }
+
+      if (attr_name == "member-to-serialize") {
+         attributes.member_to_serialize = attr_value;
+         return;
+      }
+
+      scaffold.warn("Field: Unrecognized attribute (name: "s + std::string(attr_name) + ")", attr); // can't wait for P2591...
    });
+
+   const ast::heritable* inherit_from = nullptr;
+   if (!attributes.inherit.empty()) {
+      if (this->heritables.contains(attributes.inherit)) {
+         inherit_from = this->heritables[attributes.inherit].get();
+
+         //
+         // Note: Grabbing the heritable values as below simplifies the code for loading different 
+         // member types, but makes error reporting inaccurate: the heritable's attributes will be 
+         // reported as if they were attributes on the member node.
+         //
+
+         if (!attributes.c_alignment.has_value())
+            attributes.c_alignment = inherit_from->attributes.c_alignment;
+
+         if (attributes.c_type.empty())
+            attributes.c_type = inherit_from->attributes.c_type;
+         if (attributes.c_type_decl.empty())
+            attributes.c_type_decl = inherit_from->attributes.c_type_decl;
+
+         if (!attributes.min.has_value())
+            attributes.min = inherit_from->attributes.min;
+         if (!attributes.max.has_value())
+            attributes.max = inherit_from->attributes.max;
+         if (!attributes.c_bitfield.has_value())
+            attributes.c_bitfield = inherit_from->attributes.c_bitfield;
+         if (!attributes.serialization_bitcount.has_value())
+            attributes.serialization_bitcount = inherit_from->attributes.serialization_bitcount;
+         if (!attributes.is_checksum.has_value())
+            attributes.is_checksum = inherit_from->attributes.is_checksum;
+
+         if (!attributes.length.has_value())
+            attributes.length = inherit_from->attributes.length;
+
+      } else {
+         scaffold.error("Field: `inherit` attribute did not refer to a known heritable (seen: "s + attributes.inherit + ").", node);
+      }
+   }
+
+   std::unique_ptr<ast::member> field;
+   {
+      auto tagname_integral = ast::integral_type_from_string(tagname);
+      auto attrval_integral = ast::integral_type_from_string(attributes.c_type);
+      if (tagname_integral.has_value() || attrval_integral.has_value()) {
+         field = std::make_unique<ast::integral_member>();
+
+         auto* casted = (ast::integral_member*)field.get();
+         if (tagname_integral.has_value()) {
+            casted->value_type = tagname_integral.value();
+         } else {
+            casted->value_type = attrval_integral.value();
+         }
+         if (tagname_integral.has_value() && attrval_integral.has_value() && tagname_integral != attrval_integral) {
+            scaffold.error(
+               "Field: Inconsistent c-type (between tagname `"s
+                  + std::string(ast::integral_type_to_string(tagname_integral.value())) // can't wait for P2591...
+                  + "` and attribute value `"
+                  + std::string(ast::integral_type_to_string(attrval_integral.value())) // can't wait for P2591...
+                  + "`).",
+               node
+            );
+         }
+      } else if (tagname == "string") {
+         field = std::make_unique<ast::string_member>();
+      } else if (tagname == "union") {
+         field = std::make_unique<ast::inlined_union_member>();
+      } else if (tagname == "field") {
+         if (inherit_from) {
+            if (inherit_from->is_integral()) {
+               field = std::make_unique<ast::integral_member>();
+            } else if (inherit_from->is_string()) {
+               field = std::make_unique<ast::string_member>();
+            } else {
+               field = std::make_unique<ast::struct_member>();
+            }
+         } else if (!attributes.c_type.empty()) {
+            //
+            // We don't need to handle `c-type` values that refer to `ast::integral_type` names here, 
+            // because we already checked for that above.
+            //
+            field = std::make_unique<ast::struct_member>();
+
+            auto* casted = (ast::struct_member*)field.get();
+
+            casted->type_name = attributes.c_type;
+            if (!attributes.c_type_decl.empty()) {
+               if (attributes.c_type_decl == "struct") {
+                  casted->decl = ast::struct_member::decl::c_struct;
+               } else if (attributes.c_type_decl == "union") {
+                  casted->decl = ast::struct_member::decl::c_union;
+               } else {
+                  scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl + "); ignoring...", node);
+               }
+            }
+         } else {
+            scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
+         }
+      } else {
+         scaffold.warn("Unrecognized child node (tagname "s + std::string(tagname) + ")", node); // can't wait for P2591...
+         return nullptr;
+      }
+   }
+
+   //
+   // Field is constructed with the appropriate fundamental type; now, populate it with the 
+   // parsed data.
+   //
+
+   field->name = attributes.name;
+   if (attributes.do_not_serialize.has_value()) {
+      field->skip_when_serializing = attributes.do_not_serialize.value();
+   }
+   if (attributes.c_alignment.has_value()) {
+      field->c_alignment = attributes.c_alignment.value();
+   }
+   if (auto* casted = dynamic_cast<ast::integral_member*>(field.get())) {
+      casted->min = attributes.min;
+      casted->max = attributes.max;
+      casted->c_bitfield = attributes.c_bitfield;
+      casted->serialization_bitcount = attributes.serialization_bitcount;
+
+      if (attributes.is_checksum.value_or(false))
+         out_is_checksum = true;
+
+      if (!attributes.c_type_decl.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: c-type-decl) (attribute is not valid for integral fields).", node);
+      if (!attributes.char_type.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: char-type) (attribute is not valid for integral fields).", node);
+      if (attributes.length.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for integral fields).", node);
+      if (!attributes.member_to_serialize.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for integral fields).", node);
+
+      if (inherit_from && inherit_from->is_integral()) {
+         if (!casted->value_type.has_value()) {
+            casted->value_type = inherit_from->integral_type;
+         }
+      }
+
+      if (!casted->value_type.has_value()) {
+         scaffold.error("Field: Unable to identify integral value type (specify it via `c-type` or in a heritable).", node);
+      }
+   } else if (auto* casted = dynamic_cast<ast::string_member*>(field.get())) {
+      if (!attributes.char_type.empty()) {
+         auto type = ast::integral_type_from_string(attributes.char_type);
+         if (!type.has_value()) {
+            scaffold.error("Field: unrecognized `char-type` (seen: "s + attributes.char_type + ").", node);
+         }
+         casted->char_type = type.value();
+      }
+      if (inherit_from) {
+         if (!casted->char_type.has_value()) {
+            casted->char_type = inherit_from->attributes.char_type;
+         }
+      }
+      if (attributes.length.has_value()) {
+         auto v = attributes.length.value();
+         if (v < 0) {
+            scaffold.warn("Field: The string max length cannot be negative.", node);
+         }
+         if (v == 0) {
+            scaffold.warn("Field: The string max length cannot be zero.", node);
+         }
+         casted->max_length = v;
+      }
+
+      if (!attributes.c_type.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: c-type) (attribute is not valid for string fields; did you mean `char-type`?).", node);
+      if (!attributes.c_type_decl.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: c-type-decl) (attribute is not valid for string fields).", node);
+      if (attributes.min.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: min) (attribute is not valid for string fields).", node);
+      if (attributes.max.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: max) (attribute is not valid for string fields).", node);
+      if (attributes.c_bitfield.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: c-bitfield) (attribute is not valid for string fields).", node);
+      if (attributes.serialization_bitcount.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: serialization-bitcount) (attribute is not valid for string fields).", node);
+      if (attributes.is_checksum.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: is-checksum) (attribute is not valid for string fields).", node);
+      if (!attributes.member_to_serialize.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for string fields).", node);
+
+      if (!casted->char_type.has_value()) {
+         scaffold.error("Field: Unable to identify character type (specify it via `char-type` or in a heritable).", node);
+      }
+   } else if (auto* casted = dynamic_cast<ast::struct_member*>(field.get())) {
+      casted->type_name = attributes.c_type;
+      if (!attributes.c_type_decl.empty()) {
+         if (attributes.c_type_decl == "struct") {
+            casted->decl = ast::struct_member::decl::c_struct;
+         } else if (attributes.c_type_decl == "union") {
+            casted->decl = ast::struct_member::decl::c_union;
+         } else {
+            scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl + "); ignoring...", node);
+         }
+      }
+
+      if (attributes.min.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: min) (attribute is not valid for struct fields).", node);
+      if (attributes.max.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: max) (attribute is not valid for struct fields).", node);
+      if (attributes.c_bitfield.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: c-bitfield) (attribute is not valid for struct fields).", node);
+      if (attributes.serialization_bitcount.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: serialization-bitcount) (attribute is not valid for struct fields).", node);
+      if (attributes.is_checksum.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: is-checksum) (attribute is not valid for struct fields).", node);
+      if (!attributes.char_type.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: char-type) (attribute is not valid for struct fields).", node);
+      if (attributes.length.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for struct fields).", node);
+      if (!attributes.member_to_serialize.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for struct fields).", node);
+
+      if (casted->type_name.empty()) {
+         scaffold.error("Field: field seems to be a named struct/union, but no name was found.", node);
+      }
+   }
+
+   //
+   // Field is now mostly loaded, except for child elements in the XML.
+   //
+
    if (field->name.empty()) {
       scaffold.error("Field defined with an empty or missing name", node);
-   }
-   if (inherit_from) {
-      field->inherit_from(*inherit_from);
    }
 
    lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field](std::string_view tagname, xml_node<>& node) {
       if (tagname == "array-rank") {
-         ast::c_type::array_rank rank;
+         ast::member::array_rank rank;
 
          lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &rank](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
             if (attr_name == "extent") {
                auto value = _size_or_constant_name_to_size(attr_value);
                if (!value.has_value()) {
-                  scaffold.error(std::string("Field: Array rank is an unrecognized constant or otherwise not a valid integral (seen: ") + std::string(attr_value) + ")", attr); // can't wait for P2591...
+                  scaffold.error("Field: Array rank is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
                }
                rank.extent = value.value();
             } else if (attr_name == "extent-expr") {
                rank.extent_expr = attr_value;
             } else {
-               scaffold.warn(std::string("Field: Unrecognized attribute (name: ") + std::string(attr_name) + ")", attr); // can't wait for P2591...
+               scaffold.warn("Field: Unrecognized attribute (name: "s + std::string(attr_name) + ")", attr); // can't wait for P2591...
             }
          });
 
-         field->c_type_info.array_extents.push_back(rank);
-      } else if (tagname == "checksum-of") {
+         field->array_extents.push_back(rank);
+         return;
+      }
+      if (tagname == "checksum-of") {
          //
          // This data is unused for now.
          //
-      } else if (tagname == "line-comment") {
+         return;
+      }
+      if (tagname == "line-comment") {
          try {
             field->c_line_comment = lu::rapidxml_helpers::get_element_text_content<false>(node);
          } catch (std::runtime_error) {
             scaffold.error("Field `line-comment` node contains element children", node);
          }
-      } else {
-         scaffold.warn(std::string("Field: Unrecognized child node (tagname: ") + std::string(tagname) + ")", node); // can't wait for P2591...
+         return;
       }
+      scaffold.warn("Field: Unrecognized child node (tagname: "s + std::string(tagname) + ")", node); // can't wait for P2591...
    });
 
-   field->resolve_all_specifications();
    return field;
 }
 void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_node) {
@@ -464,12 +787,12 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
       lu::rapidxml_helpers::for_each_child_element(*fields_node, [this, &scaffold, &structure](std::string_view tagname, xml_node<>& node) {
          bool is_checksum;
          auto field = this->_parse_member(scaffold, node, is_checksum);
-         structure->members.push_back(*field);
+         structure->members.push_back(std::move(field));
          if (is_checksum) {
             if (structure->checksum_member_index.has_value()) {
                scaffold.error(
                   std::string("We only support one checksum member per struct. (Existing member: ")
-                     + structure->members[structure->checksum_member_index.value()].name
+                     + structure->members[structure->checksum_member_index.value()]->name
                      + "; new member: "
                      + field->name
                      + ")",
@@ -568,7 +891,7 @@ size_t registry::bitcount_of_struct(std::string name) const {
 
    size_t bitcount = 0;
    for (const auto& member : structure->members) {
-      bitcount += member.compute_bitcount();
+      bitcount += member->compute_serialization_bitcount();
    }
    return bitcount;
 }
@@ -600,7 +923,7 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
          stream << "#define GUARD_LU_SERIALIZE_" << pair.first << "\n";
          stream << '\n';
          stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* dst);";
-         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* src);";
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, const struct " << pair.first << "* src);";
          stream << '\n';
          stream << "#endif";
       }
@@ -610,30 +933,8 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
 
          stream << "#include \"" << out_folder.string() << "/serialize_" << pair.first << ".h\"\n\n";
 
-         std::vector<std::string> dependencies;
-         bool has_any_strings = false;
-         for (const auto& m : pair.second->members) {
-            if (std::holds_alternative<std::string>(m.c_type_info.name)) {
-               const auto& name = std::get<std::string>(m.c_type_info.name);
-
-               bool already = false;
-               for (auto& prior : dependencies) {
-                  if (prior == name) {
-                     already = true;
-                     break;
-                  }
-               }
-               if (already)
-                  continue;
-
-               dependencies.push_back(name);
-            }
-            if (!has_any_strings) {
-               if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
-                  has_any_strings = true;
-               }
-            }
-         }
+         std::vector<std::string> dependencies = pair.second->get_all_direct_struct_dependencies();
+         bool has_any_strings = pair.second->has_any_string_members();
 
          if (dependencies.size()) {
             stream << "// dependencies\n";
@@ -657,15 +958,20 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
 
          stream << '\n';
 
-         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState* state, struct " << pair.first << "* src) {\n";
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState* state, const struct " << pair.first << "* src) {\n";
          for (const auto& m : pair.second->members) {
-            auto&  extents = m.c_type_info.array_extents;
-            size_t rank    = extents.size();
-            if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
-               // we appended the strlen as an extent
-               // (maybe we shouldn't do that? makes it easier to do the struct definitions, but...)
-               --rank;
+            std::string member_access = m->name;
+
+            const ast::member* member = m.get();
+            while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
+               member = &(casted->get_member_to_serialize());
+
+               member_access += '.';
+               member_access += member->name;
             }
+
+            auto&  extents = member->array_extents;
+            size_t rank    = extents.size();
 
             constexpr const char first_array_index_name = 'i';
             bool array_indices_are_numbered = rank > ('z' - 'i');
@@ -705,29 +1011,28 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                stream << "      ";
             }
 
-            if (std::holds_alternative<std::string>(m.c_type_info.name)) {
-               stream << indent << "   lu_BitstreamWrite_" << std::get<std::string>(m.c_type_info.name) << "(";
-               stream << "&src." << m.name;
+            if (auto* casted = dynamic_cast<const ast::struct_member*>(member)) {
+               stream << indent << "   lu_BitstreamWrite_" << casted->type_name << "(state, ";
+               stream << "&src." << member_access;
                _serialize_indices();
                stream << ");\n";
-            } else if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
-               const auto& casted = std::get<ast::semantic::string_info>(m.semantic_info);
-               assert(casted.max_length > 0);
+            } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
+               assert(casted->max_length > 0);
 
                stream << indent << "   lu_BitstreamWrite_string(";
                stream << "state";
                stream << ", ";
-               stream << "src." << m.name;
+               stream << "src." << member_access;
                _serialize_indices();
                stream << ", ";
-               stream << casted.max_length;
+               stream << casted->max_length;
                stream << ", ";
-               stream << std::bit_width(casted.max_length);
+               stream << std::bit_width(casted->max_length);
                stream << ");\n";
-            } else {
-               size_t bitcount = m.compute_bitcount();
+            } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
+               size_t bitcount = member->compute_serialization_bitcount();
                if (bitcount == 1) {
-                  stream << indent << "   lu_BitstreamWrite_bool(state, src." << m.name;
+                  stream << indent << "   lu_BitstreamWrite_bool(state, src." << member_access;
                   _serialize_indices();
                   stream << ");\n";
                   continue;
@@ -739,7 +1044,7 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                   stream << "16";
                else
                   stream << "8";
-               stream << "(state, src." << m.name;
+               stream << "(state, src." << member_access;
                _serialize_indices();
                stream << ", " << bitcount << ");\n";
             }

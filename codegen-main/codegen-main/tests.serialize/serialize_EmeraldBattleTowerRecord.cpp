@@ -10,7 +10,7 @@
 // TODO:
 // void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, struct EmeraldBattleTowerRecord* dst);
 
-void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, struct EmeraldBattleTowerRecord* src) {
+void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, const struct EmeraldBattleTowerRecord* src) {
    lu_BitstreamWrite_u8(state, src.lvlMode, 8);
    lu_BitstreamWrite_u8(state, src.facilityClass, 8);
    lu_BitstreamWrite_u16(state, src.winStreak, 16);
@@ -42,7 +42,7 @@ void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state,
    {
       u16 i;
       for (i = 0; i < 3; ++i) { 
-            lu_BitstreamWrite_BattleTowerPokemon(&src.party[i]);
+            lu_BitstreamWrite_BattleTowerPokemon(state, &src.party[i]);
       }
    }
    lu_BitstreamWrite_u8(state, src.language, 3);

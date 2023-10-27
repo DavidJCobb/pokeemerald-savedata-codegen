@@ -1,5 +1,5 @@
    struct EmeraldBattleTowerRecord towerPlayer;
-   struct EmeraldBattleTowerRecord towerRecords[5];
+   struct EmeraldBattleTowerRecord towerRecords[5]; // From record mixing.
    struct BattleTowerInterview towerInterview;
    struct BattleTowerEReaderTrainer ereaderTrainer;
    u8 challengeStatus;
@@ -7,14 +7,14 @@
    u8 challengePaused : 1;
    u8 disableRecordBattle : 1;
    u16 selectedPartyMons[4];
-   u16 curChallengeBattleNum;
+   u16 curChallengeBattleNum; // Battle number / room number (Pike) / floor number (Pyramid)
    u16 trainerIds[20];
    u32 winStreakActiveFlags;
    u16 towerWinStreaks[4][2];
    u16 towerRecordWinStreaks[4][2];
    u16 battledBrainFlags;
-   u16 towerSinglesStreak;
-   u16 towerNumWins;
+   u16 towerSinglesStreak; // Never read
+   u16 towerNumWins; // Increments to MAX_STREAK but never read otherwise
    u8 towerBattleOutcome;
    u8 towerLvlMode;
    u8 domeAttemptedSingles50 : 1;
@@ -56,7 +56,7 @@
    u16 pyramidWinStreaks[2][2];
    u16 pyramidRecordWinStreaks[2][2];
    u16 pyramidRandoms[4];
-   u8 pyramidTrainerFlags;
+   u8 pyramidTrainerFlags; // 1 bit for each trainer (MAX_PYRAMID_TRAINERS)
    struct PyramidBag pyramidBag;
    u8 pyramidLightRadius;
    u16 verdanturfTentPrize;
@@ -70,7 +70,7 @@
    u8 trainerFlags;
    u8 opponentNames[2][8];
    u8 opponentTrainerIds[2][4];
-   u8 unk_EF9 : 7;
+   u8 unk_EF9 : 7; // Never read
    u8 savedGame : 1;
    u8 unused_EFA;
    u8 unused_EFB;

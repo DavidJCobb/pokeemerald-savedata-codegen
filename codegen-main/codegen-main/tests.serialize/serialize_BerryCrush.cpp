@@ -5,7 +5,7 @@
 // TODO:
 // void lu_BitstreamRead_BerryCrush(struct lu_BitstreamState* state, struct BerryCrush* dst);
 
-void lu_BitstreamWrite_BerryCrush(struct lu_BitstreamState* state, struct BerryCrush* src) {
+void lu_BitstreamWrite_BerryCrush(struct lu_BitstreamState* state, const struct BerryCrush* src) {
    {
       u16 i;
       for (i = 0; i < 4; ++i) { 

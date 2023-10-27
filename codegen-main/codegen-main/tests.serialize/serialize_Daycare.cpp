@@ -8,11 +8,11 @@
 // TODO:
 // void lu_BitstreamRead_Daycare(struct lu_BitstreamState* state, struct Daycare* dst);
 
-void lu_BitstreamWrite_Daycare(struct lu_BitstreamState* state, struct Daycare* src) {
+void lu_BitstreamWrite_Daycare(struct lu_BitstreamState* state, const struct Daycare* src) {
    {
       u16 i;
       for (i = 0; i < 2; ++i) { 
-            lu_BitstreamWrite_DaycareMon(&src.mons[i]);
+            lu_BitstreamWrite_DaycareMon(state, &src.mons[i]);
       }
    }
    lu_BitstreamWrite_u32(state, src.offspringPersonality, 32);

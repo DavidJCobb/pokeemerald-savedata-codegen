@@ -144,9 +144,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ast\constant_definition.h" />
-    <ClInclude Include="ast\c_type.h" />
     <ClInclude Include="ast\heritable.h" />
     <ClInclude Include="ast\integral_constant.h" />
+    <ClInclude Include="ast\integral_type.h" />
     <ClInclude Include="ast\member.h" />
     <ClInclude Include="ast\semantic_type_info.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h" />
@@ -163,8 +163,9 @@
     <ClInclude Include="lu\strings\from_integer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ast\c_type.inl" />
+    <None Include="ast\heritable.inl" />
     <None Include="ast\integral_constant.inl" />
+    <None Include="ast\integral_type.inl" />
     <None Include="ast\member.inl" />
     <None Include="ast\structure.inl" />
   </ItemGroup>

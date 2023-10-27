@@ -1,57 +1,142 @@
 #pragma once
 #include "./member.h"
+#include "lu/strings/from_integer.h"
 #include "./heritable.h"
 
 namespace ast {
-   constexpr void member::inherit_from(const heritable& src) {
-      auto& src_sem = src.semantic_info;
-      auto& dst_sem = this->semantic_info;
+   /*virtual*/ constexpr const std::string member::as_c_array_declarator_extents() const {
+      if (this->array_extents.empty())
+         return {};
 
-      if (std::holds_alternative<semantic::number_info>(src_sem)) {
-         auto& src_num = std::get<semantic::number_info>(src_sem);
-         if (std::holds_alternative<std::monostate>(dst_sem)) {
-            dst_sem = src_num;
-         } else if (std::holds_alternative<semantic::number_info>(dst_sem)) {
-            auto& dst_num = std::get<semantic::number_info>(dst_sem);
-
-            if (!dst_num.min.has_value())
-               dst_num.min = src_num.min;
-            if (!dst_num.max.has_value())
-               dst_num.max = src_num.max;
+      std::string out;
+      for (const auto& rank : this->array_extents) {
+         out += '[';
+         if (!rank.extent_expr.empty()) {
+            out += rank.extent_expr;
+         } else {
+            out += lu::strings::from_integer(rank.extent);
          }
-
-         if (src.number_c_type.has_value()) {
-            auto& dst_cti = this->c_type_info;
-            if (std::holds_alternative<std::monostate>(dst_cti.name)) {
-               dst_cti.name = src.number_c_type.value();
-            }
-         }
-      } else if (std::holds_alternative<semantic::string_info>(src_sem)) {
-         auto& src_casted = std::get<semantic::string_info>(src_sem);
-         if (std::holds_alternative<std::monostate>(dst_sem)) {
-            dst_sem = src_casted;
-         } else if (std::holds_alternative<semantic::string_info>(dst_sem)) {
-            auto& dst_casted = std::get<semantic::string_info>(dst_sem);
-
-            if (!dst_casted.max_length)
-               dst_casted.max_length = src_casted.max_length;
-            if (!dst_casted.char_type.has_value())
-               dst_casted.char_type = src_casted.char_type;
-         }
+         out += ']';
       }
+      return out;
+   }
+   constexpr const std::string member::as_c_declaration() const {
+      std::string out;
+      if (is_const)
+         out += "const ";
+
+      out += this->as_c_type_specifier();
+      out += ' ';
+      if (this->c_alignment.has_value()) {
+         out += "ALIGNED(";
+         out += lu::strings::from_integer(this->c_alignment.value());
+         out += ") ";
+      }
+      out += this->name;
+      out += this->as_c_array_declarator_extents();
+      out += this->as_c_bitfield_specifier();
+      out += ';';
+
+      if (!this->c_line_comment.empty()) {
+         out += " // ";
+         out += this->c_line_comment;
+      }
+
+      return out;
    }
 
-   constexpr void member::resolve_all_specifications() {
-      auto& cti = c_type_info;
-         
-      if (std::holds_alternative<semantic::string_info>(semantic_info)) {
-         auto& si = std::get<semantic::string_info>(semantic_info);
-         if (si.char_type.has_value())
-            cti.name = si.char_type.value();
+   /*virtual*/ constexpr const std::string string_member::as_c_array_declarator_extents() const /*override*/ {
+      std::string out = member::as_c_array_declarator_extents();
+      out += '[';
+      out += lu::strings::from_integer(this->max_length + 1); // include `EOS` terminator byte
+      out += ']';
+      return out;
+   }
 
-         cti.array_extents.push_back(c_type::array_rank{
-            .extent = si.max_length + 1
-         });
+   /*virtual*/ constexpr const std::string integral_member::as_c_type_specifier() const /*override*/ {
+      return std::string(integral_type_to_string(this->value_type.value()));
+   }
+   /*virtual*/ constexpr const std::string integral_member::as_c_bitfield_specifier() const /*override*/ {
+      if (this->c_bitfield.has_value()) {
+         std::string out = " : ";
+         out += lu::strings::from_integer(this->c_bitfield.value());
+         return out;
       }
+      return {};
+   }
+
+   /*virtual*/ constexpr const std::string string_member::as_c_type_specifier() const /*override*/ {
+      return std::string(integral_type_to_string(this->char_type.value()));
+   }
+   /*virtual*/ constexpr const std::string struct_member::as_c_type_specifier() const /*override*/ {
+      std::string out;
+      switch (this->decl.value_or(decl::c_struct)) {
+         case decl::c_struct:
+            out = "struct ";
+            break;
+         case decl::c_union:
+            out = "union ";
+            break;
+      }
+      out += this->type_name;
+      return out;
+   }
+   /*virtual*/ constexpr const std::string inlined_union_member::as_c_type_specifier() const /*override*/ {
+      std::string out;
+      out = "union {\n";
+      for (const auto& nested : this->members) {
+         out += "   ";
+         out += nested->as_c_declaration();
+         out += "\n";
+      }
+      out += "}";
+      return out;
+   }
+   
+
+   constexpr member& inlined_union_member::get_member_to_serialize() const {
+      for (const auto& member : members) {
+         if (member->name == this->member_to_serialize)
+            return *member.get();
+      }
+      throw;
+   }
+
+   constexpr std::vector<std::string> inlined_union_member::get_all_direct_struct_dependencies() const {
+      std::vector<std::string> out;
+      for (const auto& member : members) {
+         if (auto* casted = dynamic_cast<const struct_member*>(member.get())) {
+            out.push_back(casted->type_name);
+            continue;
+         }
+         if (auto* casted = dynamic_cast<const inlined_union_member*>(member.get())) {
+            auto list = casted->get_all_direct_struct_dependencies();
+            for (const auto& item : list) {
+               {
+                  bool already = false;
+                  for (auto& prior : out) {
+                     if (prior == item) {
+                        already = true;
+                        break;
+                     }
+                  }
+                  if (already)
+                     continue;
+               }
+               out.push_back(item);
+            }
+         }
+      }
+      return out;
+   }
+   constexpr bool inlined_union_member::has_any_string_members() const {
+      for (const auto& member : members) {
+         if (dynamic_cast<const string_member*>(member.get()))
+            return true;
+         if (auto* casted = dynamic_cast<const inlined_union_member*>(member.get()))
+            if (casted->has_any_string_members())
+               return true;
+      }
+      return false;
    }
 }

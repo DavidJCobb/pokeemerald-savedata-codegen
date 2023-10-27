@@ -5,7 +5,7 @@
 // TODO:
 // void lu_BitstreamRead_Pokedex(struct lu_BitstreamState* state, struct Pokedex* dst);
 
-void lu_BitstreamWrite_Pokedex(struct lu_BitstreamState* state, struct Pokedex* src) {
+void lu_BitstreamWrite_Pokedex(struct lu_BitstreamState* state, const struct Pokedex* src) {
    lu_BitstreamWrite_u8(state, src.order, 8);
    lu_BitstreamWrite_u8(state, src.mode, 8);
    lu_BitstreamWrite_u8(state, src.nationalMagic, 8);

@@ -14,9 +14,9 @@
             <u32 name="otId" />
             <field name="nickname" inherit="$pokemon-nickname" />
             <u8 name="language" inherit="$game-language" />
-            <u8 name="isBadEgg" c-bitfield="1" semantic-type="bool" />
-            <u8 name="hasSpecies" c-bitfield="1" semantic-type="bool" />
-            <u8 name="isEgg" c-bitfield="1" semantic-type="bool" />
+            <u8 name="isBadEgg" c-bitfield="1" />
+            <u8 name="hasSpecies" c-bitfield="1" />
+            <u8 name="isEgg" c-bitfield="1" />
             <u8 name="unused" c-bitfield="5" />
             <field name="otName" inherit="$player-name" />
             <u8 name="markings" />
@@ -46,12 +46,7 @@
          <fields>
             <field name="box" c-type="BoxPokemon" c-type-decl="struct" />
             <u32 name="status" />
-            <u8
-               name="level"
-               semantic-type="integer"
-               min="0"
-               max="100"
-            />
+            <u8 name="level" min="0" max="100"  />
             <u8  name="mail" />
             <u16 name="hp" />
             <u16 name="maxHP" />

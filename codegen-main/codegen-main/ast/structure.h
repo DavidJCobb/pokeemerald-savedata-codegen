@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <string>
 #include <vector>
 #include "./member.h"
@@ -8,7 +9,7 @@ namespace ast {
       public:
          std::string name;
          std::string header;
-         std::vector<member> members;
+         std::vector<std::unique_ptr<member>> members;
          std::optional<size_t> checksum_member_index;
          struct {
             bool is_packed = false;
@@ -17,6 +18,9 @@ namespace ast {
          constexpr const std::string to_string() const;
 
          constexpr const std::string as_c_member_declaration_list() const;
+
+         constexpr std::vector<std::string> get_all_direct_struct_dependencies() const;
+         constexpr bool has_any_string_members() const;
    };
 }
 

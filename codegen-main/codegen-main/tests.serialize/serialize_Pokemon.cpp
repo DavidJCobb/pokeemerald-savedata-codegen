@@ -8,8 +8,8 @@
 // TODO:
 // void lu_BitstreamRead_Pokemon(struct lu_BitstreamState* state, struct Pokemon* dst);
 
-void lu_BitstreamWrite_Pokemon(struct lu_BitstreamState* state, struct Pokemon* src) {
-   lu_BitstreamWrite_BoxPokemon(&src.box);
+void lu_BitstreamWrite_Pokemon(struct lu_BitstreamState* state, const struct Pokemon* src) {
+   lu_BitstreamWrite_BoxPokemon(state, &src.box);
    lu_BitstreamWrite_u32(state, src.status, 32);
    lu_BitstreamWrite_u8(state, src.level, 7);
    lu_BitstreamWrite_u8(state, src.mail, 8);

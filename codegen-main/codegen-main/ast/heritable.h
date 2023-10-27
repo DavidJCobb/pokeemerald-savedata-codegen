@@ -1,16 +1,43 @@
 #pragma once
 #include <variant>
-#include "./semantic_type_info.h"
+#include "./integral_type.h"
 
 namespace ast {
    class heritable {
       public:
-         std::string name;
-         std::variant<
-            semantic::number_info,
-            semantic::string_info
-         > semantic_info;
+         enum class fundamental_type {
+            integral,
+            string,
+            structure,
+         };
 
-         std::optional<c_type::primitive> number_c_type;
+      public:
+         std::string name;
+         
+         std::string tagname;
+         struct {
+            std::optional<bool> do_not_serialize;
+            std::optional<size_t> c_alignment;
+
+            std::string c_type;
+            std::string c_type_decl;
+
+            // attributes for numbers
+            std::optional<std::intmax_t>  min;
+            std::optional<std::uintmax_t> max;
+            std::optional<std::size_t>    c_bitfield;
+            std::optional<std::size_t>    serialization_bitcount;
+            std::optional<bool> is_checksum;
+
+            // attributes for strings
+            std::optional<integral_type> char_type;
+            std::optional<std::size_t> length;
+         } attributes;
+         std::optional<integral_type> integral_type;
+
+         constexpr bool is_integral() const;
+         constexpr bool is_string() const;
    };
 }
+
+#include "./heritable.inl"
