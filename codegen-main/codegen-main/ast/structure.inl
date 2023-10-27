@@ -1,5 +1,6 @@
 #pragma once
 #include "./structure.h"
+#include <algorithm>
 
 namespace ast {
    constexpr const std::string structure::to_string() const {
@@ -26,6 +27,19 @@ namespace ast {
       return out;
    };
 
+   constexpr std::vector<std::string> structure::get_all_direct_constant_dependencies() const {
+      std::vector<std::string> out;
+
+      for (const auto& member : members) {
+         auto list = member->get_all_used_constants();
+         for (auto& item : list)
+            out.push_back(std::move(item));
+      }
+
+      auto it = std::unique(out.begin(), out.end());
+      out.erase(it, out.end());
+      return out;
+   }
    constexpr std::vector<std::string> structure::get_all_direct_struct_dependencies() const {
       std::vector<std::string> out;
       for (const auto& member : members) {

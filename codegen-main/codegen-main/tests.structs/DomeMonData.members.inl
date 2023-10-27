@@ -1,3 +1,3 @@
-   u16 moves[4];
-   u8 evs[6];
+   u16 moves[MAX_MON_MOVES];
+   u8 evs[NUM_STATS];
    u8 nature;

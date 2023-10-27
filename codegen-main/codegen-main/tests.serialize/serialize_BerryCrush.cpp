@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_BerryCrush.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_BerryCrush(struct lu_BitstreamState* state, struct BerryCrush* dst);

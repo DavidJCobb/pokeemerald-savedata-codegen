@@ -1,5 +1,6 @@
 #pragma once
 #include <variant>
+#include "./integral_constant.h"
 #include "./integral_type.h"
 
 namespace ast {
@@ -17,7 +18,7 @@ namespace ast {
          std::string tagname;
          struct {
             std::optional<bool> do_not_serialize;
-            std::optional<size_t> c_alignment;
+            std::optional<size_constant> c_alignment;
 
             std::string c_type;
             std::string c_type_decl;
@@ -25,13 +26,13 @@ namespace ast {
             // attributes for numbers
             std::optional<std::intmax_t>  min;
             std::optional<std::uintmax_t> max;
-            std::optional<std::size_t>    c_bitfield;
-            std::optional<std::size_t>    serialization_bitcount;
+            std::optional<size_constant>  c_bitfield;
+            std::optional<size_constant>  serialization_bitcount;
             std::optional<bool> is_checksum;
 
             // attributes for strings
             std::optional<integral_type> char_type;
-            std::optional<std::size_t> length;
+            std::optional<size_constant> length;
          } attributes;
          std::optional<integral_type> integral_type;
 

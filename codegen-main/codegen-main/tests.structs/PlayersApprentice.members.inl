@@ -5,5 +5,5 @@
    u8 party : 3;
    u8 saveId : 2;
    u8 unused;
-   u8 speciesIds[3];
-   struct ApprenticeQuestion questions[9];
+   u8 speciesIds[MULTI_PARTY_SIZE];
+   struct ApprenticeQuestion questions[APPRENTICE_MAX_QUESTIONS];

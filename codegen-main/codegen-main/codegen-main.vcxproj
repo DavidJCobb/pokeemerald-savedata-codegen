@@ -164,7 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\heritable.inl" />
-    <None Include="ast\integral_constant.inl" />
     <None Include="ast\integral_type.inl" />
     <None Include="ast\member.inl" />
     <None Include="ast\structure.inl" />

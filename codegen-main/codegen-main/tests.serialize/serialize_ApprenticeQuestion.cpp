@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_ApprenticeQuestion.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_ApprenticeQuestion(struct lu_BitstreamState* state, struct ApprenticeQuestion* dst);

@@ -7,11 +7,11 @@ namespace ast {
       assert(this->value_type.has_value());
 
       if (this->serialization_bitcount.has_value())
-         return this->serialization_bitcount.value();
+         return this->serialization_bitcount.value().value;
 
       if (!this->min.has_value() && !this->max.has_value()) {
          if (this->c_bitfield.has_value())
-            return this->c_bitfield.value();
+            return this->c_bitfield.value().value;
          return ast::bitcount_of(this->value_type.value());
       }
 

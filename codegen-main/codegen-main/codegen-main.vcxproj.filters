@@ -71,9 +71,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ast\integral_constant.inl">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="ast\member.inl">
       <Filter>Header Files</Filter>
     </None>

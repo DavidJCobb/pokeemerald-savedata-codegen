@@ -1,9 +1,9 @@
 #include "./tests.serialize//serialize_Pokemon.h"
 
+#include "pokemon.h" // struct definition
+
 // dependencies
 #include "./serialize_BoxPokemon.h"
-
-#include "pokemon.h"
 
 // TODO:
 // void lu_BitstreamRead_Pokemon(struct lu_BitstreamState* state, struct Pokemon* dst);

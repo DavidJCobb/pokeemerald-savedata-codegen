@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_BattleDomeTrainer.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_BattleDomeTrainer(struct lu_BitstreamState* state, struct BattleDomeTrainer* dst);

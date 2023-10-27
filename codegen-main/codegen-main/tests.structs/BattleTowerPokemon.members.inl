@@ -1,6 +1,6 @@
    u16 species;
    u16 heldItem;
-   u16 moves[4];
+   u16 moves[MAX_MON_MOVES];
    u8 level;
    u8 ppBonuses;
    u8 hpEV;
@@ -19,5 +19,5 @@
    u8 gap : 1;
    u32 abilityNum : 1;
    u32 personality;
-   u8 nickname[11];
+   u8 nickname[POKEMON_NAME_LENGTH + 1];
    u8 friendship;

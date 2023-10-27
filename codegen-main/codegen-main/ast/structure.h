@@ -19,6 +19,7 @@ namespace ast {
 
          constexpr const std::string as_c_member_declaration_list() const;
 
+         constexpr std::vector<std::string> get_all_direct_constant_dependencies() const;
          constexpr std::vector<std::string> get_all_direct_struct_dependencies() const;
          constexpr bool has_any_string_members() const;
    };

@@ -2,9 +2,9 @@
    u8 lvlMode : 2;
    u8 numQuestions;
    u8 number;
-   struct ApprenticeMon party[3];
-   u16 speechWon[6];
-   u8 playerId[4];
-   u8 playerName[8];
+   struct ApprenticeMon party[MULTI_PARTY_SIZE];
+   u16 speechWon[EASY_CHAT_BATTLE_WORDS_COUNT];
+   u8 playerId[TRAINER_ID_LENGTH];
+   u8 playerName[PLAYER_NAME_LENGTH + 1];
    u8 language;
    u32 checksum;

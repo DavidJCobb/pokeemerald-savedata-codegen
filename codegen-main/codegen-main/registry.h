@@ -8,6 +8,8 @@
 #include "lu/rapidxml_helpers/parsing_scaffold.h"
 #include "lu/singleton.h"
 
+#include "./ast/integral_constant.h"
+
 namespace ast {
    class constant_definition;
    class heritable;
@@ -33,9 +35,11 @@ class registry : public lu::singleton<registry> {
       
       std::filesystem::path path;
 
+   public:
+      std::optional<ast::size_constant> interpret_size_constant(const std::string_view&);
+
    protected:
       std::filesystem::path _normalize_path(const std::filesystem::path&);
-      std::optional<size_t> _size_or_constant_name_to_size(const std::string_view&);
       std::optional<std::intmax_t> _int_or_constant_name_to_int(const std::string_view&);
 
       void _parse_and_handle_dependencies(parse_wrapper&, rapidxml::xml_node<>&);

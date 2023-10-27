@@ -1,6 +1,7 @@
 #pragma once
+#include <optional>
 #include <string>
-#include <variant>
+#include "lu/strings/from_integer.h"
 
 namespace ast {
    template<typename UnderlyingType>
@@ -9,12 +10,15 @@ namespace ast {
          using underlying_type = UnderlyingType;
 
       public:
-         std::variant<underlying_type, std::string> value;
-         
-         constexpr const std::string to_string() const;
+         std::string     preprocessor_name; // optional
+         underlying_type value = 0; // required
+
+         constexpr std::string as_c_expression() const {
+            if (!preprocessor_name.empty())
+               return preprocessor_name;
+            return lu::strings::from_integer(value);
+         }
    };
 
    using size_constant = integral_constant<size_t>;
 }
-
-#include "./integral_constant.inl"

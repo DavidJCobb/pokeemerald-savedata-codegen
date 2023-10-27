@@ -27,15 +27,21 @@ std::filesystem::path registry::_normalize_path(const std::filesystem::path& p) 
    out = out.make_preferred();
    return out;
 }
-std::optional<size_t> registry::_size_or_constant_name_to_size(const std::string_view& text) {
+std::optional<ast::size_constant> registry::interpret_size_constant(const std::string_view& text) {
    bool   ok;
    size_t out = lu::strings::to_integer<std::size_t>(text.data(), text.size(), &ok);
-   if (ok)
-      return out;
+   if (ok) {
+      return ast::size_constant{
+         .value = out
+      };
+   }
    
    auto ugh = std::string(text);
    if (this->constants.contains(ugh)) {
-      return this->constants[ugh]->value;
+      return ast::size_constant{
+         .preprocessor_name = ugh,
+         .value = (size_t)(this->constants[ugh]->value)
+      };
    }
    return {};
 }
@@ -189,14 +195,14 @@ void registry::_parse_heritables(parse_wrapper& scaffold, rapidxml::xml_node<>& 
             return;
          }
          if (attr_name == "c-alignment") {
-            auto value = _size_or_constant_name_to_size(attr_value);
-            if (!value.has_value()) {
+            auto constant = interpret_size_constant(attr_value);
+            if (!constant.has_value()) {
                scaffold.error("Heritable: `c-alignment` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            if (value.value() == 0) {
+            if (constant.value().value == 0) {
                scaffold.error("Heritable: `c-alignment` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            heritable->attributes.c_alignment = value.value();
+            heritable->attributes.c_alignment = constant.value();
             return;
          }
 
@@ -226,31 +232,31 @@ void registry::_parse_heritables(parse_wrapper& scaffold, rapidxml::xml_node<>& 
             return;
          }
          if (attr_name == "serialization-bitcount") {
-            auto value = _size_or_constant_name_to_size(attr_value);
-            if (!value.has_value()) {
+            auto constant = interpret_size_constant(attr_value);
+            if (!constant.has_value()) {
                scaffold.error("Heritable: `serialization-bitcount` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            if (value.value() < 0) {
+            if (constant.value().value < 0) {
                scaffold.error("Heritable: `serialization-bitcount` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            if (value.value() == 0) {
+            if (constant.value().value == 0) {
                scaffold.error("Heritable: `serialization-bitcount` attribute value cannot be zero (to prevent serialization, use `do-not-serialize=\"true\"` instead) (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            heritable->attributes.serialization_bitcount = value.value();
+            heritable->attributes.serialization_bitcount = constant.value();
             return;
          }
          if (attr_name == "c-bitfield") {
-            auto value = _size_or_constant_name_to_size(attr_value);
-            if (!value.has_value()) {
+            auto constant = interpret_size_constant(attr_value);
+            if (!constant.has_value()) {
                scaffold.error("Heritable: `c-bitfield` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            if (value.value() < 0) {
+            if (constant.value().value < 0) {
                scaffold.error("Heritable: `c-bitfield` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            if (value.value() == 0) {
+            if (constant.value().value == 0) {
                scaffold.error("Heritable: `c-bitfield` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
             }
-            heritable->attributes.c_bitfield = value.value();
+            heritable->attributes.c_bitfield = constant.value();
             return;
          }
          if (attr_name == "is-checksum") {
@@ -273,11 +279,11 @@ void registry::_parse_heritables(parse_wrapper& scaffold, rapidxml::xml_node<>& 
             return;
          }
          if (attr_name == "length") {
-            auto value = _size_or_constant_name_to_size(attr_value);
-            if (!value.has_value()) {
+            auto constant = interpret_size_constant(attr_value);
+            if (!constant.has_value()) {
                scaffold.error("Heritable: `length` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
             }
-            heritable->attributes.length = value.value();
+            heritable->attributes.length = constant.value();
             return;
          }
       });
@@ -338,22 +344,22 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    struct {
       std::string name;
       std::optional<bool> do_not_serialize;
-      std::optional<size_t> c_alignment;
+      std::optional<ast::size_constant> c_alignment;
 
       std::string c_type;
       std::string c_type_decl;
       std::string inherit;
 
       // attributes for numbers
-      std::optional<std::intmax_t>  min;
-      std::optional<std::uintmax_t> max;
-      std::optional<std::size_t>    c_bitfield;
-      std::optional<std::size_t>    serialization_bitcount;
+      std::optional<std::intmax_t>      min;
+      std::optional<std::uintmax_t>     max;
+      std::optional<ast::size_constant> c_bitfield;
+      std::optional<ast::size_constant> serialization_bitcount;
       std::optional<bool> is_checksum;
 
       // attributes for strings
       std::string char_type;
-      std::optional<std::size_t> length;
+      std::optional<ast::size_constant> length;
 
       // attributes for inlined unions (we handle them in the special-case above, but 
       // we should still grab their attributes for more robust user warnings).
@@ -376,14 +382,14 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          return;
       }
       if (attr_name == "c-alignment") {
-         auto value = _size_or_constant_name_to_size(attr_value);
-         if (!value.has_value()) {
+         auto constant = interpret_size_constant(attr_value);
+         if (!constant.has_value()) {
             scaffold.error("Field: `c-alignment` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         if (value.value() == 0) {
+         if (constant.value().value == 0) {
             scaffold.error("Field: `c-alignment` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         attributes.c_alignment = value.value();
+         attributes.c_alignment = constant.value();
          return;
       }
 
@@ -417,28 +423,28 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          return;
       }
       if (attr_name == "serialization-bitcount") {
-         auto value = _size_or_constant_name_to_size(attr_value);
-         if (!value.has_value()) {
+         auto constant = interpret_size_constant(attr_value);
+         if (!constant.has_value()) {
             scaffold.error("Field: `serialization-bitcount` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         if (value.value() < 0) {
+         if (constant.value().value < 0) {
             scaffold.error("Field: `serialization-bitcount` attribute value cannot be a negative number (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         if (value.value() == 0) {
+         if (constant.value().value == 0) {
             scaffold.error("Field: `serialization-bitcount` attribute value cannot be zero (to prevent serialization, use `do-not-serialize=\"true\"` instead) (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         attributes.serialization_bitcount = value.value();
+         attributes.serialization_bitcount = constant.value();
          return;
       }
       if (attr_name == "c-bitfield") {
-         auto value = _size_or_constant_name_to_size(attr_value);
-         if (!value.has_value()) {
+         auto constant = interpret_size_constant(attr_value);
+         if (!constant.has_value()) {
             scaffold.error("Field: `c-bitfield` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         if (value.value() == 0) {
+         if (constant.value().value == 0) {
             scaffold.error("Field: `c-bitfield` attribute value cannot be zero (seen: "s + std::string(attr_value) + ").", attr); // can't wait for P2591...
          }
-         attributes.c_bitfield = value.value();
+         attributes.c_bitfield = constant.value();
          return;
       }
       if (attr_name == "is-checksum") {
@@ -457,11 +463,11 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          return;
       }
       if (attr_name == "length") {
-         auto value = _int_or_constant_name_to_int(attr_value);
-         if (!value.has_value()) {
-            scaffold.error("Field: `length` attribute value is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+         auto constant = interpret_size_constant(attr_value);
+         if (!constant.has_value()) {
+            scaffold.error("Field: `length` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
          }
-         attributes.length = value.value();
+         attributes.length = constant.value();
          return;
       }
 
@@ -629,10 +635,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       }
       if (attributes.length.has_value()) {
          auto v = attributes.length.value();
-         if (v < 0) {
+         if (v.value < 0) {
             scaffold.warn("Field: The string max length cannot be negative.", node);
          }
-         if (v == 0) {
+         if (v.value == 0) {
             scaffold.warn("Field: The string max length cannot be zero.", node);
          }
          casted->max_length = v;
@@ -706,11 +712,11 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
 
          lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &rank](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
             if (attr_name == "extent") {
-               auto value = _size_or_constant_name_to_size(attr_value);
-               if (!value.has_value()) {
+               auto constant = interpret_size_constant(attr_value);
+               if (!constant.has_value()) {
                   scaffold.error("Field: Array rank is an unrecognized constant or otherwise not a valid integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
                }
-               rank.extent = value.value();
+               rank.extent = constant.value();
             } else if (attr_name == "extent-expr") {
                rank.extent_expr = attr_value;
             } else {
@@ -933,6 +939,11 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
 
          stream << "#include \"" << out_folder.string() << "/serialize_" << pair.first << ".h\"\n\n";
 
+         if (!pair.second->header.empty()) {
+            // this should also take care of including all preprocessor constants referenced by the struct's members
+            stream << "#include \"" << pair.second->header << "\" // struct definition\n\n";
+         }
+
          std::vector<std::string> dependencies = pair.second->get_all_direct_struct_dependencies();
          bool has_any_strings = pair.second->has_any_string_members();
 
@@ -946,8 +957,20 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
          if (has_any_strings) {
             stream << "#include \"string_util.h\" // gflib; for StringLength\n\n";
          }
-         if (!pair.second->header.empty()) {
-            stream << "#include \"" << pair.second->header << "\"\n\n";
+
+         {
+            auto constants = pair.second->get_all_direct_constant_dependencies();
+            if (!constants.empty()) {
+               stream << "// check constants:\n";
+               for (const auto& item : constants) {
+                  const auto& entry = this->constants[item];
+
+                  stream << "#if " << item << " != " << entry->value << "\n";
+                  stream << "   #error Constant `" << item << "` changed in C, but XML not updated or codegen not re-run!\n";
+                  stream << "#endif\n";
+               }
+               stream << "\n";
+            }
          }
 
          //
@@ -1005,7 +1028,7 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                stream << ";\n";
                for (size_t i = 0; i < rank; ++i) {
                   char var = ('i' + i);
-                  stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].extent << "; ++" << var << ") { \n";
+                  stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].as_c_expression() << "; ++" << var << ") { \n";
                   indent += "   ";
                }
                stream << "      ";
@@ -1017,7 +1040,7 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                _serialize_indices();
                stream << ");\n";
             } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
-               assert(casted->max_length > 0);
+               assert(casted->max_length.value > 0);
 
                stream << indent << "   lu_BitstreamWrite_string(";
                stream << "state";
@@ -1025,9 +1048,9 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                stream << "src." << member_access;
                _serialize_indices();
                stream << ", ";
-               stream << casted->max_length;
+               stream << casted->max_length.as_c_expression();
                stream << ", ";
-               stream << std::bit_width(casted->max_length);
+               stream << std::bit_width(casted->max_length.value);
                stream << ");\n";
             } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
                size_t bitcount = member->compute_serialization_bitcount();

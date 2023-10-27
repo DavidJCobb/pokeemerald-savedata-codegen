@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_RentalMon.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_RentalMon(struct lu_BitstreamState* state, struct RentalMon* dst);

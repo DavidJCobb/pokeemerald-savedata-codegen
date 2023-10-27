@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_PokemonJumpRecords.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_PokemonJumpRecords(struct lu_BitstreamState* state, struct PokemonJumpRecords* dst);

@@ -1,3 +1,3 @@
    u16 species;
-   u16 moves[4];
+   u16 moves[MAX_MON_MOVES];
    u16 item;

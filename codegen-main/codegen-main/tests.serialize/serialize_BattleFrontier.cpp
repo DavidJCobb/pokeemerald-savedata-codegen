@@ -1,5 +1,7 @@
 #include "./tests.serialize//serialize_BattleFrontier.h"
 
+#include "global.h" // struct definition
+
 // dependencies
 #include "./serialize_EmeraldBattleTowerRecord.h"
 #include "./serialize_EmeraldBattleTowerRecord.h"
@@ -12,7 +14,46 @@
 
 #include "string_util.h" // gflib; for StringLength
 
-#include "global.h"
+// check constants:
+#if BATTLE_TOWER_RECORD_COUNT != 5
+   #error Constant `BATTLE_TOWER_RECORD_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if MAX_FRONTIER_PARTY_SIZE != 4
+   #error Constant `MAX_FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_LVL_MODE_COUNT != 2
+   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if DOME_TOURNAMENT_TRAINERS_COUNT != 16
+   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_PARTY_SIZE != 3
+   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_LVL_MODE_COUNT != 2
+   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_PARTY_SIZE != 3
+   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_LVL_MODE_COUNT != 2
+   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if DOME_TOURNAMENT_TRAINERS_COUNT != 16
+   #error Constant `DOME_TOURNAMENT_TRAINERS_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if PLAYER_NAME_LENGTH != 7
+   #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_LVL_MODE_COUNT != 2
+   #error Constant `FRONTIER_LVL_MODE_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if TRAINER_ID_LENGTH != 4
+   #error Constant `TRAINER_ID_LENGTH` changed in C, but XML not updated or codegen not re-run!
+#endif
+#if FRONTIER_PARTY_SIZE != 3
+   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+#endif
 
 // TODO:
 // void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct BattleFrontier* dst);
@@ -21,7 +62,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_EmeraldBattleTowerRecord(state, &src.towerPlayer);
    {
       u16 i;
-      for (i = 0; i < 5; ++i) { 
+      for (i = 0; i < BATTLE_TOWER_RECORD_COUNT; ++i) { 
             lu_BitstreamWrite_EmeraldBattleTowerRecord(state, &src.towerRecords[i]);
       }
    }
@@ -33,7 +74,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_bool(state, src.disableRecordBattle);
    {
       u16 i;
-      for (i = 0; i < 4; ++i) { 
+      for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; ++i) { 
             lu_BitstreamWrite_u16(state, src.selectedPartyMons[i], 11);
       }
    }
@@ -48,7 +89,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 4; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.towerWinStreaks[i][j], 16);
          }
       }
@@ -56,7 +97,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 4; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.towerRecordWinStreaks[i][j], 16);
          }
       }
@@ -80,7 +121,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.domeWinStreaks[i][j], 16);
          }
       }
@@ -88,7 +129,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.domeRecordWinStreaks[i][j], 16);
          }
       }
@@ -96,21 +137,21 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.domeTotalChampionships[i][j], 16);
          }
       }
    }
    {
       u16 i;
-      for (i = 0; i < 16; ++i) { 
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
             lu_BitstreamWrite_BattleDomeTrainer(state, &src.domeTrainers[i]);
       }
    }
    {
       u16 i, j;
-      for (i = 0; i < 16; ++i) { 
-         for (j = 0; j < 3; ++j) { 
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
+         for (j = 0; j < FRONTIER_PARTY_SIZE; ++j) { 
                lu_BitstreamWrite_u16(state, src.domeMonIds[i][j], 11);
          }
       }
@@ -120,7 +161,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.palaceWinStreaks[i][j], 16);
          }
       }
@@ -128,7 +169,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.palaceRecordWinStreaks[i][j], 16);
          }
       }
@@ -137,7 +178,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.arenaWinStreaks[i][j], 16);
          }
       }
@@ -145,7 +186,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.arenaRecordWinStreaks[i][j], 16);
          }
       }
@@ -153,7 +194,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.factoryWinStreaks[i][j], 16);
          }
       }
@@ -161,7 +202,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.factoryRecordWinStreaks[i][j], 16);
          }
       }
@@ -169,7 +210,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.factoryRentsCount[i][j], 16);
          }
       }
@@ -177,7 +218,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.factoryRecordRentsCount[i][j], 16);
          }
       }
@@ -186,7 +227,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.pikeWinStreaks[i][j], 16);
          }
       }
@@ -194,7 +235,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.pikeRecordStreaks[i][j], 16);
          }
       }
@@ -202,7 +243,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.pikeTotalStreaks[i][j], 16);
          }
       }
@@ -212,7 +253,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_bool(state, src.pikeHealingRoomsDisabled);
    {
       u16 i;
-      for (i = 0; i < 3; ++i) { 
+      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
             lu_BitstreamWrite_u16(state, src.pikeHeldItemsBackup[i], 16);
       }
    }
@@ -220,7 +261,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.pyramidWinStreaks[i][j], 16);
          }
       }
@@ -228,7 +269,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i, j;
       for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 2; ++j) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
                lu_BitstreamWrite_u16(state, src.pyramidRecordWinStreaks[i][j], 16);
          }
       }
@@ -247,7 +288,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_u16(state, src.slateportTentPrize, 16);
    {
       u16 i;
-      for (i = 0; i < 6; ++i) { 
+      for (i = 0; i < FRONTIER_PARTY_SIZE * 2; ++i) { 
             lu_BitstreamWrite_RentalMon(state, &src.rentalMons[i]);
       }
    }
@@ -256,21 +297,21 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_u32(state, src.battlesCount, 32);
    {
       u16 i;
-      for (i = 0; i < 16; ++i) { 
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
             lu_BitstreamWrite_u16(state, src.domeWinningMoves[i], 16);
       }
    }
    lu_BitstreamWrite_u8(state, src.trainerFlags, 8);
    {
       u16 i;
-      for (i = 0; i < 2; ++i) { 
-            lu_BitstreamWrite_string(state, src.opponentNames[i], 7, 3);
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+            lu_BitstreamWrite_string(state, src.opponentNames[i], PLAYER_NAME_LENGTH, 3);
       }
    }
    {
       u16 i, j;
-      for (i = 0; i < 2; ++i) { 
-         for (j = 0; j < 4; ++j) { 
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+         for (j = 0; j < TRAINER_ID_LENGTH; ++j) { 
                lu_BitstreamWrite_u8(state, src.opponentTrainerIds[i][j], 8);
          }
       }
@@ -281,7 +322,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    lu_BitstreamWrite_u8(state, src.unused_EFB, 8);
    {
       u16 i;
-      for (i = 0; i < 3; ++i) { 
+      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
             lu_BitstreamWrite_DomeMonData(state, &src.domePlayerPartyData[i]);
       }
    }

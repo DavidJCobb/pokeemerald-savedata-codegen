@@ -1,7 +1,7 @@
-   u8 playerName[8];
+   u8 playerName[PLAYER_NAME_LENGTH + 1];
    u8 playerGender;
    u8 specialSaveWarpFlags;
-   u8 playerTrainerId[4];
+   u8 playerTrainerId[TRAINER_ID_LENGTH];
    u16 playTimeHours;
    u8 playTimeMinutes;
    u8 playTimeSeconds;
@@ -20,11 +20,11 @@
    u32 gcnLinkFlags; // Read by Pokemon Colosseum/XD
    u32 encryptionKey;
    struct PlayersApprentice playerApprentice;
-   struct Apprentice apprentices[4];
+   struct Apprentice apprentices[APPRENTICE_COUNT];
    struct BerryCrush berryCrush;
    struct PokemonJumpRecords pokeJump;
    struct BerryPickingResults berryPick;
-   struct RankingHall1P hallRecords1P[9][2][3]; // From record mixing.
-   struct RankingHall2P hallRecords2P[2][3]; // From record mixing.
-   u16 contestLinkResults[5][4]; // From record mixing.
+   struct RankingHall1P hallRecords1P[HALL_FACILITIES_COUNT][FRONTIER_LVL_MODE_COUNT][HALL_RECORDS_COUNT]; // From record mixing.
+   struct RankingHall2P hallRecords2P[FRONTIER_LVL_MODE_COUNT][HALL_RECORDS_COUNT]; // From record mixing.
+   u16 contestLinkResults[CONTEST_CATEGORIES_COUNT][CONTESTANT_COUNT]; // From record mixing.
    struct BattleFrontier frontier;

@@ -1,10 +1,10 @@
 #include "./tests.serialize//serialize_DaycareMon.h"
 
+#include "global.h" // struct definition
+
 // dependencies
 #include "./serialize_BoxPokemon.h"
 #include "./serialize_DaycareMail.h"
-
-#include "global.h"
 
 // TODO:
 // void lu_BitstreamRead_DaycareMon(struct lu_BitstreamState* state, struct DaycareMon* dst);

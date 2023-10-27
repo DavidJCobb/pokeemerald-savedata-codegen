@@ -1,6 +1,6 @@
 #include "./tests.serialize//serialize_Time.h"
 
-#include "global.h"
+#include "global.h" // struct definition
 
 // TODO:
 // void lu_BitstreamRead_Time(struct lu_BitstreamState* state, struct Time* dst);

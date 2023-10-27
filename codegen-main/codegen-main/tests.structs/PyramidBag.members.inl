@@ -1,2 +1,2 @@
-   u16 itemId[2][10];
-   u8 quantity[2][10];
+   u16 itemId[FRONTIER_LVL_MODE_COUNT][PYRAMID_BAG_ITEMS_COUNT];
+   u8 quantity[FRONTIER_LVL_MODE_COUNT][PYRAMID_BAG_ITEMS_COUNT];
