@@ -68,7 +68,7 @@
    u32 battlesCount;
    u16 domeWinningMoves[16];
    u8 trainerFlags;
-   u8 opponentNames[8][2];
+   u8 opponentNames[2][8];
    u8 opponentTrainerIds[2][4];
    u8 unk_EF9 : 7;
    u8 savedGame : 1;

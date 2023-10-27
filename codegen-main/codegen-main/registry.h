@@ -53,7 +53,9 @@ class registry : public lu::singleton<registry> {
 
       void parse_all_xml_files();
 
+      size_t bitcount_of_struct(std::string) const;
+
       void generate_all_struct_body_files(std::filesystem::path out_folder);
 
-      void generate_serialization_code(const std::string& struct_name);
+      void generate_serialization_code(std::filesystem::path out_folder);
 };

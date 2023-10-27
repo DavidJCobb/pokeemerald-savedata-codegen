@@ -1,4 +1,5 @@
 #include "./registry.h"
+#include <bit>
 #include <fstream>
 #include <stdexcept>
 #include <string_view>
@@ -560,6 +561,18 @@ void registry::parse_all_xml_files() {
    }
 }
 
+size_t registry::bitcount_of_struct(std::string name) const {
+   if (!this->structs.contains(name))
+      return 0;
+   const auto& structure = this->structs.at(name);
+
+   size_t bitcount = 0;
+   for (const auto& member : structure->members) {
+      bitcount += member.compute_bitcount();
+   }
+   return bitcount;
+}
+
 void registry::generate_all_struct_body_files(std::filesystem::path out_folder) {
    //
    // TODO: We need to remember all constants seen when parsing a struct, so we can 
@@ -574,5 +587,173 @@ void registry::generate_all_struct_body_files(std::filesystem::path out_folder) 
       assert(!!stream);
 
       stream << pair.second->as_c_member_declaration_list();
+   }
+}
+
+void registry::generate_serialization_code(std::filesystem::path out_folder) {
+   for (auto& pair : this->structs) {
+      {  // h
+         std::ofstream stream(out_folder / std::filesystem::path("serialize_"s + pair.first + ".h"));
+         assert(!!stream);
+
+         stream << "#ifndef GUARD_LU_SERIALIZE_" << pair.first << "\n";
+         stream << "#define GUARD_LU_SERIALIZE_" << pair.first << "\n";
+         stream << '\n';
+         stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* dst);";
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* src);";
+         stream << '\n';
+         stream << "#endif";
+      }
+      {  // cpp
+         std::ofstream stream(out_folder / std::filesystem::path("serialize_"s + pair.first + ".cpp"));
+         assert(!!stream);
+
+         stream << "#include \"" << out_folder.string() << "/serialize_" << pair.first << ".h\"\n\n";
+
+         std::vector<std::string> dependencies;
+         bool has_any_strings = false;
+         for (const auto& m : pair.second->members) {
+            if (std::holds_alternative<std::string>(m.c_type_info.name)) {
+               const auto& name = std::get<std::string>(m.c_type_info.name);
+
+               bool already = false;
+               for (auto& prior : dependencies) {
+                  if (prior == name) {
+                     already = true;
+                     break;
+                  }
+               }
+               if (already)
+                  continue;
+
+               dependencies.push_back(name);
+            }
+            if (!has_any_strings) {
+               if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
+                  has_any_strings = true;
+               }
+            }
+         }
+
+         if (dependencies.size()) {
+            stream << "// dependencies\n";
+            for (const auto& name : dependencies) {
+               stream << "#include \"./serialize_" << name << ".h\"\n";
+            }
+            stream << '\n';
+         }
+         if (has_any_strings) {
+            stream << "#include \"string_util.h\" // gflib; for StringLength\n\n";
+         }
+         if (!pair.second->header.empty()) {
+            stream << "#include \"" << pair.second->header << "\"\n\n";
+         }
+
+         //
+         // TODO: Do the BitstreamRead function, too. Zero-fill the target struct before reading.
+         //
+         stream << "// TODO:\n";
+         stream << "// void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState* state, struct " << pair.first << "* dst);\n";
+
+         stream << '\n';
+
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState* state, struct " << pair.first << "* src) {\n";
+         for (const auto& m : pair.second->members) {
+            auto&  extents = m.c_type_info.array_extents;
+            size_t rank    = extents.size();
+            if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
+               // we appended the strlen as an extent
+               // (maybe we shouldn't do that? makes it easier to do the struct definitions, but...)
+               --rank;
+            }
+
+            constexpr const char first_array_index_name = 'i';
+            bool array_indices_are_numbered = rank > ('z' - 'i');
+
+            auto _serialize_indices = [&stream, rank, array_indices_are_numbered]() {
+               for (size_t i = 0; i < rank; ++i) {
+                  stream << '[';
+                  if (array_indices_are_numbered) {
+                     stream << "index_" << i;
+                  } else {
+                     stream << (char)(first_array_index_name + (char)i);
+                  }
+                  stream << ']';
+               }
+            };
+
+            std::string indent;
+            if (rank > 0) {
+               stream << "   {\n";
+               stream << "      u16 ";
+               for (size_t i = 0; i < rank; ++i) {
+                  if (array_indices_are_numbered) {
+                     stream << "index_" << i;
+                  } else {
+                     stream << (char)(first_array_index_name + (char)i);
+                  }
+                  if (i + 1 < rank) {
+                     stream << ", ";
+                  }
+               }
+               stream << ";\n";
+               for (size_t i = 0; i < rank; ++i) {
+                  char var = ('i' + i);
+                  stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].extent << "; ++" << var << ") { \n";
+                  indent += "   ";
+               }
+               stream << "      ";
+            }
+
+            if (std::holds_alternative<std::string>(m.c_type_info.name)) {
+               stream << indent << "   lu_BitstreamWrite_" << std::get<std::string>(m.c_type_info.name) << "(";
+               stream << "&src." << m.name;
+               _serialize_indices();
+               stream << ");\n";
+            } else if (std::holds_alternative<ast::semantic::string_info>(m.semantic_info)) {
+               const auto& casted = std::get<ast::semantic::string_info>(m.semantic_info);
+               assert(casted.max_length > 0);
+
+               stream << indent << "   lu_BitstreamWrite_string(";
+               stream << "state";
+               stream << ", ";
+               stream << "src." << m.name;
+               _serialize_indices();
+               stream << ", ";
+               stream << casted.max_length;
+               stream << ", ";
+               stream << std::bit_width(casted.max_length);
+               stream << ");\n";
+            } else {
+               size_t bitcount = m.compute_bitcount();
+               if (bitcount == 1) {
+                  stream << indent << "   lu_BitstreamWrite_bool(state, src." << m.name;
+                  _serialize_indices();
+                  stream << ");\n";
+                  continue;
+               }
+               stream << indent << "   lu_BitstreamWrite_u";
+               if (bitcount > 16)
+                  stream << "32";
+               else if (bitcount > 8)
+                  stream << "16";
+               else
+                  stream << "8";
+               stream << "(state, src." << m.name;
+               _serialize_indices();
+               stream << ", " << bitcount << ");\n";
+            }
+
+            if (rank > 0) {
+               for (size_t i = 0; i < rank; ++i) {
+                  stream << indent << "   }\n"; // close (nested) for-loop
+                  indent = indent.substr(3);
+               }
+               stream << "   }\n"; // close anonymous block containing loop iterator var
+            }
+
+         }
+         stream << "}";
+      }
    }
 }

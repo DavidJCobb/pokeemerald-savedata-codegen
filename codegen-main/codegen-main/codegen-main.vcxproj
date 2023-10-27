@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ast\main.cpp" />
+    <ClCompile Include="ast\member.cpp" />
     <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp" />
     <ClCompile Include="registry.cpp" />
   </ItemGroup>

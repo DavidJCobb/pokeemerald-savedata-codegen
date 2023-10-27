@@ -51,6 +51,8 @@ namespace ast {
             auto& cti = c_type_info;
             return cti.as_c_member_prefix() + ' ' + name + cti.as_c_member_postfix();
          }
+
+         size_t compute_bitcount() const;
    };
 }
 

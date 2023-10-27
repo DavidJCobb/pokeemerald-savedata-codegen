@@ -18,6 +18,34 @@ namespace ast {
             return 32;
       }
    }
+   /*static*/ constexpr std::intmax_t c_type::minimum_of(primitive v) {
+      switch (v) {
+         case primitive::bool8:
+         case primitive::u8:
+         case primitive::u16:
+         case primitive::u32:
+            return 0;
+      }
+      switch (v) {
+         case primitive::s8:
+         case primitive::s16:
+         case primitive::s32:
+            return -(std::intmax_t{ 1 } << (bitcount_of(v) - 1));
+      }
+      return 0;
+   }
+   /*static*/ constexpr std::uintmax_t c_type::maximum_of(primitive v) {
+      auto bc  = bitcount_of(v) - 1;
+      auto max = std::uintmax_t{ 1 } << bc;
+      switch (v) {
+         case primitive::s8:
+         case primitive::s16:
+         case primitive::s32:
+            --max;
+            break;
+      }
+      return max;
+   }
    /*static*/ constexpr std::string_view c_type::primitive_to_string(primitive v) {
       switch (v) {
          case primitive::u8:    return "u8";  break;

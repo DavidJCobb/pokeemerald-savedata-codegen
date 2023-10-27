@@ -94,5 +94,8 @@
     <ClCompile Include="ast\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ast\member.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -49,7 +49,7 @@ namespace ast {
          if (si.char_type.has_value())
             cti.name = si.char_type.value();
 
-         cti.array_extents.insert(cti.array_extents.begin(), c_type::array_rank{
+         cti.array_extents.push_back(c_type::array_rank{
             .extent = si.max_length + 1
          });
       }

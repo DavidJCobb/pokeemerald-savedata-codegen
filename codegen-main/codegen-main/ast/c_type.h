@@ -17,6 +17,8 @@ namespace ast {
             bool8,
          };
          static constexpr size_t bitcount_of(primitive);
+         static constexpr std::intmax_t  minimum_of(primitive);
+         static constexpr std::uintmax_t maximum_of(primitive);
          static constexpr std::string_view primitive_to_string(primitive);
          static constexpr std::optional<primitive> primitive_from_string(std::string_view);
 

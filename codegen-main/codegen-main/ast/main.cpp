@@ -62,5 +62,7 @@ int main(int argcount, char* args[]) {
 
    reg.generate_all_struct_body_files(struct_output_path);
 
+   reg.generate_serialization_code(serialization_output_path);
+
    return 0;
 }
