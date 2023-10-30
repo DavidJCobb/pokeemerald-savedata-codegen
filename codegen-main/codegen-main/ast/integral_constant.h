@@ -1,6 +1,7 @@
 #pragma once
 #include <optional>
 #include <string>
+#include <type_traits>
 #include "lu/strings/from_integer.h"
 
 namespace ast {
@@ -21,4 +22,10 @@ namespace ast {
    };
 
    using size_constant = integral_constant<size_t>;
+
+   template<typename T>
+   concept is_integral_constant = requires {
+      typename T::underlying_type;
+      requires std::is_same_v<T, integral_constant<typename T::underlying_type>>;
+   };
 }

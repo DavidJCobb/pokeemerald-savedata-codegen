@@ -63,10 +63,10 @@
     <ClInclude Include="ast\heritable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ast\semantic_type_info.h">
+    <ClInclude Include="ast\integral_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ast\integral_type.h">
+    <ClInclude Include="treewalker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -91,10 +91,13 @@
     <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ast\main.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ast\member.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="treewalker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

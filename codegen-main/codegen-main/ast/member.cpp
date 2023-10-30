@@ -3,7 +3,15 @@
 #include "../registry.h"
 
 namespace ast {
-   /*virtual*/ std::size_t integral_member::compute_serialization_bitcount() const /*override*/ {
+   size_t member::compute_total_bitcount() const {
+      size_t count = this->compute_single_element_bitcount();
+      for (const auto& rank : this->array_extents) {
+         count *= rank.extent.value;
+      }
+      return count;
+   }
+
+   /*virtual*/ std::size_t integral_member::compute_single_element_bitcount() const /*override*/ {
       assert(this->value_type.has_value());
 
       if (this->serialization_bitcount.has_value())
@@ -30,16 +38,16 @@ namespace ast {
       return std::bit_width((std::uintmax_t)(max - min));
    }
 
-   /*virtual*/ std::size_t string_member::compute_serialization_bitcount() const /*override*/ {
+   /*virtual*/ std::size_t string_member::compute_single_element_bitcount() const /*override*/ {
       assert(this->char_type.has_value());
       return ast::bitcount_of(this->char_type.value());
    }
 
-   /*virtual*/ std::size_t struct_member::compute_serialization_bitcount() const /*override*/ {
+   /*virtual*/ std::size_t struct_member::compute_single_element_bitcount() const /*override*/ {
       return registry::get().bitcount_of_struct(this->type_name);
    }
 
-   /*virtual*/ std::size_t inlined_union_member::compute_serialization_bitcount() const /*override*/ {
-      return this->get_member_to_serialize().compute_serialization_bitcount();
+   /*virtual*/ std::size_t inlined_union_member::compute_single_element_bitcount() const /*override*/ {
+      return this->get_member_to_serialize().compute_single_element_bitcount();
    }
 }

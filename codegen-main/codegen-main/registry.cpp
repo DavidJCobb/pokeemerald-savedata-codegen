@@ -897,20 +897,12 @@ size_t registry::bitcount_of_struct(std::string name) const {
 
    size_t bitcount = 0;
    for (const auto& member : structure->members) {
-      bitcount += member->compute_serialization_bitcount();
+      bitcount += member->compute_total_bitcount();
    }
    return bitcount;
 }
 
 void registry::generate_all_struct_body_files(std::filesystem::path out_folder) {
-   //
-   // TODO: We need to remember all constants seen when parsing a struct, so we can 
-   // emit preprocessor directives to assert that they have the expected values. We 
-   // DO NOT need to pull in the headers for these constants (and in fact, can't, 
-   // since we're generating code for the innards of struct definitions) since the 
-   // constants should already be included/defined at the time the structs themselves 
-   // are defined.
-   //
    for (auto& pair : this->structs) {
       std::ofstream stream(out_folder / std::filesystem::path(pair.first + ".members.inl"));
       assert(!!stream);
@@ -1053,7 +1045,7 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
                stream << std::bit_width(casted->max_length.value);
                stream << ");\n";
             } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
-               size_t bitcount = member->compute_serialization_bitcount();
+               size_t bitcount = member->compute_single_element_bitcount();
                if (bitcount == 1) {
                   stream << indent << "   lu_BitstreamWrite_bool(state, src." << member_access;
                   _serialize_indices();
@@ -1084,4 +1076,10 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
          stream << "}";
       }
    }
+}
+
+const ast::structure* registry::lookup_struct_definition(const std::string& name) const {
+   if (this->structs.contains(name))
+      return this->structs.at(name).get();
+   return nullptr;
 }

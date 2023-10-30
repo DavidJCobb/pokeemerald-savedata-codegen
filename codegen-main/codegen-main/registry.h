@@ -62,4 +62,6 @@ class registry : public lu::singleton<registry> {
       void generate_all_struct_body_files(std::filesystem::path out_folder);
 
       void generate_serialization_code(std::filesystem::path out_folder);
+
+      const ast::structure* lookup_struct_definition(const std::string&) const;
 };
