@@ -18,6 +18,8 @@ namespace codegen {
       public:
          std::string function_name_fragment;
          std::vector<ast::structure*> top_level_structs;
+         std::string sector_serialize_header_folder;
+         std::string whole_struct_serialize_header_folder;
 
          size_t sector_max_bytes = 3968; // 4KiB sectors with 128B burned on the footer, of which 12B are actually used
 

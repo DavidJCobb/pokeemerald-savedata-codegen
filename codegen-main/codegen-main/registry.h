@@ -31,20 +31,50 @@ class registry : public lu::singleton<registry> {
          std::vector<std::string> top_level_struct_names;
       };
 
+      struct path_set {
+         struct {
+            std::filesystem::path xml;
+         } input_paths;
+         struct {
+            std::filesystem::path h;
+            std::filesystem::path c;
+            //
+            std::filesystem::path struct_members;
+            std::filesystem::path struct_serialize;
+            std::filesystem::path sector_serialize;
+         } output_paths;
+      };
+      
    protected:
+      struct union_stack_frame {
+         const ast::inlined_union_member* target_union = nullptr;
+         bool in_member_to_serialize = false;
+      };
+
+      path_set paths;
+
       std::unordered_map<std::string, std::unique_ptr<ast::constant_definition>> constants;
       std::unordered_map<std::string, std::unique_ptr<ast::heritable>> heritables;
       std::unordered_map<std::string, std::unique_ptr<ast::structure>> structs;
 
       std::vector<std::filesystem::path> seen_files;
       
-      std::filesystem::path path;
+      struct {
+         std::vector<union_stack_frame> unions;
+      } load_state;
+
+      void _enter_union(const ast::inlined_union_member&);
+      void _exit_union(const ast::inlined_union_member&);
+
+      // If we're inside of a union member that isn't serialized, then we don't care whether 
+      // structs inside of that member are actually defined/laid out within the XML.
+      bool _in_inactive_union_member(const std::string& member_name) const;
 
    public:
       std::optional<ast::size_constant> interpret_size_constant(const std::string_view&);
 
    protected:
-      std::filesystem::path _normalize_path(const std::filesystem::path&);
+      std::filesystem::path _normalize_xml_path(const std::filesystem::path&);
       std::optional<std::intmax_t> _int_or_constant_name_to_int(const std::string_view&);
 
       void _parse_and_handle_dependencies(parse_wrapper&, rapidxml::xml_node<>&);
@@ -58,16 +88,16 @@ class registry : public lu::singleton<registry> {
       void parse_xml(parse_wrapper& scaffold);
 
    public:
-      void set_base_xml_path(std::filesystem::path p) { path = _normalize_path(p); }
+      void set_paths(const path_set&);
 
       void parse_all_xml_files();
 
       size_t bitcount_of_struct(std::string) const;
 
-      void generate_all_struct_body_files(std::filesystem::path out_folder);
+      void generate_all_struct_body_files();
 
-      void generate_serialization_code(std::filesystem::path out_folder);
-      void generate_sector_code(std::filesystem::path out_h_folder, std::filesystem::path out_c_folder, std::vector<sector_info> sectors);
+      void generate_whole_struct_serialization_code();
+      void generate_sector_code(std::vector<sector_info> sectors);
 
       const ast::structure* lookup_struct_definition(const std::string&) const;
 };

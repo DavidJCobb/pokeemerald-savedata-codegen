@@ -68,7 +68,8 @@ namespace codegen {
          for (size_t j = 0; j < structures.size(); ++j) {
             out += "const ";
             out += structures[j]->name;
-            out += "*";
+            out += "* p_";
+            out += structures[j]->name;
             if (j + 1 < structures.size()) {
                out += ", ";
             }
@@ -87,9 +88,14 @@ namespace codegen {
          }
       }
 
-      out.implementation += "#include \"lu-generated/sectors/";
+      out.implementation += "#include \"";
+      out.implementation += this->sector_serialize_header_folder;
+      if (!this->sector_serialize_header_folder.empty()) {
+         if (this->sector_serialize_header_folder.back() != '/')
+            out.implementation += '/';
+      }
       out.implementation += this->function_name_fragment;
-      out.implementation += ".h\"\n";
+      out.implementation += ".h\"\n\n";
       {
          std::vector<const ast::structure*> dependencies;
          std::string code_read;
@@ -164,7 +170,7 @@ namespace codegen {
             for (const auto& item_ptr : items_by_sector[i]) {
                std::string computed_accessor = item_ptr->accessor;
 
-               std::string indent;
+               std::string indent = "   ";
                if (item_ptr->is_array()) {
                   std::string common;
 
@@ -213,18 +219,21 @@ namespace codegen {
                }
 
                if (is_struct) {
+                  const ast::structure* struct_type = nullptr;
+                  if (item_ptr->member_definition) {
+                     auto* casted = dynamic_cast<const ast::struct_member*>(item_ptr->member_definition);
+                     struct_type = casted->type_def;
+                  } else {
+                     struct_type = item_ptr->struct_definition;
+                  }
+
                   code_read  += indent;
                   code_write += indent;
                   code_read  += "lu_BitstreamRead_";
                   code_write += "lu_BitstreamWrite_";
                   {
                      std::string common;
-                     if (item_ptr->member_definition) {
-                        auto* casted = dynamic_cast<const ast::struct_member*>(item_ptr->member_definition);
-                        common+= casted->type_def->name;
-                     } else {
-                        common += item_ptr->struct_definition->name;
-                     }
+                     common += struct_type->name;
                      common += "(&state, ";
                      common += computed_accessor;
                      common += ");\n";
@@ -232,6 +241,8 @@ namespace codegen {
                      code_read  += common;
                      code_write += common;
                   }
+
+                  dependencies.push_back(struct_type);
                } else if (auto* casted = dynamic_cast<const ast::string_member*>(item_ptr->member_definition)) {
                   if (casted->max_length.value <= 0)
                      throw;
@@ -335,11 +346,20 @@ namespace codegen {
          }
 
          if (!dependencies.empty()) {
-            out.implementation += "// dependencies:\n";
+            out.implementation += "// whole-struct serialize funcs:\n";
             for (const auto* structure : dependencies) {
-               out.implementation += "#include \"lu-generated/struct-serialize/serialize_";
+               out.implementation += "#include \"";
+               {
+                  const auto& folder = this->whole_struct_serialize_header_folder;
+                  if (!folder.empty()) {
+                     out.implementation += folder;
+                     if (folder.back() != '/')
+                        out.implementation += '/';
+                  }
+               }
+               out.implementation += "serialize_";
                out.implementation += structure->name;
-               out.implementation += ".h\n";
+               out.implementation += ".h\"\n";
             }
             out.implementation += '\n';
          }

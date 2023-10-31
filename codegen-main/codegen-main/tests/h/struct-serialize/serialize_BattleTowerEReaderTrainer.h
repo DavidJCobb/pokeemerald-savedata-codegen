@@ -1,0 +1,7 @@
+#ifndef GUARD_LU_SERIALIZE_BattleTowerEReaderTrainer
+#define GUARD_LU_SERIALIZE_BattleTowerEReaderTrainer
+
+void lu_BitstreamRead_BattleTowerEReaderTrainer(struct lu_BitstreamState*, struct BattleTowerEReaderTrainer* dst);
+void lu_BitstreamWrite_BattleTowerEReaderTrainer(struct lu_BitstreamState*, const struct BattleTowerEReaderTrainer* src);
+
+#endif

@@ -4,19 +4,19 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>--xml-path "./tests/" --structs-path "./tests.structs/" --serialization-path "./tests.serialize/"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--xml-path "./tests/" --path-h "./tests/h/" --path-c "./tests/c/" --out-path-struct "struct-members/" --out-path-struct-serialize "struct-serialize/" --out-path-sector "sector-serialize/"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>--xml-path "./tests/" --structs-path "./tests.structs/" --serialization-path "./tests.serialize/"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--xml-path "./tests/" --path-h "./tests/h/" --path-c "./tests/c/" --out-path-struct "struct-members/" --out-path-struct-serialize "struct-serialize/" --out-path-sector "sector-serialize/"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--xml-path "./tests/" --structs-path "./tests.structs/" --serialization-path "./tests.serialize/"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--xml-path "./tests/" --path-h "./tests/h/" --path-c "./tests/c/" --out-path-struct "struct-members/" --out-path-struct-serialize "struct-serialize/" --out-path-sector "sector-serialize/"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>--xml-path "./tests/" --structs-path "./tests.structs/" --serialization-path "./tests.serialize/"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--xml-path "./tests/" --path-h "./tests/h/" --path-c "./tests/c/" --out-path-struct "struct-members/" --out-path-struct-serialize "struct-serialize/" --out-path-sector "sector-serialize/"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

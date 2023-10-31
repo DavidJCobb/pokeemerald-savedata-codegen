@@ -20,15 +20,28 @@
 
 using namespace std::literals::string_literals;
 
-std::filesystem::path registry::_normalize_path(const std::filesystem::path& p) {
+std::filesystem::path registry::_normalize_xml_path(const std::filesystem::path& p) {
    std::filesystem::path out = p;
    if (out.is_relative()) {
-      out = this->path / out;
+      out = this->paths.input_paths.xml / out;
    }
    out = std::filesystem::weakly_canonical(out);
    out = out.make_preferred();
    return out;
 }
+
+void registry::set_paths(const path_set& v) {
+   this->paths = v;
+
+   auto fixup = [](std::filesystem::path& p) {
+      p = std::filesystem::weakly_canonical(p).make_preferred();
+   };
+
+   fixup(this->paths.input_paths.xml);
+   fixup(this->paths.output_paths.h);
+   fixup(this->paths.output_paths.c);
+}
+
 std::optional<ast::size_constant> registry::interpret_size_constant(const std::string_view& text) {
    bool   ok;
    size_t out = lu::strings::to_integer<std::size_t>(text.data(), text.size(), &ok);
@@ -60,6 +73,35 @@ std::optional<std::intmax_t> registry::_int_or_constant_name_to_int(const std::s
    return {};
 }
 
+void registry::_enter_union(const ast::inlined_union_member& m) {
+   auto& list = this->load_state.unions;
+   if (!list.empty()) {
+      list.back().in_member_to_serialize = (list.back().target_union->member_to_serialize == m.name);
+   }
+   list.push_back({ .target_union = &m });
+}
+void registry::_exit_union(const ast::inlined_union_member& m) {
+   auto& list = this->load_state.unions;
+   assert(!list.empty());
+   assert(list.back().target_union == &m);
+   list.pop_back();
+   if (!list.empty()) {
+      list.back().in_member_to_serialize = false;
+   }
+}
+bool registry::_in_inactive_union_member(const std::string& member_name) const {
+   auto& list = this->load_state.unions;
+   if (list.empty())
+      return false;
+   auto size = list.size();
+   for (size_t i = 0; i < size - 1; ++i) {
+      auto& item = list[i];
+      if (!item.in_member_to_serialize)
+         return true;
+   }
+   return (list.back().target_union->member_to_serialize != member_name);
+}
+
 void registry::_parse_and_handle_dependencies(parse_wrapper& scaffold, rapidxml::xml_node<>& base_node) {
    using namespace rapidxml;
 
@@ -73,7 +115,7 @@ void registry::_parse_and_handle_dependencies(parse_wrapper& scaffold, rapidxml:
          }
 
          auto specified = std::string_view(attr->value(), attr->value_size());
-         std::filesystem::path resolved = _normalize_path(specified);
+         std::filesystem::path resolved = _normalize_xml_path(specified);
          for (const auto& seen : this->seen_files) {
             if (resolved == seen) {
                return;
@@ -316,10 +358,12 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "member-to-serialize")) {
          field->member_to_serialize = std::string_view(attr->value(), attr->value_size());
       } else {
-         scaffold.error("Field: You must specify a union member to serialize.", node);
+         if (!_in_inactive_union_member(field->name)) {
+            scaffold.error("Field: You must specify a union member to serialize.", node);
+         }
       }
 
-      static_assert(false, "TODO: Do not validate whether struct names are defined if they occur inside of a non-serialized union member.");
+      this->_enter_union(*field.get());
 
       lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field](std::string_view tagname, xml_node<>& node) {
          bool is_checksum;
@@ -329,7 +373,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          }
          field->members.push_back(std::move(nested));
       });
-      {
+
+      this->_exit_union(*field.get());
+
+      if (!_in_inactive_union_member(field->name)) {
          bool found = false;
          for (const auto& m : field->members) {
             if (m->name == field->member_to_serialize) {
@@ -339,6 +386,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          }
          if (!found) {
             scaffold.error("Field: You must specify a union member to serialize (member \""s + field->member_to_serialize + "\") was not found.", node);
+         }
+      } else {
+         if (!field->member_to_serialize.empty()) {
+            scaffold.error("Field: Specified a union member to serialize (member \""s + field->member_to_serialize + "\") when this union exists inside of a non-serialized union member.", node);
          }
       }
 
@@ -700,10 +751,12 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       if (casted->type_name.empty()) {
          scaffold.error("Field: field seems to be a named struct/union, but no name was found.", node);
       }
-      if (this->structs.contains(casted->type_name)) {
-         casted->type_def = this->structs[casted->type_name].get();
-      } else {
-         scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted->type_name + ").", node);
+      if (!this->_in_inactive_union_member(field->name)) {
+         if (this->structs.contains(casted->type_name)) {
+            casted->type_def = this->structs[casted->type_name].get();
+         } else {
+            scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted->type_name + ").", node);
+         }
       }
    }
 
@@ -857,11 +910,11 @@ void registry::parse_xml(lu::rapidxml_helpers::parsing_scaffold& scaffold) {
 }
 
 void registry::parse_all_xml_files() {
-   for (const auto& entry : std::filesystem::directory_iterator(this->path)) {
+   for (const auto& entry : std::filesystem::directory_iterator(this->paths.input_paths.xml)) {
       if (entry.is_directory())
          continue;
 
-      auto current_path = _normalize_path(entry.path());
+      auto current_path = _normalize_xml_path(entry.path());
       if (!current_path.string().ends_with(".xml"))
          continue;
 
@@ -911,34 +964,37 @@ size_t registry::bitcount_of_struct(std::string name) const {
    return bitcount;
 }
 
-void registry::generate_all_struct_body_files(std::filesystem::path out_folder) {
+void registry::generate_all_struct_body_files() {
+   auto base_path = this->paths.output_paths.h / this->paths.output_paths.struct_members;
    for (auto& pair : this->structs) {
-      std::ofstream stream(out_folder / std::filesystem::path(pair.first + ".members.inl"));
+      std::ofstream stream(base_path / std::filesystem::path(pair.first + ".members.inl"));
       assert(!!stream);
 
       stream << pair.second->as_c_member_declaration_list();
    }
 }
 
-void registry::generate_serialization_code(std::filesystem::path out_folder) {
+void registry::generate_whole_struct_serialization_code() {
+   auto out_folder_h = this->paths.output_paths.h / this->paths.output_paths.struct_serialize;
+   auto out_folder_c = this->paths.output_paths.c / this->paths.output_paths.struct_serialize;
    for (auto& pair : this->structs) {
       {  // h
-         std::ofstream stream(out_folder / std::filesystem::path("serialize_"s + pair.first + ".h"));
+         std::ofstream stream(out_folder_h / std::filesystem::path("serialize_"s + pair.first + ".h"));
          assert(!!stream);
 
          stream << "#ifndef GUARD_LU_SERIALIZE_" << pair.first << "\n";
          stream << "#define GUARD_LU_SERIALIZE_" << pair.first << "\n";
          stream << '\n';
-         stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* dst);";
-         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, const struct " << pair.first << "* src);";
+         stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* dst);\n";
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, const struct " << pair.first << "* src);\n";
          stream << '\n';
          stream << "#endif";
       }
-      {  // cpp
-         std::ofstream stream(out_folder / std::filesystem::path("serialize_"s + pair.first + ".cpp"));
+      {  // c
+         std::ofstream stream(out_folder_c / std::filesystem::path("serialize_"s + pair.first + ".c"));
          assert(!!stream);
 
-         stream << "#include \"" << out_folder.string() << "/serialize_" << pair.first << ".h\"\n\n";
+         stream << "#include \"" << this->paths.output_paths.struct_serialize.string() << "/serialize_" << pair.first << ".h\"\n\n";
 
          if (!pair.second->header.empty()) {
             // this should also take care of including all preprocessor constants referenced by the struct's members
@@ -1087,9 +1143,14 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
    }
 }
 
-void registry::generate_sector_code(std::filesystem::path out_h_folder, std::filesystem::path out_c_folder, std::vector<sector_info> sectors) {
+void registry::generate_sector_code(std::vector<sector_info> sectors) {
+   auto out_folder_h = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
+   auto out_folder_c = this->paths.output_paths.c / this->paths.output_paths.sector_serialize;
    for (auto& info : sectors) {
       codegen::sector_generator gen;
+      gen.function_name_fragment = info.function_name_fragment;
+      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.string().c_str();
+      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.string().c_str();
 
       std::vector<const ast::structure*> structures;
       for (auto& name : info.top_level_struct_names) {
@@ -1098,12 +1159,12 @@ void registry::generate_sector_code(std::filesystem::path out_h_folder, std::fil
       auto output = gen.generate(structures);
 
       {
-         std::ofstream stream(out_h_folder / std::filesystem::path(info.function_name_fragment + ".h"));
+         std::ofstream stream(out_folder_h / std::filesystem::path(info.function_name_fragment + ".h"));
          assert(!!stream);
          stream << output.header;
       }
       {
-         std::ofstream stream(out_c_folder / std::filesystem::path(info.function_name_fragment + ".c"));
+         std::ofstream stream(out_folder_c / std::filesystem::path(info.function_name_fragment + ".c"));
          assert(!!stream);
          stream << output.implementation;
       }
