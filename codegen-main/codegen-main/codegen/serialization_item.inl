@@ -1,77 +1,62 @@
 #pragma once
 #include "./serialization_item.h"
-#include "../ast/member.h"
+#include "../ast/member_types/_all.h"
 #include "../ast/structure.h"
 
 namespace codegen {
    using namespace std::literals::string_literals;
    
-   /*static*/ constexpr void serialization_item::_expand_array_ranks(const serialization_item& item_template, std::vector<std::unique_ptr<serialization_item>>& dst) {
-      const auto& extents = item_template.member_definition->array_extents;
-      if (extents.empty()) {
-         dst.push_back(std::make_unique<serialization_item>(item_template));
-         return;
-      }
-      //
-      // given extents 3, 4, 5, produce as output:
-      // 
-      //  - [0][0][0]
-      //  - [0][0][1]
-      //  - [0][0][2]
-      //  - [0][0][3]
-      //  - [0][0][4]
-      //  - [0][1][0]
-      //  - [0][1][1]
-      //  - [0][1][2]
-      //  - [0][1][3]
-      //  - [0][1][4]
-      //  - ...
-      //  - [2][3][4]
-      //
-      size_t total_elements = 1;
-      for (const auto& rank : extents) {
-         total_elements *= rank.extent.value;
-      }
+   constexpr size_t serialization_item::bitcount() const {
+      if (!this->member_definition) {
+         size_t count = 0;
+         for (const auto& member_ptr : this->struct_definition->members) {
+            const auto* member = member_ptr.get();
+            while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
+               member = &(casted->get_member_to_serialize());
+            }
 
-      for (size_t i = 0; i < total_elements; ++i) {
-         auto item = std::make_unique<serialization_item>();
-         *item = item_template;
-         item->array_indices.reserve(extents.size());
-
-         size_t index = i;
-         for (auto it = extents.rbegin(); it != extents.rend(); ++it) {
-            auto div = it->extent.value;
-            item->array_indices.push_back(index % div);
-            index /= div;
+            count += member->compute_total_bitcount();
          }
-
-         dst.push_back(item);
+         return count;
       }
-   }
 
-   constexpr serialization_item::item_list serialization_item::expand() {
+      auto&  extents = this->member_definition->array_extents;
+      size_t element = this->member_definition->compute_single_element_bitcount();
+      for (size_t i = this->array_indices.size(); i < extents.size(); ++i) {
+         element *= extents[i].extent.value;
+      }
+      return element;
+   }
+   constexpr serialization_item::item_list serialization_item::expand() const {
       serialization_item::item_list out;
 
-      if (this->array_indices.size() < this->member_definition->array_extents.size()) {
-         //
-         // Expand next array rank, e.g. foo[2] -> foo[2][0], foo[2][1], foo[2][2], foo[2][3]
-         //
-         size_t next_rank = this->array_indices.size();
-         size_t extent = this->member_definition->array_extents[next_rank].extent.value;
-         for (size_t i = 0; i < extent; ++i) {
-            auto next = std::make_unique<serialization_item>(*this);
-            next->array_indices.push_back(i);
-            out.push_back(std::move(next));
+      if (this->member_definition) {
+         if (this->array_indices.size() < this->member_definition->array_extents.size()) {
+            //
+            // Expand next array rank, e.g. foo[2] -> foo[2][0], foo[2][1], foo[2][2], foo[2][3]
+            //
+            size_t next_rank = this->array_indices.size();
+            size_t extent = this->member_definition->array_extents[next_rank].extent.value;
+            for (size_t i = 0; i < extent; ++i) {
+               auto next = new serialization_item(*this);
+               next->array_indices.push_back(i);
+               out.push_back(next);
+            }
+            return out;
          }
-         return out;
       }
 
       const ast::structure* my_type = nullptr;
-      {
+      if (this->member_definition) {
          auto* casted = dynamic_cast<const ast::struct_member*>(this->member_definition);
          if (!casted)
             return out;
          my_type = casted->type_def;
+      } else {
+         //
+         // We may be missing a member definition if we represent a top-level struct.
+         //
+         my_type = this->struct_definition;
       }
 
       for (const auto& member_ptr : my_type->members) {
@@ -84,13 +69,30 @@ namespace codegen {
          }
          member_accessor += member->name;
 
-         auto item = std::make_unique<serialization_item>();
+         auto item = new serialization_item;
          item->struct_definition = my_type;
          item->member_definition = member;
          item->accessor          = member_accessor;
-         out.push_back(std::move(item));
+         out.push_back(item);
       }
 
       return out;
+   }
+
+   /*static*/ constexpr serialization_item serialization_item::for_top_level_struct(const ast::structure& def) {
+      serialization_item out;
+      out.struct_definition = &def;
+      out.member_definition = nullptr;
+      out.accessor          = "p_"s + def.name;
+      return out;
+   }
+
+   constexpr bool serialization_item::is_array() const {
+      if (!this->member_definition)
+         return false;
+      const auto& extents = this->member_definition->array_extents;
+      if (extents.empty())
+         return false;
+      return this->array_indices.size() < extents.size();
    }
 }

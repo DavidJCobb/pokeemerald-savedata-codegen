@@ -11,10 +11,12 @@
 #include "lu/rapidxml_helpers/get_element_text_content.h"
 #include "lu/strings/to_integer.h"
 
+#include "./ast/member_types/_all.h"
 #include "./ast/constant_definition.h"
 #include "./ast/heritable.h"
-#include "./ast/member.h"
 #include "./ast/structure.h"
+
+#include "./codegen/sector_generator.h"
 
 using namespace std::literals::string_literals;
 
@@ -316,6 +318,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       } else {
          scaffold.error("Field: You must specify a union member to serialize.", node);
       }
+
+      static_assert(false, "TODO: Do not validate whether struct names are defined if they occur inside of a non-serialized union member.");
 
       lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field](std::string_view tagname, xml_node<>& node) {
          bool is_checksum;
@@ -1079,6 +1083,29 @@ void registry::generate_serialization_code(std::filesystem::path out_folder) {
 
          }
          stream << "}";
+      }
+   }
+}
+
+void registry::generate_sector_code(std::filesystem::path out_h_folder, std::filesystem::path out_c_folder, std::vector<sector_info> sectors) {
+   for (auto& info : sectors) {
+      codegen::sector_generator gen;
+
+      std::vector<const ast::structure*> structures;
+      for (auto& name : info.top_level_struct_names) {
+         structures.push_back(this->structs.at(name).get());
+      }
+      auto output = gen.generate(structures);
+
+      {
+         std::ofstream stream(out_h_folder / std::filesystem::path(info.function_name_fragment + ".h"));
+         assert(!!stream);
+         stream << output.header;
+      }
+      {
+         std::ofstream stream(out_c_folder / std::filesystem::path(info.function_name_fragment + ".c"));
+         assert(!!stream);
+         stream << output.implementation;
       }
    }
 }

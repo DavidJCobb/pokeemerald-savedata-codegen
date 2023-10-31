@@ -64,5 +64,15 @@ int main(int argcount, char* args[]) {
 
    reg.generate_serialization_code(serialization_output_path);
 
+   // for testing:
+   {
+      std::vector<registry::sector_info> list;
+      list.push_back({
+         .function_name_fragment = "CharacterData",
+         .top_level_struct_names = { "SaveBlock2" },
+      });
+      reg.generate_sector_code(serialization_output_path, serialization_output_path, list);
+   }
+
    return 0;
 }

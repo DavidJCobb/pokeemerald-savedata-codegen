@@ -66,7 +66,25 @@
     <ClInclude Include="ast\integral_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="treewalker.h">
+    <ClInclude Include="codegen\serialization_item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen\sector_generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\_all.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\struct_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\inlined_union_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\string_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\integral_member.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,6 +101,19 @@
     <None Include="ast\heritable.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="codegen\serialization_item.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member_types\struct_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member_types\inlined_union_member.inl" />
+    <None Include="ast\member_types\string_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member_types\integral_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="registry.cpp">
@@ -94,10 +125,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ast\member.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="treewalker.cpp">
+    <ClCompile Include="codegen\sector_generator.inl">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -25,6 +25,11 @@ class registry;
 class registry : public lu::singleton<registry> {
    protected:
       using parse_wrapper = lu::rapidxml_helpers::parsing_scaffold;
+   public:
+      struct sector_info {
+         std::string function_name_fragment;
+         std::vector<std::string> top_level_struct_names;
+      };
 
    protected:
       std::unordered_map<std::string, std::unique_ptr<ast::constant_definition>> constants;
@@ -62,6 +67,7 @@ class registry : public lu::singleton<registry> {
       void generate_all_struct_body_files(std::filesystem::path out_folder);
 
       void generate_serialization_code(std::filesystem::path out_folder);
+      void generate_sector_code(std::filesystem::path out_h_folder, std::filesystem::path out_c_folder, std::vector<sector_info> sectors);
 
       const ast::structure* lookup_struct_definition(const std::string&) const;
 };

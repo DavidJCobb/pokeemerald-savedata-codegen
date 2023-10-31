@@ -14,11 +14,12 @@ namespace ast {
       bool8,
    };
 
-   static constexpr std::size_t bitcount_of(integral_type);
-   static constexpr std::intmax_t  minimum_of(integral_type);
-   static constexpr std::uintmax_t maximum_of(integral_type);
-   static constexpr std::string_view integral_type_to_string(integral_type);
-   static constexpr std::optional<integral_type> integral_type_from_string(std::string_view);
+   constexpr std::size_t bitcount_of(integral_type);
+   constexpr std::intmax_t  minimum_of(integral_type);
+   constexpr std::uintmax_t maximum_of(integral_type);
+   constexpr bool is_signed(integral_type);
+   constexpr std::string_view integral_type_to_string(integral_type);
+   constexpr std::optional<integral_type> integral_type_from_string(std::string_view);
 }
 
 #include "./integral_type.inl"

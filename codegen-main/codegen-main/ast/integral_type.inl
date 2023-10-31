@@ -2,7 +2,7 @@
 #include "./integral_type.h"
 
 namespace ast {
-   /*static*/ constexpr std::size_t bitcount_of(integral_type t) {
+   constexpr std::size_t bitcount_of(integral_type t) {
       switch (t) {
          case integral_type::bool8:
             return 1;
@@ -17,7 +17,7 @@ namespace ast {
             return 32;
       }
    }
-   /*static*/ constexpr std::intmax_t minimum_of(integral_type v) {
+   constexpr std::intmax_t minimum_of(integral_type v) {
       switch (v) {
          case integral_type::bool8:
          case integral_type::u8:
@@ -33,7 +33,7 @@ namespace ast {
       }
       return 0;
    }
-   /*static*/ constexpr std::uintmax_t maximum_of(integral_type v) {
+   constexpr std::uintmax_t maximum_of(integral_type v) {
       auto bc  = bitcount_of(v) - 1;
       auto max = std::uintmax_t{ 1 } << bc;
       switch (v) {
@@ -45,7 +45,16 @@ namespace ast {
       }
       return max;
    }
-   /*static*/ constexpr std::string_view integral_type_to_string(integral_type v) {
+   constexpr bool is_signed(integral_type v) {
+      switch (v) {
+         case integral_type::s8:
+         case integral_type::s16:
+         case integral_type::s32:
+            return true;
+      }
+      return false;
+   }
+   constexpr std::string_view integral_type_to_string(integral_type v) {
       switch (v) {
          case integral_type::u8:    return "u8";  break;
          case integral_type::u16:   return "u16"; break;
@@ -57,7 +66,7 @@ namespace ast {
       }
       return {};
    }
-   /*static*/ constexpr std::optional<integral_type> integral_type_from_string(std::string_view v) {
+   constexpr std::optional<integral_type> integral_type_from_string(std::string_view v) {
       if (v == "u8")
          return integral_type::u8;
       if (v == "u16")

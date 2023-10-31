@@ -148,6 +148,13 @@
     <ClInclude Include="ast\integral_constant.h" />
     <ClInclude Include="ast\integral_type.h" />
     <ClInclude Include="ast\member.h" />
+    <ClInclude Include="ast\member_types\inlined_union_member.h" />
+    <ClInclude Include="ast\member_types\integral_member.h" />
+    <ClInclude Include="ast\member_types\string_member.h" />
+    <ClInclude Include="ast\member_types\struct_member.h" />
+    <ClInclude Include="ast\member_types\_all.h" />
+    <ClInclude Include="codegen\sector_generator.h" />
+    <ClInclude Include="codegen\serialization_item.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_child_element.h" />
     <ClInclude Include="lu\rapidxml_helpers\get_attribute.h" />
@@ -160,20 +167,23 @@
     <ClInclude Include="ast\structure.h" />
     <ClInclude Include="lu\singleton.h" />
     <ClInclude Include="lu\strings\from_integer.h" />
-    <ClInclude Include="treewalker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\heritable.inl" />
     <None Include="ast\integral_type.inl" />
     <None Include="ast\member.inl" />
+    <None Include="ast\member_types\inlined_union_member.inl" />
+    <None Include="ast\member_types\integral_member.inl" />
+    <None Include="ast\member_types\string_member.inl" />
+    <None Include="ast\member_types\struct_member.inl" />
     <None Include="ast\structure.inl" />
+    <None Include="codegen\serialization_item.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="codegen\sector_generator.inl" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ast\member.cpp" />
     <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp" />
     <ClCompile Include="registry.cpp" />
-    <ClCompile Include="treewalker.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
