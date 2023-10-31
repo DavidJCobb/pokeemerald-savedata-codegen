@@ -8,6 +8,7 @@
 
 namespace ast {
    class heritable;
+   class structure;
 }
 
 namespace ast {
@@ -29,7 +30,7 @@ namespace ast {
          virtual constexpr const std::string as_c_type_specifier() const = 0;
          virtual constexpr const std::string as_c_array_declarator_extents() const;
          virtual constexpr const std::string as_c_bitfield_specifier() const { return {}; }
-         virtual std::size_t compute_single_element_bitcount() const = 0; // computes the bitcount of a single item, i.e. don't account for array ranks
+         virtual constexpr std::size_t compute_single_element_bitcount() const = 0; // computes the bitcount of a single item, i.e. don't account for array ranks
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const = 0;
 
@@ -37,7 +38,7 @@ namespace ast {
          constexpr const std::string as_c_declaration() const;
          constexpr std::vector<std::string> get_all_used_constants() const;
 
-         size_t compute_total_bitcount() const;
+         constexpr size_t compute_total_bitcount() const;
 
       public:
          std::string name;
@@ -53,7 +54,7 @@ namespace ast {
       public:
          virtual constexpr const std::string as_c_type_specifier() const override;
          virtual constexpr const std::string as_c_bitfield_specifier() const override;
-         virtual std::size_t compute_single_element_bitcount() const override;
+         virtual constexpr std::size_t compute_single_element_bitcount() const override;
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const override;
 
@@ -68,7 +69,7 @@ namespace ast {
       public:
          virtual constexpr const std::string as_c_type_specifier() const override;
          virtual constexpr const std::string as_c_array_declarator_extents() const override;
-         virtual std::size_t compute_single_element_bitcount() const override;
+         virtual constexpr std::size_t compute_single_element_bitcount() const override;
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const override;
 
@@ -85,18 +86,20 @@ namespace ast {
          
       public:
          virtual constexpr const std::string as_c_type_specifier() const override;
-         virtual std::size_t compute_single_element_bitcount() const override;
+         virtual constexpr std::size_t compute_single_element_bitcount() const override;
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const override;
 
       public:
-         std::string type_name;
+         std::string      type_name;
+         const structure* type_def = nullptr;
+         //
          std::optional<decl> decl; // defaults to c_struct
    };
    class inlined_union_member : public member {
       public:
          virtual constexpr const std::string as_c_type_specifier() const override;
-         virtual std::size_t compute_single_element_bitcount() const override;
+         virtual constexpr std::size_t compute_single_element_bitcount() const override;
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const override;
 

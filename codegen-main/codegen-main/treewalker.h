@@ -7,12 +7,6 @@ namespace ast {
    class structure;
 }
 
-struct block_generator {
-   std::string data;
-   size_t indent = 0;
-};
-// TODO: use above struct. everything we're genning within the body of a function is either a call or a loop
-
 class treewalker {
    protected:
       struct depth_frame {

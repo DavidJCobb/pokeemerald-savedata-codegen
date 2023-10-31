@@ -39,7 +39,21 @@ void treewalker::_enter_extent_loops(std::string& dst, const std::vector<ast::me
    ++this->indent;
 
    this->_write_indent(dst);
-   dst += "u16 ";
+   {
+      bool type_is_wide = false;
+      for (const auto& extent : extents) {
+         if (extent.extent.value > 255) {
+            type_is_wide = true;
+            break;
+         }
+      }
+      if (type_is_wide) {
+         dst += "u16";
+      } else {
+         dst += "u8";
+      }
+      dst += ' ';
+   }
 
    for (size_t i = 0; i < rank; ++i) {
       if (array_indices_are_numbered) {
@@ -127,7 +141,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
          current_gen.bodies.read,
          "lu_BitstreamRead_"s + casted->type_name,
          //
-         "&"s + bitstream_state_argument_name,
+         bitstream_state_argument_name,
          "&"s + accessor
       );
                   
@@ -135,7 +149,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
          current_gen.bodies.write,
          "lu_BitstreamWrite_"s + casted->type_name,
          //
-         "&"s + bitstream_state_argument_name,
+         bitstream_state_argument_name,
          "&"s + accessor
       );
    } else if (auto* casted = dynamic_cast<const ast::integral_member*>(&member)) {
@@ -145,14 +159,14 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
             accessor,
             "lu_BitstreamRead_bool",
             //
-            "&"s + bitstream_state_argument_name
+            bitstream_state_argument_name
          );
                   
          this->_write_call(
             current_gen.bodies.write,
             "lu_BitstreamWrite_bool",
             //
-            "&"s + bitstream_state_argument_name,
+            bitstream_state_argument_name,
             accessor
          );
       } else {
@@ -169,7 +183,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
             accessor,
             "lu_BitstreamRead_"s + func_discriminator,
             //
-            "&"s + bitstream_state_argument_name,
+            bitstream_state_argument_name,
             bitcounts.single
          );
                   
@@ -177,7 +191,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
             current_gen.bodies.write,
             "lu_BitstreamWrite_"s + func_discriminator,
             //
-            "&"s + bitstream_state_argument_name,
+            bitstream_state_argument_name,
             accessor,
             bitcounts.single
          );
@@ -188,7 +202,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
          current_gen.bodies.write,
          "lu_BitstreamRead_string",
          //
-         "&"s + bitstream_state_argument_name,
+         bitstream_state_argument_name,
          accessor,
          casted->max_length,
          std::bit_width(casted->max_length.value)
@@ -197,7 +211,7 @@ void treewalker::_serialize_single_element(std::string accessor, const ast::memb
          current_gen.bodies.write,
          "lu_BitstreamWrite_string",
          //
-         "&"s + bitstream_state_argument_name,
+         bitstream_state_argument_name,
          accessor,
          casted->max_length,
          std::bit_width(casted->max_length.value)
@@ -241,7 +255,8 @@ void treewalker::_walk_array_rank(std::string top_level_struct_name, std::string
       .total  = member.compute_total_bitcount(),
    };
 
-   size_t bits_remaining = (this->bytes_per_sector * 8) - current_gen->bits_used;
+   size_t bits_remaining      = (this->bytes_per_sector * 8) - current_gen->bits_used;
+   size_t room_for_n_elements = bits_remaining / bitcounts.single;
 
    size_t bitcount_per_whole_iteration = bitcounts.single;
    for (size_t i = rank; i < member.array_extents.size(); ++i)
@@ -297,8 +312,25 @@ void treewalker::_walk_array_rank(std::string top_level_struct_name, std::string
       return;
    }
 
-   static_assert(false, "TODO: serialize as much as is possible; move to next sector; serialize what remains");
+   static_assert(false, "TODO: serialize as much as is possible up to the sector boundary");
    static_assert(false, "TODO: 'as much as is possible' means the first few whole iterations, and then a partial iteration if possible");
+
+   this->_write_indent(current_gen->bodies.read);
+   current_gen->bodies.read += "// data to be continued in next sector...\n";
+   this->_write_indent(current_gen->bodies.write);
+   current_gen->bodies.write += "// data to be continued in next sector...\n";
+   //
+   // Advance to next sector:
+   //
+   current_gen = &(this->generated_funcs.emplace_back());
+   current_gen->top_level_types_touched.push_back(top_level_struct_name);
+   //
+   this->_write_indent(current_gen->bodies.read);
+   current_gen->bodies.read += "// data continued from previous sector...\n";
+   this->_write_indent(current_gen->bodies.write);
+   current_gen->bodies.write += "// data continued from previous sector...\n";
+
+   static_assert(false, "serialize what remains");
 }
 
 void treewalker::_walk_struct(std::string top_level_struct_name, std::string accessor, const ast::structure& dfn) {
@@ -389,8 +421,9 @@ void treewalker::_walk_struct(std::string top_level_struct_name, std::string acc
       current_gen->bodies.read += "// data to be continued in next sector...\n";
       this->_write_indent(current_gen->bodies.write);
       current_gen->bodies.write += "// data to be continued in next sector...\n";
-
+      //
       // Advance to next sector:
+      //
       current_gen = &(this->generated_funcs.emplace_back());
       current_gen->top_level_types_touched.push_back(top_level_struct_name);
       //

@@ -696,6 +696,11 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       if (casted->type_name.empty()) {
          scaffold.error("Field: field seems to be a named struct/union, but no name was found.", node);
       }
+      if (this->structs.contains(casted->type_name)) {
+         casted->type_def = this->structs[casted->type_name].get();
+      } else {
+         scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted->type_name + ").", node);
+      }
    }
 
    //

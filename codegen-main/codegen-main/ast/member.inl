@@ -58,6 +58,15 @@ namespace ast {
       out.erase(it, out.end());
       return out;
    }
+   constexpr size_t member::compute_total_bitcount() const {
+      size_t count = this->compute_single_element_bitcount();
+      for (const auto& rank : this->array_extents) {
+         count *= rank.extent.value;
+      }
+      return count;
+   }
+
+
 
    /*virtual*/ constexpr const std::string integral_member::as_c_type_specifier() const /*override*/ {
       return std::string(integral_type_to_string(this->value_type.value()));
@@ -69,6 +78,35 @@ namespace ast {
          return out;
       }
       return {};
+   }
+   /*virtual*/ constexpr std::size_t integral_member::compute_single_element_bitcount() const /*override*/ {
+      if (std::is_constant_evaluated()) {
+         if (!this->value_type.has_value())
+            throw;
+      }
+
+      if (this->serialization_bitcount.has_value())
+         return this->serialization_bitcount.value().value;
+
+      if (!this->min.has_value() && !this->max.has_value()) {
+         if (this->c_bitfield.has_value())
+            return this->c_bitfield.value().value;
+         return ast::bitcount_of(this->value_type.value());
+      }
+
+      std::intmax_t min;
+      std::intmax_t max;
+      if (this->min.has_value()) {
+         min = this->min.value();
+      } else {
+         min = ast::minimum_of(this->value_type.value());
+      }
+      if (this->max.has_value()) {
+         max = this->max.value();
+      } else {
+         max = ast::maximum_of(this->value_type.value());
+      }
+      return std::bit_width((std::uintmax_t)(max - min));
    }
    /*virtual*/ constexpr std::vector<std::string> integral_member::_get_all_used_constants_impl() const /*override*/ {
       std::vector<std::string> out;
@@ -110,6 +148,13 @@ namespace ast {
 
       return out;
    }
+   /*virtual*/ constexpr std::size_t string_member::compute_single_element_bitcount() const /*override*/ {
+      if (std::is_constant_evaluated()) {
+         if (!this->char_type.has_value())
+            throw;
+      }
+      return ast::bitcount_of(this->char_type.value());
+   }
 
    /*virtual*/ constexpr const std::string struct_member::as_c_type_specifier() const /*override*/ {
       std::string out;
@@ -126,6 +171,18 @@ namespace ast {
    }
    /*virtual*/ constexpr std::vector<std::string> struct_member::_get_all_used_constants_impl() const /*override*/ {
       return {};
+   }
+   /*virtual*/ constexpr std::size_t struct_member::compute_single_element_bitcount() const /*override*/ {
+      if (std::is_constant_evaluated()) {
+         if (!this->type_def)
+            throw;
+      }
+
+      size_t bitcount = 0;
+      for (const auto& member_ptr : this->type_def->members) {
+         bitcount += member_ptr->compute_total_bitcount();
+      }
+      return bitcount;
    }
 
    /*virtual*/ constexpr const std::string inlined_union_member::as_c_type_specifier() const /*override*/ {
@@ -149,6 +206,9 @@ namespace ast {
       }
 
       return out;
+   }
+   /*virtual*/ constexpr std::size_t inlined_union_member::compute_single_element_bitcount() const /*override*/ {
+      return this->get_member_to_serialize().compute_single_element_bitcount();
    }
    
 
