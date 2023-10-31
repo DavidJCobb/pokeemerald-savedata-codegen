@@ -8,7 +8,7 @@ void lu_ReadSaveSector_CharacterData00(u8* dst, const SaveBlock2* p_SaveBlock2) 
    state.target = dst;
    state.shift  = 0;
 
-   lu_BitstreamRead_SaveBlock2(&state, p_SaveBlock2);
+   lu_BitstreamRead_SaveBlock2(&state, &p_SaveBlock2);
 };
 
 void lu_WriteSaveSector_CharacterData00(u8* dst, const SaveBlock2* p_SaveBlock2) {
@@ -16,6 +16,6 @@ void lu_WriteSaveSector_CharacterData00(u8* dst, const SaveBlock2* p_SaveBlock2)
    state.target = dst;
    state.shift  = 0;
 
-   lu_BitstreamWrite_SaveBlock2(&state, p_SaveBlock2);
+   lu_BitstreamWrite_SaveBlock2(&state, &p_SaveBlock2);
 };
 

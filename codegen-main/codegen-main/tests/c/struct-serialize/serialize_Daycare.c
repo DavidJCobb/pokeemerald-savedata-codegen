@@ -1,4 +1,4 @@
-#include "struct-serialize//serialize_Daycare.h"
+#include "struct-serialize//serialize_DayCare.h"
 
 #include "global.h" // struct definition
 
@@ -11,9 +11,9 @@
 #endif
 
 // TODO:
-// void lu_BitstreamRead_Daycare(struct lu_BitstreamState* state, struct Daycare* dst);
+// void lu_BitstreamRead_DayCare(struct lu_BitstreamState* state, struct DayCare* dst);
 
-void lu_BitstreamWrite_Daycare(struct lu_BitstreamState* state, const struct Daycare* src) {
+void lu_BitstreamWrite_DayCare(struct lu_BitstreamState* state, const struct DayCare* src) {
    {
       u16 i;
       for (i = 0; i < DAYCARE_MON_COUNT; ++i) { 

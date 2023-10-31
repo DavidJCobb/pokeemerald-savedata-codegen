@@ -12,6 +12,8 @@ namespace ast {
       s16,
       s32,
       bool8,
+
+      _int, // int; same as s32
    };
 
    constexpr std::size_t bitcount_of(integral_type);

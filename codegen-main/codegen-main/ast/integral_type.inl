@@ -14,6 +14,7 @@ namespace ast {
             return 16;
          case integral_type::u32:
          case integral_type::s32:
+         case integral_type::_int:
             return 32;
       }
    }
@@ -29,6 +30,7 @@ namespace ast {
          case integral_type::s8:
          case integral_type::s16:
          case integral_type::s32:
+         case integral_type::_int:
             return -(std::intmax_t{ 1 } << (bitcount_of(v) - 1));
       }
       return 0;
@@ -40,6 +42,7 @@ namespace ast {
          case integral_type::s8:
          case integral_type::s16:
          case integral_type::s32:
+         case integral_type::_int:
             --max;
             break;
       }
@@ -50,6 +53,7 @@ namespace ast {
          case integral_type::s8:
          case integral_type::s16:
          case integral_type::s32:
+         case integral_type::_int:
             return true;
       }
       return false;
@@ -63,6 +67,7 @@ namespace ast {
          case integral_type::s16:   return "s16"; break;
          case integral_type::s32:   return "s32"; break;
          case integral_type::bool8: return "bool8"; break;
+         case integral_type::_int:  return "int"; break;
       }
       return {};
    }
@@ -81,6 +86,8 @@ namespace ast {
          return integral_type::s32;
       if (v == "bool8")
          return integral_type::bool8;
+      if (v == "int")
+         return integral_type::_int;
       return {};
    }
 }

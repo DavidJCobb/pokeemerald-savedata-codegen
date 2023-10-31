@@ -12,6 +12,8 @@ namespace ast {
          case decl::c_union:
             out = "union ";
             break;
+         case decl::blank:
+            break;
       }
       out += this->type_name;
       return out;

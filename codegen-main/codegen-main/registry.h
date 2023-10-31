@@ -12,12 +12,15 @@
 
 namespace ast {
    class constant_definition;
+
+   class blind_union;
    class heritable;
    class structure;
    class member;
 }
 // HA HA HA, JUST KIDDING, std::unique_ptr CHOKES ON FORWARD DECLARATIONS
 #include "./ast/constant_definition.h"
+#include "./ast/blind_union.h"
 #include "./ast/heritable.h"
 #include "./ast/structure.h"
 
@@ -56,11 +59,12 @@ class registry : public lu::singleton<registry> {
       std::unordered_map<std::string, std::unique_ptr<ast::constant_definition>> constants;
       std::unordered_map<std::string, std::unique_ptr<ast::heritable>> heritables;
       std::unordered_map<std::string, std::unique_ptr<ast::structure>> structs;
+      std::unordered_map<std::string, std::unique_ptr<ast::blind_union>> blind_unions;
 
       std::vector<std::filesystem::path> seen_files;
       
       struct {
-         std::vector<union_stack_frame> unions;
+         std::vector<union_stack_frame> unions; // i.e. ast::inlined_union_member
       } load_state;
 
       void _enter_union(const ast::inlined_union_member&);

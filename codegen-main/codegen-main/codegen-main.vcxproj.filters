@@ -87,6 +87,15 @@
     <ClInclude Include="ast\member_types\integral_member.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ast\member_types\pointer_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\blind_union.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast\member_types\blind_union_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\member.inl">
@@ -112,6 +121,12 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="ast\member_types\integral_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member_types\pointer_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="ast\member_types\blind_union_member.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

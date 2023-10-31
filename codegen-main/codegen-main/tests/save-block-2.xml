@@ -71,7 +71,7 @@
             <field name="party" c-type="ApprenticeMon" c-type-decl="struct">
                <array-rank extent="MULTI_PARTY_SIZE" />
             </field>
-            <u16 name="speechWon">
+            <u16 name="speechWon" inherit="$easy-chat-word">
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
             </u16>
             <u8 name="playerId">

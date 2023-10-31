@@ -13,6 +13,7 @@ namespace ast {
          enum class decl {
             c_struct,
             c_union,
+            blank,
          };
          
       public:

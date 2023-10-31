@@ -21,7 +21,7 @@ namespace ast {
             std::optional<size_constant> c_alignment;
 
             std::string c_type;
-            std::string c_type_decl;
+            std::optional<std::string> c_type_decl;
 
             // attributes for numbers
             std::optional<std::intmax_t>  min;

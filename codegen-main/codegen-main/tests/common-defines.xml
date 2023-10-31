@@ -36,5 +36,7 @@
       
       <string name="$player-name"      char-type="u8" length="PLAYER_NAME_LENGTH" />
       <string name="$pokemon-nickname" char-type="u8" length="POKEMON_NAME_LENGTH" />
+      
+      <number name="$easy-chat-word" />
    </heritables>
 </data>

@@ -143,13 +143,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ast\blind_union.h" />
     <ClInclude Include="ast\constant_definition.h" />
     <ClInclude Include="ast\heritable.h" />
     <ClInclude Include="ast\integral_constant.h" />
     <ClInclude Include="ast\integral_type.h" />
     <ClInclude Include="ast\member.h" />
+    <ClInclude Include="ast\member_types\blind_union_member.h" />
     <ClInclude Include="ast\member_types\inlined_union_member.h" />
     <ClInclude Include="ast\member_types\integral_member.h" />
+    <ClInclude Include="ast\member_types\pointer_member.h" />
     <ClInclude Include="ast\member_types\string_member.h" />
     <ClInclude Include="ast\member_types\struct_member.h" />
     <ClInclude Include="ast\member_types\_all.h" />
@@ -172,8 +175,10 @@
     <None Include="ast\heritable.inl" />
     <None Include="ast\integral_type.inl" />
     <None Include="ast\member.inl" />
+    <None Include="ast\member_types\blind_union_member.inl" />
     <None Include="ast\member_types\inlined_union_member.inl" />
     <None Include="ast\member_types\integral_member.inl" />
+    <None Include="ast\member_types\pointer_member.inl" />
     <None Include="ast\member_types\string_member.inl" />
     <None Include="ast\member_types\struct_member.inl" />
     <None Include="ast\structure.inl" />

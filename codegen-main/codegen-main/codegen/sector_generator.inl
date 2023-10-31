@@ -1,5 +1,6 @@
 #pragma once
 #include "./sector_generator.h"
+#include <algorithm>
 #include <bit>
 #include "lu/strings/from_integer.h"
 #include "./ast/member_types/_all.h"
@@ -15,6 +16,7 @@ namespace codegen {
 
          auto bitcount = item->bitcount();
          if (bytespan_of(current_bits + bitcount) < this->sector_max_bytes) {
+            current_bits += bitcount;
             out.back().push_back(item);
             continue;
          }
@@ -30,6 +32,7 @@ namespace codegen {
          }
 
          // Expansion failed, i.e. this item cannot be expanded. Move to the next sector and try again.
+         current_bits = 0;
          out.push_back({});
          --i;
       }
@@ -107,16 +110,6 @@ namespace codegen {
             code_read  += " {\n";
             code_write += " {\n";
 
-            {
-               std::string common;
-               common += "   struct lu_BitstreamState state;\n";
-               common += "   state.target = dst;\n";
-               common += "   state.shift  = 0;\n\n";
-
-               code_read  += common;
-               code_write += common;
-            }
-
             bool array_indices_are_numbered = false;
             bool array_indices_are_all_u8   = true;
             auto rank_to_var = [array_indices_are_numbered](size_t i) -> std::string {
@@ -126,7 +119,7 @@ namespace codegen {
                return std::string{} += (char)('i' + i);
             };
             //
-            {
+            {  // Forward-declare loop index variables
                size_t deepest_rank = 0;
                for (const auto& item_ptr : items_by_sector[i]) {
                   if (item_ptr->member_definition) {
@@ -166,6 +159,16 @@ namespace codegen {
                }
             }
 
+            {
+               std::string common;
+               common += "   struct lu_BitstreamState state;\n";
+               common += "   state.target = dst;\n";
+               common += "   state.shift  = 0;\n\n";
+
+               code_read += common;
+               code_write += common;
+            }
+
             // Function bodies
             for (const auto& item_ptr : items_by_sector[i]) {
                std::string computed_accessor = item_ptr->accessor;
@@ -193,7 +196,7 @@ namespace codegen {
                      computed_accessor += ']';
 
                      common += indent;
-                     common += "   for (";
+                     common += "for (";
                      common += rank_to_var(i);
                      common += " = 0; ";
                      common += rank_to_var(i);
@@ -234,7 +237,7 @@ namespace codegen {
                   {
                      std::string common;
                      common += struct_type->name;
-                     common += "(&state, ";
+                     common += "(&state, &";
                      common += computed_accessor;
                      common += ");\n";
 
@@ -243,6 +246,21 @@ namespace codegen {
                   }
 
                   dependencies.push_back(struct_type);
+               } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(item_ptr->member_definition)) {
+                  code_read  += indent;
+                  code_write += indent;
+                  code_read  += "lu_BitstreamRead_buffer(&state, &";
+                  code_write += "lu_BitstreamWrite_buffer(&state, &";
+                  {
+                     std::string common;
+                     common += computed_accessor;
+                     common += ", ";
+                     common += lu::strings::from_integer(casted->type_def->size_in_bytes);
+                     common += ");\n";
+
+                     code_read  += common;
+                     code_write += common;
+                  }
                } else if (auto* casted = dynamic_cast<const ast::string_member*>(item_ptr->member_definition)) {
                   if (casted->max_length.value <= 0)
                      throw;
@@ -266,6 +284,10 @@ namespace codegen {
                } else if (auto* casted = dynamic_cast<const ast::integral_member*>(item_ptr->member_definition)) {
                   code_read  += indent;
                   code_write += indent;
+
+                  code_read += computed_accessor;
+                  code_read += " = ";
+
                   code_read  += "lu_BitstreamRead_";
                   code_write += "lu_BitstreamWrite_";
 
@@ -291,20 +313,19 @@ namespace codegen {
                         }
                      }
                      common += "(&state, ";
-                     common += computed_accessor;
 
                      code_read  += common;
                      code_write += common;
                   }
 
+                  code_write += computed_accessor;
                   if (casted->min.has_value()) {
                      code_write += " - ";
                      code_write += lu::strings::from_integer(casted->min.value());
                   }
+                  code_write += ", ";
 
                   if (bitcount_per != 1) {
-                     code_read  += ", ";
-                     code_write += ", ";
                      code_read  += lu::strings::from_integer(bitcount_per);
                      code_write += lu::strings::from_integer(bitcount_per);
                   }
@@ -316,6 +337,23 @@ namespace codegen {
                   code_read += ";\n";
 
                   code_write += ");\n";
+               } else if (auto* casted = dynamic_cast<const ast::pointer_member*>(item_ptr->member_definition)) {
+                  code_read  += indent;
+                  code_write += indent;
+
+                  code_read += computed_accessor;
+                  code_read += " = (";
+                  code_read += ast::integral_type_to_string(casted->pointed_to_type.value());
+                  code_read += "*) ";
+
+                  code_read  += "lu_BitstreamRead_u32(&state, ";
+                  code_write += "lu_BitstreamWrite_u32(&state, ";
+
+                  code_write += computed_accessor;
+                  code_write += ", ";
+
+                  code_read  += "32);\n";
+                  code_write += "32);\n";
                } else {
                   throw;
                }
@@ -346,6 +384,9 @@ namespace codegen {
          }
 
          if (!dependencies.empty()) {
+            auto it = std::unique(dependencies.begin(), dependencies.end());
+            dependencies.erase(it, dependencies.end());
+
             out.implementation += "// whole-struct serialize funcs:\n";
             for (const auto* structure : dependencies) {
                out.implementation += "#include \"";

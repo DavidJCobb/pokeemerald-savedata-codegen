@@ -60,14 +60,47 @@ namespace codegen {
       }
 
       for (const auto& member_ptr : my_type->members) {
-         std::string member_accessor;
+         std::string member_accessor = this->accessor;
          const auto* member          = member_ptr.get();
-         while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
+         {
+            bool is_top_level = (this->member_definition == nullptr);
+            bool is_outermost = true;
+            
+            while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
+               if (is_outermost) {
+                  for (auto idx : this->array_indices) {
+                     member_accessor += '[';
+                     member_accessor += lu::strings::from_integer(idx);
+                     member_accessor += ']';
+                  }
+                  is_outermost = false;
+               }
+               if (is_top_level) {
+                  member_accessor += "->";
+                  is_top_level = false;
+               } else {
+                  member_accessor += '.';
+               }
+               member_accessor += member->name;
+               member = &(casted->get_member_to_serialize());
+            }
+
+            if (is_outermost) {
+               for (auto idx : this->array_indices) {
+                  member_accessor += '[';
+                  member_accessor += lu::strings::from_integer(idx);
+                  member_accessor += ']';
+               }
+               is_outermost = false;
+            }
+            if (is_top_level) {
+               member_accessor += "->";
+               is_top_level = false;
+            } else {
+               member_accessor += '.';
+            }
             member_accessor += member->name;
-            member_accessor += '.';
-            member = &(casted->get_member_to_serialize());
          }
-         member_accessor += member->name;
 
          auto item = new serialization_item;
          item->struct_definition = my_type;
@@ -91,8 +124,6 @@ namespace codegen {
       if (!this->member_definition)
          return false;
       const auto& extents = this->member_definition->array_extents;
-      if (extents.empty())
-         return false;
-      return this->array_indices.size() < extents.size();
+      return !extents.empty();
    }
 }

@@ -400,9 +400,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       std::string name;
       std::optional<bool> do_not_serialize;
       std::optional<ast::size_constant> c_alignment;
+      std::optional<bool> is_const;
 
       std::string c_type;
-      std::string c_type_decl;
+      std::optional<std::string> c_type_decl;
       std::string inherit;
 
       // attributes for numbers
@@ -424,6 +425,16 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &attributes](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
       if (attr_name == "name") {
          attributes.name = attr_value;
+         return;
+      }
+      if (attr_name == "const") {
+         if (attr_value == "true") {
+            attributes.is_const = true;
+         } else if (attr_value == "false") {
+            attributes.is_const = false;
+         } else {
+            scaffold.warn("Field: Unrecognized attribute value for `const` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+         }
          return;
       }
       if (attr_name == "do-not-serialize") {
@@ -550,7 +561,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
 
          if (attributes.c_type.empty())
             attributes.c_type = inherit_from->attributes.c_type;
-         if (attributes.c_type_decl.empty())
+         if (!attributes.c_type_decl.has_value())
             attributes.c_type_decl = inherit_from->attributes.c_type_decl;
 
          if (!attributes.min.has_value())
@@ -576,7 +587,12 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    {
       auto tagname_integral = ast::integral_type_from_string(tagname);
       auto attrval_integral = ast::integral_type_from_string(attributes.c_type);
-      if (tagname_integral.has_value() || attrval_integral.has_value()) {
+      if (tagname == "pointer") {
+         field = std::make_unique<ast::pointer_member>();
+         if (attrval_integral.has_value()) {
+            ((ast::pointer_member*)field.get())->pointed_to_type = attrval_integral.value();
+         }
+      } else if (tagname_integral.has_value() || attrval_integral.has_value()) {
          field = std::make_unique<ast::integral_member>();
 
          auto* casted = (ast::integral_member*)field.get();
@@ -613,19 +629,42 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
             // We don't need to handle `c-type` values that refer to `ast::integral_type` names here, 
             // because we already checked for that above.
             //
-            field = std::make_unique<ast::struct_member>();
+            ast::structure*   def_struct = nullptr;
+            ast::blind_union* def_union  = nullptr;
+            if (this->blind_unions.contains(attributes.c_type)) {
+               field = std::make_unique<ast::blind_union_member>();
 
-            auto* casted = (ast::struct_member*)field.get();
+               auto* casted = (ast::blind_union_member*)field.get();
 
-            casted->type_name = attributes.c_type;
-            if (!attributes.c_type_decl.empty()) {
-               if (attributes.c_type_decl == "struct") {
-                  casted->decl = ast::struct_member::decl::c_struct;
-               } else if (attributes.c_type_decl == "union") {
-                  casted->decl = ast::struct_member::decl::c_union;
-               } else {
-                  scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl + "); ignoring...", node);
+               casted->type_name = attributes.c_type;
+               if (attributes.c_type_decl.has_value()) {
+                  if (attributes.c_type_decl == "union") {
+                     casted->decl = ast::blind_union_member::decl::c_union;
+                  } else if (attributes.c_type_decl == "") {
+                     casted->decl = ast::blind_union_member::decl::blank;
+                  } else {
+                     scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl.value() + "); ignoring...", node);
+                  }
                }
+            } else if (this->structs.contains(attributes.c_type) || this->_in_inactive_union_member(attributes.name)) {
+               field = std::make_unique<ast::struct_member>();
+
+               auto* casted = (ast::struct_member*)field.get();
+
+               casted->type_name = attributes.c_type;
+               if (attributes.c_type_decl.has_value()) {
+                  if (attributes.c_type_decl == "struct") {
+                     casted->decl = ast::struct_member::decl::c_struct;
+                  } else if (attributes.c_type_decl == "union") {
+                     casted->decl = ast::struct_member::decl::c_union;
+                  } else if (attributes.c_type_decl == "") {
+                     casted->decl = ast::struct_member::decl::blank;
+                  } else {
+                     scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl.value() + "); ignoring...", node);
+                  }
+               }
+            } else {
+               scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
             }
          } else {
             scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
@@ -648,6 +687,9 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    if (attributes.c_alignment.has_value()) {
       field->c_alignment = attributes.c_alignment.value();
    }
+   if (attributes.is_const.has_value()) {
+      field->is_const = attributes.is_const.value();
+   }
    if (auto* casted = dynamic_cast<ast::integral_member*>(field.get())) {
       casted->min = attributes.min;
       casted->max = attributes.max;
@@ -657,7 +699,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       if (attributes.is_checksum.value_or(false))
          out_is_checksum = true;
 
-      if (!attributes.c_type_decl.empty())
+      if (attributes.c_type_decl.has_value())
          scaffold.warn("Field: Unrecognized attribute (name: c-type-decl) (attribute is not valid for integral fields).", node);
       if (!attributes.char_type.empty())
          scaffold.warn("Field: Unrecognized attribute (name: char-type) (attribute is not valid for integral fields).", node);
@@ -701,7 +743,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
 
       if (!attributes.c_type.empty())
          scaffold.warn("Field: Unrecognized attribute (name: c-type) (attribute is not valid for string fields; did you mean `char-type`?).", node);
-      if (!attributes.c_type_decl.empty())
+      if (attributes.c_type_decl.has_value())
          scaffold.warn("Field: Unrecognized attribute (name: c-type-decl) (attribute is not valid for string fields).", node);
       if (attributes.min.has_value())
          scaffold.warn("Field: Unrecognized attribute (name: min) (attribute is not valid for string fields).", node);
@@ -721,13 +763,15 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       }
    } else if (auto* casted = dynamic_cast<ast::struct_member*>(field.get())) {
       casted->type_name = attributes.c_type;
-      if (!attributes.c_type_decl.empty()) {
+      if (attributes.c_type_decl.has_value()) {
          if (attributes.c_type_decl == "struct") {
             casted->decl = ast::struct_member::decl::c_struct;
          } else if (attributes.c_type_decl == "union") {
             casted->decl = ast::struct_member::decl::c_union;
+         } else if (attributes.c_type_decl == "") {
+            casted->decl = ast::struct_member::decl::blank;
          } else {
-            scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl + "); ignoring...", node);
+            scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl.value() + "); ignoring (default is `struct`)...", node);
          }
       }
 
@@ -757,6 +801,68 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          } else {
             scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted->type_name + ").", node);
          }
+      }
+   } else if (auto* casted = dynamic_cast<ast::blind_union_member*>(field.get())) {
+      casted->type_name = attributes.c_type;
+      if (attributes.c_type_decl.has_value()) {
+         if (attributes.c_type_decl == "union") {
+            casted->decl = ast::blind_union_member::decl::c_union;
+         } else if (attributes.c_type_decl == "") {
+            casted->decl = ast::blind_union_member::decl::blank;
+         } else {
+            scaffold.warn("Field: Unrecognized value for attribute `c-type-decl` (seen: "s + attributes.c_type_decl.value() + "); ignoring (default is `struct`)...", node);
+         }
+      }
+
+      if (attributes.min.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: min) (attribute is not valid for union fields).", node);
+      if (attributes.max.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: max) (attribute is not valid for union fields).", node);
+      if (attributes.c_bitfield.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: c-bitfield) (attribute is not valid for union fields).", node);
+      if (attributes.serialization_bitcount.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: serialization-bitcount) (attribute is not valid for union fields).", node);
+      if (attributes.is_checksum.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: is-checksum) (attribute is not valid for union fields).", node);
+      if (!attributes.char_type.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: char-type) (attribute is not valid for union fields).", node);
+      if (attributes.length.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for union fields).", node);
+      if (!attributes.member_to_serialize.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for union fields).", node);
+
+      if (casted->type_name.empty()) {
+         scaffold.error("Field: field seems to be a named union, but no name was found.", node);
+      }
+      if (!this->_in_inactive_union_member(field->name)) {
+         if (this->blind_unions.contains(casted->type_name)) {
+            casted->type_def = this->blind_unions[casted->type_name].get();
+         } else {
+            scaffold.error("Field: union typename is not known/defined yet (seen: "s + casted->type_name + ").", node);
+         }
+      }
+   } else if (auto* casted = dynamic_cast<ast::pointer_member*>(field.get())) {
+      if (attributes.c_type_decl.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: c-type-decl) (attribute is not valid for pointer fields).", node);
+      if (!attributes.char_type.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: char-type) (attribute is not valid for pointer fields).", node);
+      if (attributes.min.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: min) (attribute is not valid for pointer fields).", node);
+      if (attributes.max.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: max) (attribute is not valid for pointer fields).", node);
+      if (attributes.c_bitfield.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: c-bitfield) (attribute is not valid for pointer fields).", node);
+      if (attributes.length.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for pointer fields).", node);
+      if (attributes.serialization_bitcount.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: serialization-bitcount) (attribute is not valid for pointer fields).", node);
+      if (attributes.is_checksum.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: is-checksum) (attribute is not valid for pointer fields).", node);
+      if (!attributes.member_to_serialize.empty())
+         scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for pointer fields).", node);
+
+      if (!casted->pointed_to_type.has_value()) {
+         scaffold.error("Field: Unable to identify pointed-to value type (specify it via `c-type` or in a heritable).", node);
       }
    }
 
@@ -813,8 +919,45 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
 
    for (xml_node<>* node = base_node.first_node(); node; node = node->next_sibling()) {
       auto tagname = std::string(node->name(), node->name_size());
-      if (tagname != "struct") {
+      if (tagname != "struct" && tagname != "union") {
          scaffold.warn(std::string("Unrecognized child node (tagname ") + tagname + ")", *node);
+         continue;
+      }
+
+      if (tagname == "union") {
+         {
+            auto* attr = lu::rapidxml_helpers::get_attribute(*node, "do-not-codegen");
+            if (!attr || std::string_view(attr->value(), attr->value_size()) != "true") {
+               scaffold.error("Fully-defined unions are not yet implemented.", *node);
+            }
+         }
+
+         std::string_view name;
+         if (auto* attr = lu::rapidxml_helpers::get_attribute(*node, "name")) {
+            name = std::string_view(attr->value(), attr->value_size());
+         }
+         if (name.empty()) {
+            scaffold.error("Unions defined with empty or missing name", *node);
+         }
+
+         size_t size_in_bytes = 0;
+         if (auto* attr = lu::rapidxml_helpers::get_attribute(*node, "sizeof")) {
+            bool ok;
+            size_in_bytes = lu::strings::to_integer<size_t>(attr->value(), attr->value_size(), &ok);
+            if (!ok) {
+               scaffold.error("Blind union: `sizeof` attribute is not a valid unsigned integral.", *node);
+            }
+            if (size_in_bytes <= 0) {
+               scaffold.error("Blind union: `sizeof` attribute value cannot be zero or a negative number", *node);
+            }
+         } else {
+            scaffold.error("A blind union must provide its size in bytes via the `sizeof` attribute", *node);
+         }
+
+         auto blind_union = std::make_unique<ast::blind_union>();
+         blind_union->name = name;
+         blind_union->size_in_bytes = size_in_bytes;
+         this->blind_unions[blind_union->name] = std::move(blind_union);
          continue;
       }
 
@@ -1109,24 +1252,40 @@ void registry::generate_whole_struct_serialization_code() {
                stream << ", ";
                stream << std::bit_width(casted->max_length.value);
                stream << ");\n";
+            } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
+               stream << indent << "   lu_BitstreamWrite_buffer(";
+               stream << "state";
+               stream << ", ";
+               stream << "&src." << member_access;
+               _serialize_indices();
+               stream << ", ";
+               stream << lu::strings::from_integer(casted->type_def->size_in_bytes);
+               stream << ");\n";
             } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
                size_t bitcount = member->compute_single_element_bitcount();
                if (bitcount == 1) {
                   stream << indent << "   lu_BitstreamWrite_bool(state, src." << member_access;
                   _serialize_indices();
                   stream << ");\n";
-                  continue;
+               } else {
+                  stream << indent << "   lu_BitstreamWrite_u";
+                  if (bitcount > 16)
+                     stream << "32";
+                  else if (bitcount > 8)
+                     stream << "16";
+                  else
+                     stream << "8";
+                  stream << "(state, src." << member_access;
+                  _serialize_indices();
+                  stream << ", " << bitcount << ");\n";
                }
-               stream << indent << "   lu_BitstreamWrite_u";
-               if (bitcount > 16)
-                  stream << "32";
-               else if (bitcount > 8)
-                  stream << "16";
-               else
-                  stream << "8";
-               stream << "(state, src." << member_access;
+            } else if (auto* casted = dynamic_cast<const ast::pointer_member*>(member)) {
+               //
+               // Writing in a pointer to ROM.
+               //
+               stream << indent << "   lu_BitstreamWrite_u32(state, src." << member_access;
                _serialize_indices();
-               stream << ", " << bitcount << ");\n";
+               stream << ", 32);\n";
             }
 
             if (rank > 0) {

@@ -12,7 +12,7 @@
    <types>
       <struct name="Mail" header="global.h">
          <fields>
-            <u16 name="words">
+            <u16 name="words" inherit="$easy-chat-word">
                <array-rank extent="MAIL_WORDS_COUNT" />
             </u16>
             <field name="playerName" inherit="$player-name" />
@@ -40,7 +40,7 @@
          </fields>
       </struct>
       
-      <struct name="Daycare" header="global.h">
+      <struct name="DayCare" header="global.h">
          <fields>
             <field name="mons" c-type="DaycareMon" c-type-decl="struct">
                <array-rank extent="DAYCARE_MON_COUNT" />

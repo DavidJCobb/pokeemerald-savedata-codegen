@@ -118,6 +118,10 @@ int main(int argcount, char* args[]) {
          .function_name_fragment = "CharacterData",
          .top_level_struct_names = { "SaveBlock2" },
       });
+      list.push_back({
+         .function_name_fragment = "WorldData",
+         .top_level_struct_names = { "SaveBlock1" },
+      });
       reg.generate_sector_code(list);
    }
 
