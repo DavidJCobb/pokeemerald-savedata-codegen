@@ -2,9 +2,16 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_BerryCrush(struct lu_BitstreamState* state, struct BerryCrush* dst);
-
+void lu_BitstreamRead_BerryCrush(struct lu_BitstreamState* state, const struct BerryCrush* src) {
+   {
+      u16 i;
+      for (i = 0; i < 4; ++i) { 
+            src.pressingSpeeds[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.berryPowderAmount = lu_BitstreamRead_u32(state, 32);
+   src.unk = lu_BitstreamRead_u32(state, 32);
+}
 void lu_BitstreamWrite_BerryCrush(struct lu_BitstreamState* state, const struct BerryCrush* src) {
    {
       u16 i;

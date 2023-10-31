@@ -126,4 +126,25 @@ namespace codegen {
       const auto& extents = this->member_definition->array_extents;
       return !extents.empty();
    }
+
+   constexpr bool serialization_item::arg_is_next_array_sibling(const serialization_item& o) const {
+      if (!this->member_definition)
+         return false;
+      if (this->member_definition != o.member_definition)
+         return false;
+      if (this->member_definition->array_extents.empty())
+         return false;
+
+      size_t size = this->array_indices.size();
+      if (size == 0)
+         return false;
+      if (size != o.array_indices.size())
+         return false;
+
+      for (size_t i = 0; i < size - 1; ++i)
+         if (this->array_indices[i] != o.array_indices[i])
+            return false;
+
+      return this->array_indices.back() + 1 == o.array_indices.back();
+   }
 }

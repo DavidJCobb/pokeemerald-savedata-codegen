@@ -170,8 +170,13 @@ namespace codegen {
             }
 
             // Function bodies
-            for (const auto& item_ptr : items_by_sector[i]) {
+            for (size_t j = 0; j < items_by_sector[i].size(); ++j) {
+               auto& item_list = items_by_sector[i];
+
+               const auto& item_ptr = item_list[j];
                std::string computed_accessor = item_ptr->accessor;
+
+               size_t coalesce_array_siblings_up_through = j;
 
                std::string indent = "   ";
                if (item_ptr->is_array()) {
@@ -180,10 +185,48 @@ namespace codegen {
                   auto& indices = item_ptr->array_indices;
                   auto& extents = item_ptr->member_definition->array_extents;
 
-                  for (size_t i = 0; i < indices.size(); ++i) {
+                  if (indices.size() == extents.size()) {
+                     for (size_t k = j + 1; k < item_list.size(); ++k) {
+                        if (item_list[k - 1]->arg_is_next_array_sibling(*item_list[k])) {
+                           coalesce_array_siblings_up_through = k;
+                        } else {
+                           break;
+                        }
+                     }
+                  }
+                  bool coalesce_last_defined_index = coalesce_array_siblings_up_through > j;
+
+                  for (size_t i = 0; i < indices.size() - (coalesce_last_defined_index ? 1 : 0); ++i) {
                      computed_accessor += '[';
                      computed_accessor += lu::strings::from_integer(indices[i]);
                      computed_accessor += ']';
+                  }
+                  if (coalesce_last_defined_index) {
+                     size_t i = indices.size() - 1;
+
+                     computed_accessor += '[';
+                     if (array_indices_are_numbered) {
+                        computed_accessor += "index_";
+                        computed_accessor += lu::strings::from_integer(i);
+                     } else {
+                        computed_accessor += (char)('i' + i);
+                     }
+                     computed_accessor += ']';
+
+                     common += indent;
+                     common += "for (";
+                     common += rank_to_var(i);
+                     common += " = ";
+                     common += lu::strings::from_integer(item_list[j]->array_indices.back());
+                     common += "; ";
+                     common += rank_to_var(i);
+                     common += " < ";
+                     common += lu::strings::from_integer(item_list[coalesce_array_siblings_up_through]->array_indices.back() + 1);
+                     common += "; ++";
+                     common += rank_to_var(i);
+                     common += ") {\n";
+
+                     indent += "   ";
                   }
                   for (size_t i = indices.size(); i < extents.size(); ++i) {
                      computed_accessor += '[';
@@ -213,6 +256,7 @@ namespace codegen {
                   code_write += common;
                }
 
+               #pragma region Serialize item
                //
                // Generate the function call to serialize the item.
                //
@@ -357,6 +401,7 @@ namespace codegen {
                } else {
                   throw;
                }
+               #pragma endregion
 
                //
                // Close any array loops we're in.
@@ -368,6 +413,12 @@ namespace codegen {
                   auto& indices = item_ptr->array_indices;
                   auto& extents = item_ptr->member_definition->array_extents;
 
+                  if (coalesce_array_siblings_up_through > j) {
+                     indent = indent.substr(3);
+                     common += indent;
+                     common += "}\n";
+                  }
+
                   for (size_t i = indices.size(); i < extents.size(); ++i) {
                      indent = indent.substr(3);
                      common += indent;
@@ -376,6 +427,10 @@ namespace codegen {
 
                   code_read  += common;
                   code_write += common;
+               }
+
+               if (coalesce_array_siblings_up_through > j) {
+                  j = coalesce_array_siblings_up_through;
                }
             }
 

@@ -15,9 +15,25 @@
    #error Constant `WONDER_CARD_TEXT_LENGTH` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, struct WonderCard* dst);
-
+void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, const struct WonderCard* src) {
+   src.flagId = lu_BitstreamRead_u16(state, 16);
+   src.iconSpecies = lu_BitstreamRead_u16(state, 11);
+   src.idNumber = lu_BitstreamRead_u32(state, 32);
+   src.type = lu_BitstreamRead_u8(state, 2);
+   src.bgType = lu_BitstreamRead_u8(state, 4);
+   src.sendType = lu_BitstreamRead_u8(state, 2);
+   src.maxStamps = lu_BitstreamRead_u8(state, 8);
+   lu_BitstreamRead_string(state, src.titleText, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamRead_string(state, src.subtitleText, WONDER_CARD_TEXT_LENGTH, 6);
+   {
+      u16 i;
+      for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) { 
+            lu_BitstreamRead_string(state, src.bodyText[i], WONDER_CARD_TEXT_LENGTH, 6);
+      }
+   }
+   lu_BitstreamRead_string(state, src.footerLine1Text, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamRead_string(state, src.footerLine2Text, WONDER_CARD_TEXT_LENGTH, 6);
+}
 void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct WonderCard* src) {
    lu_BitstreamWrite_u16(state, src.flagId, 16);
    lu_BitstreamWrite_u16(state, src.iconSpecies, 11);

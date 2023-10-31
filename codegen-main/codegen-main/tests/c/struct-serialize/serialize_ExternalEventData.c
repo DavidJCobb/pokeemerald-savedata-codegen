@@ -2,9 +2,28 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_ExternalEventData(struct lu_BitstreamState* state, struct ExternalEventData* dst);
-
+void lu_BitstreamRead_ExternalEventData(struct lu_BitstreamState* state, const struct ExternalEventData* src) {
+   {
+      u16 i;
+      for (i = 0; i < 7; ++i) { 
+            src.unknownExternalDataFields1[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   src.unknownExternalDataFields2 = lu_BitstreamRead_u8(state, 8);
+   src.currentPokeCoupons = lu_BitstreamRead_u32(state, 24);
+   src.gotGoldPokeCouponTitleReward = lu_BitstreamRead_bool(state, src.gotGoldPokeCouponTitleReward);
+   src.gotSilverPokeCouponTitleReward = lu_BitstreamRead_bool(state, src.gotSilverPokeCouponTitleReward);
+   src.gotBronzePokeCouponTitleReward = lu_BitstreamRead_bool(state, src.gotBronzePokeCouponTitleReward);
+   src.receivedAgetoCelebi = lu_BitstreamRead_bool(state, src.receivedAgetoCelebi);
+   src.unknownExternalDataFields3 = lu_BitstreamRead_u8(state, 4);
+   src.totalEarnedPokeCoupons = lu_BitstreamRead_u32(state, 24);
+   {
+      u16 i;
+      for (i = 0; i < 5; ++i) { 
+            src.unknownExternalDataFields4[i] = lu_BitstreamRead_u32(state, 32);
+      }
+   }
+}
 void lu_BitstreamWrite_ExternalEventData(struct lu_BitstreamState* state, const struct ExternalEventData* src) {
    {
       u16 i;

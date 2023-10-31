@@ -2,9 +2,19 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_BerryPickingResults(struct lu_BitstreamState* state, struct BerryPickingResults* dst);
-
+void lu_BitstreamRead_BerryPickingResults(struct lu_BitstreamState* state, const struct BerryPickingResults* src) {
+   src.bestScore = lu_BitstreamRead_u32(state, 32);
+   src.berriesPicked = lu_BitstreamRead_u32(state, 32);
+   src.berriesPickedInRow = lu_BitstreamRead_u32(state, 32);
+   src.field_8 = lu_BitstreamRead_u8(state, 8);
+   src.field_9 = lu_BitstreamRead_u8(state, 8);
+   src.field_A = lu_BitstreamRead_u8(state, 8);
+   src.field_B = lu_BitstreamRead_u8(state, 8);
+   src.field_C = lu_BitstreamRead_u8(state, 8);
+   src.field_D = lu_BitstreamRead_u8(state, 8);
+   src.field_E = lu_BitstreamRead_u8(state, 8);
+   src.field_F = lu_BitstreamRead_u8(state, 8);
+}
 void lu_BitstreamWrite_BerryPickingResults(struct lu_BitstreamState* state, const struct BerryPickingResults* src) {
    lu_BitstreamWrite_u32(state, src.bestScore, 32);
    lu_BitstreamWrite_u32(state, src.berriesPicked, 32);

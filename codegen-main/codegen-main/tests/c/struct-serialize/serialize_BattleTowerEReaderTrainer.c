@@ -21,9 +21,43 @@
    #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_BattleTowerEReaderTrainer(struct lu_BitstreamState* state, struct BattleTowerEReaderTrainer* dst);
-
+void lu_BitstreamRead_BattleTowerEReaderTrainer(struct lu_BitstreamState* state, const struct BattleTowerEReaderTrainer* src) {
+   src.unk0 = lu_BitstreamRead_u8(state, 8);
+   src.facilityClass = lu_BitstreamRead_u8(state, 8);
+   src.winStreak = lu_BitstreamRead_u16(state, 16);
+   lu_BitstreamRead_string(state, src.name, PLAYER_NAME_LENGTH, 3);
+   {
+      u16 i;
+      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
+            src.trainerId[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.greeting[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.farewellPlayerLost[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.farewellPlayerWon[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
+            lu_BitstreamRead_BattleTowerPokemon(state, &src.party[i]);
+      }
+   }
+   src.checksum = lu_BitstreamRead_u32(state, 32);
+}
 void lu_BitstreamWrite_BattleTowerEReaderTrainer(struct lu_BitstreamState* state, const struct BattleTowerEReaderTrainer* src) {
    lu_BitstreamWrite_u8(state, src.unk0, 8);
    lu_BitstreamWrite_u8(state, src.facilityClass, 8);

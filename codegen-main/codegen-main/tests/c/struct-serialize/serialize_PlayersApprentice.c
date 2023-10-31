@@ -13,9 +13,27 @@
    #error Constant `APPRENTICE_MAX_QUESTIONS` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_PlayersApprentice(struct lu_BitstreamState* state, struct PlayersApprentice* dst);
-
+void lu_BitstreamRead_PlayersApprentice(struct lu_BitstreamState* state, const struct PlayersApprentice* src) {
+   src.id = lu_BitstreamRead_u8(state, 8);
+   src.lvlMode = lu_BitstreamRead_u8(state, 2);
+   src.questionsAnswered = lu_BitstreamRead_u8(state, 4);
+   src.leadMonId = lu_BitstreamRead_u8(state, 2);
+   src.party = lu_BitstreamRead_u8(state, 3);
+   src.saveId = lu_BitstreamRead_u8(state, 2);
+   src.unused = lu_BitstreamRead_u8(state, 8);
+   {
+      u16 i;
+      for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
+            src.speciesIds[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < APPRENTICE_MAX_QUESTIONS; ++i) { 
+            lu_BitstreamRead_ApprenticeQuestion(state, &src.questions[i]);
+      }
+   }
+}
 void lu_BitstreamWrite_PlayersApprentice(struct lu_BitstreamState* state, const struct PlayersApprentice* src) {
    lu_BitstreamWrite_u8(state, src.id, 8);
    lu_BitstreamWrite_u8(state, src.lvlMode, 2);

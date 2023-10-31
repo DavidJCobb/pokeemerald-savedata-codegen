@@ -27,7 +27,7 @@
       <number name="$game-language" min="0" max="7" />
    
       <!-- The plan with this is to divide item IDs up into per-pocket IDs, so that each bag pocket can potentially be stored with fewer bits. However, "global" item IDs will still need to exist, e.g. for convenient run-time inventory management, Pokemon held items, mail items, and so on. -->
-      <u16 name="$global-item-id" />
+      <u16 name="$global-item-id" max="511" />
       
       <number name="$item-quantity" min="0" max="99" />
       

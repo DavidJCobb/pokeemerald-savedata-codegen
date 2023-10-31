@@ -12,12 +12,39 @@
    #error Constant `POKEMON_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_BattleTowerPokemon(struct lu_BitstreamState* state, struct BattleTowerPokemon* dst);
-
+void lu_BitstreamRead_BattleTowerPokemon(struct lu_BitstreamState* state, const struct BattleTowerPokemon* src) {
+   src.species = lu_BitstreamRead_u16(state, 11);
+   src.heldItem = lu_BitstreamRead_u16(state, 9);
+   {
+      u16 i;
+      for (i = 0; i < MAX_MON_MOVES; ++i) { 
+            src.moves[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.level = lu_BitstreamRead_u8(state, 7);
+   src.ppBonuses = lu_BitstreamRead_u8(state, 8);
+   src.hpEV = lu_BitstreamRead_u8(state, 8);
+   src.attackEV = lu_BitstreamRead_u8(state, 8);
+   src.defenseEV = lu_BitstreamRead_u8(state, 8);
+   src.speedEV = lu_BitstreamRead_u8(state, 8);
+   src.spAttackEV = lu_BitstreamRead_u8(state, 8);
+   src.spDefenseEV = lu_BitstreamRead_u8(state, 8);
+   src.otId = lu_BitstreamRead_u32(state, 32);
+   src.hpIV = lu_BitstreamRead_u8(state, 5);
+   src.attackIV = lu_BitstreamRead_u8(state, 5);
+   src.defenseIV = lu_BitstreamRead_u8(state, 5);
+   src.speedIV = lu_BitstreamRead_u8(state, 5);
+   src.spAttackIV = lu_BitstreamRead_u8(state, 5);
+   src.spDefenseIV = lu_BitstreamRead_u8(state, 5);
+   src.gap = lu_BitstreamRead_bool(state, src.gap);
+   src.abilityNum = lu_BitstreamRead_bool(state, src.abilityNum);
+   src.personality = lu_BitstreamRead_u32(state, 32);
+   lu_BitstreamRead_string(state, src.nickname, POKEMON_NAME_LENGTH, 4);
+   src.friendship = lu_BitstreamRead_u8(state, 8);
+}
 void lu_BitstreamWrite_BattleTowerPokemon(struct lu_BitstreamState* state, const struct BattleTowerPokemon* src) {
    lu_BitstreamWrite_u16(state, src.species, 11);
-   lu_BitstreamWrite_u16(state, src.heldItem, 16);
+   lu_BitstreamWrite_u16(state, src.heldItem, 9);
    {
       u16 i;
       for (i = 0; i < MAX_MON_MOVES; ++i) { 

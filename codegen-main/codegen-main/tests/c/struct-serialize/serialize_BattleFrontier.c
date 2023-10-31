@@ -55,9 +55,275 @@
    #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, struct BattleFrontier* dst);
-
+void lu_BitstreamRead_BattleFrontier(struct lu_BitstreamState* state, const struct BattleFrontier* src) {
+   lu_BitstreamRead_EmeraldBattleTowerRecord(state, &src.towerPlayer);
+   {
+      u16 i;
+      for (i = 0; i < BATTLE_TOWER_RECORD_COUNT; ++i) { 
+            lu_BitstreamRead_EmeraldBattleTowerRecord(state, &src.towerRecords[i]);
+      }
+   }
+   lu_BitstreamRead_BattleTowerInterview(state, &src.towerInterview);
+   lu_BitstreamRead_BattleTowerEReaderTrainer(state, &src.ereaderTrainer);
+   src.challengeStatus = lu_BitstreamRead_u8(state, 8);
+   src.lvlMode = lu_BitstreamRead_u8(state, 2);
+   src.challengePaused = lu_BitstreamRead_bool(state, src.challengePaused);
+   src.disableRecordBattle = lu_BitstreamRead_bool(state, src.disableRecordBattle);
+   {
+      u16 i;
+      for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; ++i) { 
+            src.selectedPartyMons[i] = lu_BitstreamRead_u16(state, 11);
+      }
+   }
+   src.curChallengeBattleNum = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i;
+      for (i = 0; i < 20; ++i) { 
+            src.trainerIds[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.winStreakActiveFlags = lu_BitstreamRead_u32(state, 32);
+   {
+      u16 i, j;
+      for (i = 0; i < 4; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.towerWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 4; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.towerRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   src.battledBrainFlags = lu_BitstreamRead_u16(state, 16);
+   src.towerSinglesStreak = lu_BitstreamRead_u16(state, 16);
+   src.towerNumWins = lu_BitstreamRead_u16(state, 16);
+   src.towerBattleOutcome = lu_BitstreamRead_u8(state, 8);
+   src.towerLvlMode = lu_BitstreamRead_u8(state, 8);
+   src.domeAttemptedSingles50 = lu_BitstreamRead_bool(state, src.domeAttemptedSingles50);
+   src.domeAttemptedSinglesOpen = lu_BitstreamRead_bool(state, src.domeAttemptedSinglesOpen);
+   src.domeHasWonSingles50 = lu_BitstreamRead_bool(state, src.domeHasWonSingles50);
+   src.domeHasWonSinglesOpen = lu_BitstreamRead_bool(state, src.domeHasWonSinglesOpen);
+   src.domeAttemptedDoubles50 = lu_BitstreamRead_bool(state, src.domeAttemptedDoubles50);
+   src.domeAttemptedDoublesOpen = lu_BitstreamRead_bool(state, src.domeAttemptedDoublesOpen);
+   src.domeHasWonDoubles50 = lu_BitstreamRead_bool(state, src.domeHasWonDoubles50);
+   src.domeHasWonDoublesOpen = lu_BitstreamRead_bool(state, src.domeHasWonDoublesOpen);
+   src.domeUnused = lu_BitstreamRead_u8(state, 8);
+   src.domeLvlMode = lu_BitstreamRead_u8(state, 8);
+   src.domeBattleMode = lu_BitstreamRead_u8(state, 8);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.domeWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.domeRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.domeTotalChampionships[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
+            lu_BitstreamRead_BattleDomeTrainer(state, &src.domeTrainers[i]);
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
+         for (j = 0; j < FRONTIER_PARTY_SIZE; ++j) { 
+               src.domeMonIds[i][j] = lu_BitstreamRead_u16(state, 11);
+         }
+      }
+   }
+   src.unused_DC4 = lu_BitstreamRead_u16(state, 16);
+   src.palacePrice = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.palaceWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.palaceRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   src.arenaPrize = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.arenaWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.arenaRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.factoryWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.factoryRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.factoryRentsCount[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.factoryRecordRentsCount[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   src.pikePrize = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.pikeWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.pikeRecordStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.pikeTotalStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   src.pikeHintedRoomIndex = lu_BitstreamRead_u8(state, 3);
+   src.pikeHintedRoomType = lu_BitstreamRead_u8(state, 3);
+   src.pikeHealingRoomsDisabled = lu_BitstreamRead_bool(state, src.pikeHealingRoomsDisabled);
+   {
+      u16 i;
+      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
+            src.pikeHeldItemsBackup[i] = lu_BitstreamRead_u16(state, 9);
+      }
+   }
+   src.pyramidPrize = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.pyramidWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
+               src.pyramidRecordWinStreaks[i][j] = lu_BitstreamRead_u16(state, 16);
+         }
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 4; ++i) { 
+            src.pyramidRandoms[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.pyramidTrainerFlags = lu_BitstreamRead_u8(state, 8);
+   lu_BitstreamRead_PyramidBag(state, &src.pyramidBag);
+   src.pyramidLightRadius = lu_BitstreamRead_u8(state, 8);
+   src.verdanturfTentPrize = lu_BitstreamRead_u16(state, 16);
+   src.fallaborTentPrize = lu_BitstreamRead_u16(state, 16);
+   src.slateportTentPrize = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i;
+      for (i = 0; i < FRONTIER_PARTY_SIZE * 2; ++i) { 
+            lu_BitstreamRead_RentalMon(state, &src.rentalMons[i]);
+      }
+   }
+   src.battlePoints = lu_BitstreamRead_u16(state, 16);
+   src.cardBattlePoints = lu_BitstreamRead_u16(state, 16);
+   src.battlesCount = lu_BitstreamRead_u32(state, 32);
+   {
+      u16 i;
+      for (i = 0; i < DOME_TOURNAMENT_TRAINERS_COUNT; ++i) { 
+            src.domeWinningMoves[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.trainerFlags = lu_BitstreamRead_u8(state, 8);
+   {
+      u16 i;
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+            lu_BitstreamRead_string(state, src.opponentNames[i], PLAYER_NAME_LENGTH, 3);
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+         for (j = 0; j < TRAINER_ID_LENGTH; ++j) { 
+               src.opponentTrainerIds[i][j] = lu_BitstreamRead_u8(state, 8);
+         }
+      }
+   }
+   src.unk_EF9 = lu_BitstreamRead_u8(state, 7);
+   src.savedGame = lu_BitstreamRead_bool(state, src.savedGame);
+   src.unused_EFA = lu_BitstreamRead_u8(state, 8);
+   src.unused_EFB = lu_BitstreamRead_u8(state, 8);
+   {
+      u16 i;
+      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
+            lu_BitstreamRead_DomeMonData(state, &src.domePlayerPartyData[i]);
+      }
+   }
+}
 void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const struct BattleFrontier* src) {
    lu_BitstreamWrite_EmeraldBattleTowerRecord(state, &src.towerPlayer);
    {
@@ -254,7 +520,7 @@ void lu_BitstreamWrite_BattleFrontier(struct lu_BitstreamState* state, const str
    {
       u16 i;
       for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
-            lu_BitstreamWrite_u16(state, src.pikeHeldItemsBackup[i], 16);
+            lu_BitstreamWrite_u16(state, src.pikeHeldItemsBackup[i], 9);
       }
    }
    lu_BitstreamWrite_u16(state, src.pyramidPrize, 16);

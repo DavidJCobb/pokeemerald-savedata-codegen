@@ -10,9 +10,16 @@
    #error Constant `DAYCARE_MON_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_DayCare(struct lu_BitstreamState* state, struct DayCare* dst);
-
+void lu_BitstreamRead_DayCare(struct lu_BitstreamState* state, const struct DayCare* src) {
+   {
+      u16 i;
+      for (i = 0; i < DAYCARE_MON_COUNT; ++i) { 
+            lu_BitstreamRead_DaycareMon(state, &src.mons[i]);
+      }
+   }
+   src.offspringPersonality = lu_BitstreamRead_u32(state, 32);
+   src.stepCounter = lu_BitstreamRead_u8(state, 8);
+}
 void lu_BitstreamWrite_DayCare(struct lu_BitstreamState* state, const struct DayCare* src) {
    {
       u16 i;

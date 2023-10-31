@@ -2,9 +2,18 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_DewfordTrend(struct lu_BitstreamState* state, struct DewfordTrend* dst);
-
+void lu_BitstreamRead_DewfordTrend(struct lu_BitstreamState* state, const struct DewfordTrend* src) {
+   src.trendiness = lu_BitstreamRead_u8(state, 7);
+   src.maxTrendiness = lu_BitstreamRead_u8(state, 7);
+   src.gainingTrendiness = lu_BitstreamRead_bool(state, src.gainingTrendiness);
+   src.rand = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i;
+      for (i = 0; i < 2; ++i) { 
+            src.words[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+}
 void lu_BitstreamWrite_DewfordTrend(struct lu_BitstreamState* state, const struct DewfordTrend* src) {
    lu_BitstreamWrite_u8(state, src.trendiness, 7);
    lu_BitstreamWrite_u8(state, src.maxTrendiness, 7);

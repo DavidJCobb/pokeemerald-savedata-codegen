@@ -13,9 +13,29 @@
    #error Constant `NUM_QUESTIONNAIRE_WORDS` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_MysteryGiftSave(struct lu_BitstreamState* state, struct MysteryGiftSave* dst);
-
+void lu_BitstreamRead_MysteryGiftSave(struct lu_BitstreamState* state, const struct MysteryGiftSave* src) {
+   src.newsCrc = lu_BitstreamRead_u32(state, 32);
+   lu_BitstreamRead_WonderNews(state, &src.news);
+   src.cardCrc = lu_BitstreamRead_u32(state, 32);
+   lu_BitstreamRead_WonderCard(state, &src.card);
+   src.cardMetadataCrc = lu_BitstreamRead_u32(state, 32);
+   lu_BitstreamRead_WonderCardMetadata(state, &src.cardMetadata);
+   {
+      u16 i;
+      for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) { 
+            src.questionnaireWords[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   lu_BitstreamRead_WonderNewsMetadata(state, &src.newsMetadata);
+   {
+      u16 i, j;
+      for (i = 0; i < 2; ++i) { 
+         for (j = 0; j < 5; ++j) { 
+               src.trainerIds[i][j] = lu_BitstreamRead_u32(state, 32);
+         }
+      }
+   }
+}
 void lu_BitstreamWrite_MysteryGiftSave(struct lu_BitstreamState* state, const struct MysteryGiftSave* src) {
    lu_BitstreamWrite_u32(state, src.newsCrc, 32);
    lu_BitstreamWrite_WonderNews(state, &src.news);

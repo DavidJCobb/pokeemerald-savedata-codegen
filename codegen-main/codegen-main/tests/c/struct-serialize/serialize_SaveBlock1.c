@@ -128,9 +128,332 @@
    #error Constant `UNION_ROOM_KB_ROW_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, struct SaveBlock1* dst);
-
+void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, const struct SaveBlock1* src) {
+   lu_BitstreamRead_Coords16(state, &src.pos);
+   lu_BitstreamRead_WarpData(state, &src.location);
+   lu_BitstreamRead_WarpData(state, &src.continueGameWarp);
+   lu_BitstreamRead_WarpData(state, &src.dynamicWarp);
+   lu_BitstreamRead_WarpData(state, &src.lastHealLocation);
+   lu_BitstreamRead_WarpData(state, &src.escapeWarp);
+   src.savedMusic = lu_BitstreamRead_u16(state, 16);
+   src.weather = lu_BitstreamRead_u8(state, 8);
+   src.weatherCycleStage = lu_BitstreamRead_u8(state, 8);
+   src.flashLevel = lu_BitstreamRead_u8(state, 8);
+   src.mapLayoutId = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i;
+      for (i = 0; i < 0x100; ++i) { 
+            src.mapView[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.playerPartyCount = lu_BitstreamRead_u8(state, 3);
+   {
+      u16 i;
+      for (i = 0; i < PARTY_SIZE; ++i) { 
+            lu_BitstreamRead_Pokemon(state, &src.playerParty[i]);
+      }
+   }
+   src.money = lu_BitstreamRead_u32(state, 32);
+   src.coins = lu_BitstreamRead_u16(state, 16);
+   src.registeredItem = lu_BitstreamRead_u16(state, 9);
+   {
+      u16 i;
+      for (i = 0; i < PC_ITEMS_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.pcItems[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BAG_ITEMS_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.bagPocket_Items[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BAG_KEYITEMS_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.bagPocket_KeyItems[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BAG_POKEBALLS_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.bagPocket_PokeBalls[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BAG_TMHM_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.bagPocket_TMHM[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BAG_BERRIES_COUNT; ++i) { 
+            lu_BitstreamRead_ItemSlot(state, &src.bagPocket_Berries[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < POKEBLOCKS_COUNT; ++i) { 
+            lu_BitstreamRead_Pokeblock(state, &src.pokeblocks[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
+            src.seen1[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 3; ++i) { 
+            src.berryBlenderRecords[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 6; ++i) { 
+            src.unused_9C2[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   src.trainerRematchStepCounter = lu_BitstreamRead_u16(state, 16);
+   {
+      u16 i;
+      for (i = 0; i < MAX_REMATCH_ENTRIES; ++i) { 
+            src.trainerRematches[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < OBJECT_EVENTS_COUNT; ++i) { 
+            lu_BitstreamRead_ObjectEvent(state, &src.objectEvents[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < OBJECT_EVENT_TEMPLATES_COUNT; ++i) { 
+            lu_BitstreamRead_ObjectEventTemplate(state, &src.objectEventTemplates[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_FLAG_BYTES; ++i) { 
+            src.flags[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < VARS_COUNT; ++i) { 
+            src.vars[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_GAME_STATS; ++i) { 
+            src.gameStats[i] = lu_BitstreamRead_u32(state, 32);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < BERRY_TREES_COUNT; ++i) { 
+            lu_BitstreamRead_BerryTree(state, &src.berryTrees[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < SECRET_BASES_COUNT; ++i) { 
+            lu_BitstreamRead_SecretBase(state, &src.secretBases[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < DECOR_MAX_PLAYERS_HOUSE; ++i) { 
+            src.playerRoomDecorations[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < DECOR_MAX_PLAYERS_HOUSE; ++i) { 
+            src.playerRoomDecorationPositions[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.decorationDesks[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.decorationChairs[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.decorationPlants[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 30; ++i) { 
+            src.decorationOrnaments[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 30; ++i) { 
+            src.decorationMats[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.decorationPosters[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 40; ++i) { 
+            src.decorationDolls[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.decorationCushions[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   lu_BitstreamRead_buffer(state, &src.tvShows, 36);
+   {
+      u16 i;
+      for (i = 0; i < POKE_NEWS_COUNT; ++i) { 
+            lu_BitstreamRead_PokeNews(state, &src.pokeNews[i]);
+      }
+   }
+   src.outbreakPokemonSpecies = lu_BitstreamRead_u16(state, 11);
+   src.outbreakLocationMapNum = lu_BitstreamRead_u8(state, 8);
+   src.outbreakLocationMapGroup = lu_BitstreamRead_u8(state, 8);
+   src.outbreakPokemonLevel = lu_BitstreamRead_u8(state, 7);
+   src.outbreakUnused1 = lu_BitstreamRead_u8(state, 8);
+   src.outbreakUnused2 = lu_BitstreamRead_u8(state, 8);
+   {
+      u16 i;
+      for (i = 0; i < MAX_MON_MOVES; ++i) { 
+            src.outbreakPokemonMoves[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.outbreakUnused3 = lu_BitstreamRead_u8(state, 8);
+   src.outbreakPokemonProbability = lu_BitstreamRead_u8(state, 8);
+   src.outbreakDaysLeft = lu_BitstreamRead_u16(state, 16);
+   lu_BitstreamRead_GabbyAndTyData(state, &src.gabbyAndTyData);
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.easyChatProfile[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.easyChatBattleStart[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.easyChatBattleWon[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < EASY_CHAT_BATTLE_WORDS_COUNT; ++i) { 
+            src.easyChatBattleLost[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < MAIL_COUNT; ++i) { 
+            lu_BitstreamRead_Mail(state, &src.mail[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_TRENDY_SAYING_BYTES; ++i) { 
+            src.unlockedTrendySayings[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   lu_BitstreamRead_buffer(state, &src.oldMan, 64);
+   {
+      u16 i;
+      for (i = 0; i < SAVED_TRENDS_COUNT; ++i) { 
+            lu_BitstreamRead_DewfordTrend(state, &src.dewfordTrends[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_CONTEST_WINNERS; ++i) { 
+            lu_BitstreamRead_ContestWinner(state, &src.contestWinners[i]);
+      }
+   }
+   lu_BitstreamRead_DayCare(state, &src.daycare);
+   lu_BitstreamRead_LinkBattleRecords(state, &src.linkBattleRecords);
+   {
+      u16 i;
+      for (i = 0; i < GIFT_RIBBONS_COUNT; ++i) { 
+            src.giftRibbons[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   lu_BitstreamRead_ExternalEventData(state, &src.externalEventData);
+   lu_BitstreamRead_ExternalEventFlags(state, &src.externalEventFlags);
+   lu_BitstreamRead_Roamer(state, &src.roamer);
+   lu_BitstreamRead_EnigmaBerry(state, &src.enigmaBerry);
+   lu_BitstreamRead_MysteryGiftSave(state, &src.mysteryGift);
+   {
+      u16 i;
+      for (i = 0; i < 0x180; ++i) { 
+            src.unused_3598[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) { 
+            src.trainerHillTimes[i] = lu_BitstreamRead_u32(state, 32);
+      }
+   }
+   lu_BitstreamRead_RamScript(state, &src.ramScript);
+   lu_BitstreamRead_RecordMixingGift(state, &src.recordMixingGift);
+   {
+      u16 i;
+      for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) { 
+            src.seen2[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   lu_BitstreamRead_buffer(state, &src.lilycoveLady, 64);
+   {
+      u16 i;
+      for (i = 0; i < 20; ++i) { 
+            lu_BitstreamRead_TrainerNameRecord(state, &src.trainerNameRecords[i]);
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < UNION_ROOM_KB_ROW_COUNT; ++i) { 
+         for (j = 0; j < 21; ++j) { 
+               src.registeredTexts[i][j] = lu_BitstreamRead_u8(state, 8);
+         }
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < 10; ++i) { 
+            src.unused_3D5A[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   lu_BitstreamRead_TrainerHillSave(state, &src.trainerHill);
+   lu_BitstreamRead_WaldaPhrase(state, &src.waldaPhrase);
+}
 void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct SaveBlock1* src) {
    lu_BitstreamWrite_Coords16(state, &src.pos);
    lu_BitstreamWrite_WarpData(state, &src.location);
@@ -158,7 +481,7 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
    }
    lu_BitstreamWrite_u32(state, src.money, 32);
    lu_BitstreamWrite_u16(state, src.coins, 16);
-   lu_BitstreamWrite_u16(state, src.registeredItem, 16);
+   lu_BitstreamWrite_u16(state, src.registeredItem, 9);
    {
       u16 i;
       for (i = 0; i < PC_ITEMS_COUNT; ++i) { 

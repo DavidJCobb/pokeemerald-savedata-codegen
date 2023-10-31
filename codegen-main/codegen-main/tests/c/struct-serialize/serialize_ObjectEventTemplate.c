@@ -2,9 +2,21 @@
 
 #include "global.fieldmap.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_ObjectEventTemplate(struct lu_BitstreamState* state, struct ObjectEventTemplate* dst);
-
+void lu_BitstreamRead_ObjectEventTemplate(struct lu_BitstreamState* state, const struct ObjectEventTemplate* src) {
+   src.localId = lu_BitstreamRead_u8(state, 8);
+   src.graphicsId = lu_BitstreamRead_u8(state, 8);
+   src.kind = lu_BitstreamRead_u8(state, 8);
+   src.x = lu_BitstreamRead_u16(state, 16);
+   src.y = lu_BitstreamRead_u16(state, 16);
+   src.elevation = lu_BitstreamRead_u8(state, 8);
+   src.movementType = lu_BitstreamRead_u8(state, 8);
+   src.movementRangeX = lu_BitstreamRead_u8(state, 4);
+   src.movementRangeY = lu_BitstreamRead_u8(state, 4);
+   src.trainerType = lu_BitstreamRead_u16(state, 16);
+   src.trainerRange_berryTreeId = lu_BitstreamRead_u16(state, 16);
+   script = (u8*) lu_BitstreamREad_u32(state, 32);
+   src.flagId = lu_BitstreamRead_u16(state, 16);
+}
 void lu_BitstreamWrite_ObjectEventTemplate(struct lu_BitstreamState* state, const struct ObjectEventTemplate* src) {
    lu_BitstreamWrite_u8(state, src.localId, 8);
    lu_BitstreamWrite_u8(state, src.graphicsId, 8);

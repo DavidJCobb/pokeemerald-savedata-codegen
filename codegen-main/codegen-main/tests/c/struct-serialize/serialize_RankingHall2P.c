@@ -12,9 +12,24 @@
    #error Constant `PLAYER_NAME_LENGTH` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_RankingHall2P(struct lu_BitstreamState* state, struct RankingHall2P* dst);
-
+void lu_BitstreamRead_RankingHall2P(struct lu_BitstreamState* state, const struct RankingHall2P* src) {
+   {
+      u16 i;
+      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
+            src.id1[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
+            src.id2[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   src.winStreak = lu_BitstreamRead_u16(state, 16);
+   lu_BitstreamRead_string(state, src.name1, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, src.name2, PLAYER_NAME_LENGTH, 3);
+   src.language = lu_BitstreamRead_u8(state, 3);
+}
 void lu_BitstreamWrite_RankingHall2P(struct lu_BitstreamState* state, const struct RankingHall2P* src) {
    {
       u16 i;

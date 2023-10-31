@@ -25,6 +25,8 @@ namespace codegen {
          static constexpr serialization_item for_top_level_struct(const ast::structure&);
 
          constexpr bool is_array() const;
+
+         constexpr bool arg_is_next_array_sibling(const serialization_item&) const;
    };
 }
 

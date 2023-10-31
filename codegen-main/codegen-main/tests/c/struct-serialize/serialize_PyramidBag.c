@@ -16,15 +16,30 @@
    #error Constant `PYRAMID_BAG_ITEMS_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_PyramidBag(struct lu_BitstreamState* state, struct PyramidBag* dst);
-
+void lu_BitstreamRead_PyramidBag(struct lu_BitstreamState* state, const struct PyramidBag* src) {
+   {
+      u16 i, j;
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
+               src.itemId[i][j] = lu_BitstreamRead_u16(state, 9);
+         }
+      }
+   }
+   {
+      u16 i, j;
+      for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
+         for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
+               src.quantity[i][j] = lu_BitstreamRead_u8(state, 7);
+         }
+      }
+   }
+}
 void lu_BitstreamWrite_PyramidBag(struct lu_BitstreamState* state, const struct PyramidBag* src) {
    {
       u16 i, j;
       for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
          for (j = 0; j < PYRAMID_BAG_ITEMS_COUNT; ++j) { 
-               lu_BitstreamWrite_u16(state, src.itemId[i][j], 16);
+               lu_BitstreamWrite_u16(state, src.itemId[i][j], 9);
          }
       }
    }

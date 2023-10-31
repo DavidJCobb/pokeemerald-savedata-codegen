@@ -10,9 +10,20 @@
    #error Constant `LINK_B_RECORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_LinkBattleRecords(struct lu_BitstreamState* state, struct LinkBattleRecords* dst);
-
+void lu_BitstreamRead_LinkBattleRecords(struct lu_BitstreamState* state, const struct LinkBattleRecords* src) {
+   {
+      u16 i;
+      for (i = 0; i < LINK_B_RECORDS_COUNT; ++i) { 
+            lu_BitstreamRead_LinkBattleRecord(state, &src.entries[i]);
+      }
+   }
+   {
+      u16 i;
+      for (i = 0; i < LINK_B_RECORDS_COUNT; ++i) { 
+            src.languages[i] = lu_BitstreamRead_u8(state, 3);
+      }
+   }
+}
 void lu_BitstreamWrite_LinkBattleRecords(struct lu_BitstreamState* state, const struct LinkBattleRecords* src) {
    {
       u16 i;

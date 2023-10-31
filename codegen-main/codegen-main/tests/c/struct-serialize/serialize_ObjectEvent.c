@@ -7,9 +7,61 @@
 #include "./serialize_Coords16.h"
 #include "./serialize_Coords16.h"
 
-// TODO:
-// void lu_BitstreamRead_ObjectEvent(struct lu_BitstreamState* state, struct ObjectEvent* dst);
-
+void lu_BitstreamRead_ObjectEvent(struct lu_BitstreamState* state, const struct ObjectEvent* src) {
+   src.active = lu_BitstreamRead_bool(state, src.active);
+   src.singleMovementActive = lu_BitstreamRead_bool(state, src.singleMovementActive);
+   src.triggerGroundEffectsOnMove = lu_BitstreamRead_bool(state, src.triggerGroundEffectsOnMove);
+   src.triggerGroundEffectsOnStop = lu_BitstreamRead_bool(state, src.triggerGroundEffectsOnStop);
+   src.disableCoveringGroundEffects = lu_BitstreamRead_bool(state, src.disableCoveringGroundEffects);
+   src.landingJump = lu_BitstreamRead_bool(state, src.landingJump);
+   src.heldMovementActive = lu_BitstreamRead_bool(state, src.heldMovementActive);
+   src.heldMovementFinished = lu_BitstreamRead_bool(state, src.heldMovementFinished);
+   src.frozen = lu_BitstreamRead_bool(state, src.frozen);
+   src.facingDirectionLocked = lu_BitstreamRead_bool(state, src.facingDirectionLocked);
+   src.disableAnim = lu_BitstreamRead_bool(state, src.disableAnim);
+   src.enableAnim = lu_BitstreamRead_bool(state, src.enableAnim);
+   src.inanimate = lu_BitstreamRead_bool(state, src.inanimate);
+   src.invisible = lu_BitstreamRead_bool(state, src.invisible);
+   src.offScreen = lu_BitstreamRead_bool(state, src.offScreen);
+   src.trackedByCamera = lu_BitstreamRead_bool(state, src.trackedByCamera);
+   src.isPlayer = lu_BitstreamRead_bool(state, src.isPlayer);
+   src.hasReflection = lu_BitstreamRead_bool(state, src.hasReflection);
+   src.inShortGrass = lu_BitstreamRead_bool(state, src.inShortGrass);
+   src.inShallowFlowingWater = lu_BitstreamRead_bool(state, src.inShallowFlowingWater);
+   src.inSandPile = lu_BitstreamRead_bool(state, src.inSandPile);
+   src.inHotSprings = lu_BitstreamRead_bool(state, src.inHotSprings);
+   src.hasShadow = lu_BitstreamRead_bool(state, src.hasShadow);
+   src.spriteAnimPausedBackup = lu_BitstreamRead_bool(state, src.spriteAnimPausedBackup);
+   src.spriteAffineAnimPausedBackup = lu_BitstreamRead_bool(state, src.spriteAffineAnimPausedBackup);
+   src.disableJumpLandingGroundEffect = lu_BitstreamRead_bool(state, src.disableJumpLandingGroundEffect);
+   src.fixedPriority = lu_BitstreamRead_bool(state, src.fixedPriority);
+   src.hideReflection = lu_BitstreamRead_bool(state, src.hideReflection);
+   src.spriteId = lu_BitstreamRead_u8(state, 8);
+   src.graphicsId = lu_BitstreamRead_u8(state, 8);
+   src.movementType = lu_BitstreamRead_u8(state, 8);
+   src.trainerType = lu_BitstreamRead_u8(state, 8);
+   src.localId = lu_BitstreamRead_u8(state, 8);
+   src.mapNum = lu_BitstreamRead_u8(state, 8);
+   src.mapGroup = lu_BitstreamRead_u8(state, 8);
+   src.currentElevation = lu_BitstreamRead_u8(state, 4);
+   src.previousElevation = lu_BitstreamRead_u8(state, 4);
+   lu_BitstreamRead_Coords16(state, &src.initialCoords);
+   lu_BitstreamRead_Coords16(state, &src.currentCoords);
+   lu_BitstreamRead_Coords16(state, &src.previousCoords);
+   src.facingDirection = lu_BitstreamRead_u8(state, 4);
+   src.movementDirection = lu_BitstreamRead_u8(state, 4);
+   src.rangeX = lu_BitstreamRead_u8(state, 4);
+   src.rangeY = lu_BitstreamRead_u8(state, 4);
+   src.fieldEffectSpriteId = lu_BitstreamRead_u8(state, 8);
+   src.warpArrowSpriteId = lu_BitstreamRead_u8(state, 8);
+   src.movementActionId = lu_BitstreamRead_u8(state, 8);
+   src.trainerRange_berryTreeId = lu_BitstreamRead_u8(state, 8);
+   src.currentMetatileBehavior = lu_BitstreamRead_u8(state, 8);
+   src.previousMetatileBehavior = lu_BitstreamRead_u8(state, 8);
+   src.previousMovementDirection = lu_BitstreamRead_u8(state, 8);
+   src.directionSequenceIndex = lu_BitstreamRead_u8(state, 8);
+   src.playerCopyableMovement = lu_BitstreamRead_u8(state, 8);
+}
 void lu_BitstreamWrite_ObjectEvent(struct lu_BitstreamState* state, const struct ObjectEvent* src) {
    lu_BitstreamWrite_bool(state, src.active);
    lu_BitstreamWrite_bool(state, src.singleMovementActive);

@@ -10,9 +10,18 @@
    #error Constant `BERRY_ITEM_EFFECT_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_EnigmaBerry(struct lu_BitstreamState* state, struct EnigmaBerry* dst);
-
+void lu_BitstreamRead_EnigmaBerry(struct lu_BitstreamState* state, const struct EnigmaBerry* src) {
+   lu_BitstreamRead_Berry2(state, &src.berry);
+   {
+      u16 i;
+      for (i = 0; i < BERRY_ITEM_EFFECT_COUNT; ++i) { 
+            src.itemEffect[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+   src.holdEffect = lu_BitstreamRead_u8(state, 8);
+   src.holdEffectParam = lu_BitstreamRead_u8(state, 8);
+   src.checksum = lu_BitstreamRead_u32(state, 32);
+}
 void lu_BitstreamWrite_EnigmaBerry(struct lu_BitstreamState* state, const struct EnigmaBerry* src) {
    lu_BitstreamWrite_Berry2(state, &src.berry);
    {

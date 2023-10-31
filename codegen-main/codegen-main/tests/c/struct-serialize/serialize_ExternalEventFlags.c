@@ -2,9 +2,30 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_ExternalEventFlags(struct lu_BitstreamState* state, struct ExternalEventFlags* dst);
-
+void lu_BitstreamRead_ExternalEventFlags(struct lu_BitstreamState* state, const struct ExternalEventFlags* src) {
+   src.usedBoxRS = lu_BitstreamRead_bool(state, src.usedBoxRS);
+   src.boxRSEggsUnlocked = lu_BitstreamRead_u8(state, 2);
+   src.unknownFlag1 = lu_BitstreamRead_u8(state, 8);
+   src.receivedGCNJirachi = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag3 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag4 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag5 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag6 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag7 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag8 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag9 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag10 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag11 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag12 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag13 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag14 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag15 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag16 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag17 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag18 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag19 = lu_BitstreamRead_u8(state, 8);
+   src.unknownFlag20 = lu_BitstreamRead_u8(state, 8);
+}
 void lu_BitstreamWrite_ExternalEventFlags(struct lu_BitstreamState* state, const struct ExternalEventFlags* src) {
    lu_BitstreamWrite_bool(state, src.usedBoxRS);
    lu_BitstreamWrite_u8(state, src.boxRSEggsUnlocked, 2);

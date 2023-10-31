@@ -7,9 +7,16 @@
    #error Constant `MAX_MON_MOVES` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-// TODO:
-// void lu_BitstreamRead_ApprenticeMon(struct lu_BitstreamState* state, struct ApprenticeMon* dst);
-
+void lu_BitstreamRead_ApprenticeMon(struct lu_BitstreamState* state, const struct ApprenticeMon* src) {
+   src.species = lu_BitstreamRead_u16(state, 11);
+   {
+      u16 i;
+      for (i = 0; i < MAX_MON_MOVES; ++i) { 
+            src.moves[i] = lu_BitstreamRead_u16(state, 16);
+      }
+   }
+   src.item = lu_BitstreamRead_u16(state, 9);
+}
 void lu_BitstreamWrite_ApprenticeMon(struct lu_BitstreamState* state, const struct ApprenticeMon* src) {
    lu_BitstreamWrite_u16(state, src.species, 11);
    {
@@ -18,5 +25,5 @@ void lu_BitstreamWrite_ApprenticeMon(struct lu_BitstreamState* state, const stru
             lu_BitstreamWrite_u16(state, src.moves[i], 16);
       }
    }
-   lu_BitstreamWrite_u16(state, src.item, 16);
+   lu_BitstreamWrite_u16(state, src.item, 9);
 }

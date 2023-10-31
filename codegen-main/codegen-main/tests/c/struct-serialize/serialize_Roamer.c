@@ -2,9 +2,26 @@
 
 #include "global.h" // struct definition
 
-// TODO:
-// void lu_BitstreamRead_Roamer(struct lu_BitstreamState* state, struct Roamer* dst);
-
+void lu_BitstreamRead_Roamer(struct lu_BitstreamState* state, const struct Roamer* src) {
+   src.ivs = lu_BitstreamRead_u32(state, 32);
+   src.personality = lu_BitstreamRead_u32(state, 32);
+   src.species = lu_BitstreamRead_u16(state, 11);
+   src.hp = lu_BitstreamRead_u16(state, 16);
+   src.level = lu_BitstreamRead_u8(state, 7);
+   src.status = lu_BitstreamRead_u8(state, 8);
+   src.cool = lu_BitstreamRead_u8(state, 8);
+   src.beauty = lu_BitstreamRead_u8(state, 8);
+   src.cute = lu_BitstreamRead_u8(state, 8);
+   src.smart = lu_BitstreamRead_u8(state, 8);
+   src.tough = lu_BitstreamRead_u8(state, 8);
+   src.active = lu_BitstreamRead_bool(state, src.active);
+   {
+      u16 i;
+      for (i = 0; i < 8; ++i) { 
+            src.filler[i] = lu_BitstreamRead_u8(state, 8);
+      }
+   }
+}
 void lu_BitstreamWrite_Roamer(struct lu_BitstreamState* state, const struct Roamer* src) {
    lu_BitstreamWrite_u32(state, src.ivs, 32);
    lu_BitstreamWrite_u32(state, src.personality, 32);
