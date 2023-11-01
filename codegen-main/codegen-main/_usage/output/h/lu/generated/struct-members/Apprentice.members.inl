@@ -5,6 +5,6 @@
    struct ApprenticeMon party[MULTI_PARTY_SIZE];
    u16 speechWon[EASY_CHAT_BATTLE_WORDS_COUNT];
    u8 playerId[TRAINER_ID_LENGTH];
-   u8 playerName[PLAYER_NAME_LENGTH + 1];
+   u8 playerName[PLAYER_NAME_LENGTH];
    u8 language;
    u32 checksum;

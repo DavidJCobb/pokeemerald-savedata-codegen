@@ -12,10 +12,16 @@ namespace ast{
       {
          auto& ml = this->max_length;
          if (ml.preprocessor_name.empty()) {
-            out += lu::strings::from_integer(ml.value + 1); // include `EOS` terminator byte
+            if (this->only_early_terminator) {
+               out += lu::strings::from_integer(ml.value);
+            } else {
+               out += lu::strings::from_integer(ml.value + 1); // include `EOS` terminator byte
+            }
          } else {
             out += ml.preprocessor_name;
-            out += " + 1";
+            if (!this->only_early_terminator) {
+               out += " + 1";
+            }
          }
       }
       out += ']';

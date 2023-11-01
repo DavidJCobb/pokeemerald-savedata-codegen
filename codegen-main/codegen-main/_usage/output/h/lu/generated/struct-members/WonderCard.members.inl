@@ -5,8 +5,8 @@
    u8 bgType : 4;
    u8 sendType : 2; // SEND_TYPE_*
    u8 maxStamps;
-   u8 titleText[WONDER_CARD_TEXT_LENGTH + 1];
-   u8 subtitleText[WONDER_CARD_TEXT_LENGTH + 1];
-   u8 bodyText[WONDER_CARD_BODY_TEXT_LINES][WONDER_CARD_TEXT_LENGTH + 1];
-   u8 footerLine1Text[WONDER_CARD_TEXT_LENGTH + 1];
-   u8 footerLine2Text[WONDER_CARD_TEXT_LENGTH + 1];
+   u8 titleText[WONDER_CARD_TEXT_LENGTH];
+   u8 subtitleText[WONDER_CARD_TEXT_LENGTH];
+   u8 bodyText[WONDER_CARD_BODY_TEXT_LINES][WONDER_CARD_TEXT_LENGTH];
+   u8 footerLine1Text[WONDER_CARD_TEXT_LENGTH];
+   u8 footerLine2Text[WONDER_CARD_TEXT_LENGTH];
