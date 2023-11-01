@@ -81,7 +81,10 @@ namespace codegen {
          // TODO: Only take args that are actually used within this sector.
          //
          for (size_t j = 0; j < this->top_level_structs.size(); ++j) {
-            out += "const ";
+            if (!is_read) {
+               out += "const ";
+            }
+            out += "struct ";
             out += this->top_level_structs[j]->name;
             out += "* p_";
             out += this->top_level_structs[j]->name;
@@ -94,6 +97,10 @@ namespace codegen {
       };
 
       {
+         out.header += "#ifndef GUARD_LU_SERIALIZE_SECTOR_" + this->function_name_fragment;
+         out.header += "\n#define GUARD_LU_SERIALIZE_SECTOR_" + this->function_name_fragment;
+         out.header += "\n\n";
+
          out.header += "#include \"lu/bitstreams.h\"\n\n";
          for (size_t i = 0; i < items_by_sector.size(); ++i) {
             out.header += sector_id_to_function_decl(i, true); // read
@@ -101,6 +108,8 @@ namespace codegen {
             out.header += sector_id_to_function_decl(i, false); // write
             out.header += ";\n";
          }
+
+         out.header += "\n#endif";
       }
 
       out.implementation += "#include \"";

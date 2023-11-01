@@ -11,6 +11,17 @@ int main(int argcount, char* args[]) {
    std::string out_path_struct_serialize;
    std::string out_path_sectors;
 
+   if (argcount == 1) {
+      std::cout << "Supported params:\n";
+      std::cout << "   --xml-path                       Base input path for XML files.\n";
+      std::cout << "   --path-h                         Base output path for *.h files.\n";
+      std::cout << "   --path-c                         Base output path for *.c files.\n";
+      std::cout << "   --out-path-struct                Output path for struct member *.inl files, relative to path-h and path-c.\n";
+      std::cout << "   --out-path-struct-serialize      Output path for struct serialization *.h/*.c files, relative to path-h and path-c.\n";
+      std::cout << "   --out-path-sector                Output path for sector serialization *.h/*.c files, relative to path-h and path-c.\n";
+      return 0;
+   }
+
    #if _DEBUG
    for (int i = 1; i < argcount; ++i) {
       std::cout << "arg: " << args[i] << '\n';
@@ -108,10 +119,6 @@ int main(int argcount, char* args[]) {
       return 1;
    }
 
-   reg.generate_all_struct_body_files();
-   reg.generate_whole_struct_serialization_code();
-
-   // for testing:
    {
       std::vector<registry::sector_info> list;
       list.push_back({
@@ -129,16 +136,6 @@ int main(int argcount, char* args[]) {
       } else {
          std::cout << "Failed to pack one or more of the sector groups. See report for information.";
       }
-      /*// old code:
-      try {
-         reg.generate_sector_code(list);
-      } catch (std::runtime_error& e) {
-         std::cout << '\n';
-         std::cout << "Exception thrown and not caught: std::runtime_error: " << e.what() << '\n';
-         std::cout << "Terminating.";
-         return 1;
-      }
-      //*/
    }
 
    return 0;

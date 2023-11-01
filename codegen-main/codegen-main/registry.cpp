@@ -1160,6 +1160,7 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
    } report;
    report.by_sector.resize(sector_groups.size());
 
+   #pragma region Split across sectors, and generate report text
    std::vector<const ast::structure*> top_level_structures;
    size_t total_bytes_in_ram = 0;
 
@@ -1508,9 +1509,15 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       }
       report.every_struct += '\n';
    }
+   #pragma endregion
 
    if (failed) {
       auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
+      {
+         std::error_code error;
+         if (!std::filesystem::create_directories(out_folder, error))
+            assert(!error);
+      }
 
       std::ofstream stream(out_folder / "last-failure.md");
       assert(!!stream);
@@ -1531,6 +1538,32 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
                 "result of bitpacking that row's specific struct type.\n";
       stream << report.every_struct;
    } else {
+      {  // Create all paths
+         std::error_code error;
+         if (!std::filesystem::create_directories(this->paths.output_paths.h, error)) {
+            assert(!error);
+         }
+         if (!std::filesystem::create_directories(this->paths.output_paths.c, error)) {
+            assert(!error);
+         }
+         if (!std::filesystem::create_directories(this->paths.output_paths.h / this->paths.output_paths.sector_serialize, error)) {
+            assert(!error);
+         }
+         if (!std::filesystem::create_directories(this->paths.output_paths.c / this->paths.output_paths.sector_serialize, error)) {
+            assert(!error);
+         }
+         if (!std::filesystem::create_directories(this->paths.output_paths.h / this->paths.output_paths.struct_serialize, error)) {
+            assert(!error);
+         }
+         if (!std::filesystem::create_directories(this->paths.output_paths.c / this->paths.output_paths.struct_serialize, error)) {
+            assert(!error);
+         }
+         // Note: next needs only an H subfolder
+         if (!std::filesystem::create_directories(this->paths.output_paths.h / this->paths.output_paths.struct_members, error)) {
+            assert(!error);
+         }
+      }
+
       {  // Save report
          auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
 
