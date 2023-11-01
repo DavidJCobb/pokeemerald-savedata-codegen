@@ -1,5 +1,7 @@
-# Last failed codegen
-This report describes the last failed attempt at code generation.
+# Codegen for bitpacked savedata
+This report describes the last successful attempt at code generation.
+
+In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (character state) structs consume 99% of the space allotted to them in flash memory (savedata). This is because they are blindly `memcpy`'d from RAM. A bitpacked format would consume substantially less space; however, maintaining the code to bitpack these structs would be prohibitively difficult by hand because savedata is split into ~4KiB strips ("sectors"). Instead, we use custom code generation to produce the serialization code, minding sector boundaries.
 
 ## Overall stats
 19664 bytes in RAM / 19840 bytes available across 5 sectors (99% space usage)  

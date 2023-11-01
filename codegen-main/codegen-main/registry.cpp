@@ -1443,8 +1443,13 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
 
          std::ofstream stream(out_folder / "README.md");
          assert(!!stream);
-         stream << "# Last failed codegen\n";
-         stream << "This report describes the last failed attempt at code generation.\n\n"; // TODO: include date
+         stream << "# Codegen for bitpacked savedata\n";
+         stream << "This report describes the last successful attempt at code generation.\n\n"; // TODO: include date
+         stream << "In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (character state) structs consume "
+                   "99% of the space allotted to them in flash memory (savedata). This is because they are blindly `memcpy`'d "
+                   "from RAM. A bitpacked format would consume substantially less space; however, maintaining the code to bitpack "
+                   "these structs would be prohibitively difficult by hand because savedata is split into ~4KiB strips (\"sectors\"). "
+                   "Instead, we use custom code generation to produce the serialization code, minding sector boundaries.\n\n";
          stream << "## Overall stats\n";
          stream << report.overall_stats;
          stream << "\n\n";
