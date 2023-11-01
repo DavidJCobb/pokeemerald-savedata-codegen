@@ -117,12 +117,28 @@ int main(int argcount, char* args[]) {
       list.push_back({
          .function_name_fragment = "CharacterData",
          .top_level_struct_names = { "SaveBlock2" },
+         .max_sector_count = 1,
       });
       list.push_back({
          .function_name_fragment = "WorldData",
          .top_level_struct_names = { "SaveBlock1" },
+         .max_sector_count = 4,
       });
-      reg.generate_sector_code(list);
+      if (reg.generate_all_files(list)) {
+         std::cout << "Packed all sectors! See report for information.";
+      } else {
+         std::cout << "Failed to pack one or more of the sector groups. See report for information.";
+      }
+      /*// old code:
+      try {
+         reg.generate_sector_code(list);
+      } catch (std::runtime_error& e) {
+         std::cout << '\n';
+         std::cout << "Exception thrown and not caught: std::runtime_error: " << e.what() << '\n';
+         std::cout << "Terminating.";
+         return 1;
+      }
+      //*/
    }
 
    return 0;

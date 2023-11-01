@@ -24,7 +24,7 @@ void lu_BitstreamRead_SecretBase(struct lu_BitstreamState* state, const struct S
    src.gender = lu_BitstreamRead_bool(state, src.gender);
    src.battledOwnerToday = lu_BitstreamRead_bool(state, src.battledOwnerToday);
    src.registryStatus = lu_BitstreamRead_u8(state, 2);
-   lu_BitstreamRead_string(state, src.trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string_optional_terminator(state, src.trainerName, PLAYER_NAME_LENGTH, 3);
    {
       u16 i;
       for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
@@ -55,7 +55,7 @@ void lu_BitstreamWrite_SecretBase(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_bool(state, src.gender);
    lu_BitstreamWrite_bool(state, src.battledOwnerToday);
    lu_BitstreamWrite_u8(state, src.registryStatus, 2);
-   lu_BitstreamWrite_string(state, src.trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string_optional_terminator(state, src.trainerName, PLAYER_NAME_LENGTH, 3);
    {
       u16 i;
       for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 

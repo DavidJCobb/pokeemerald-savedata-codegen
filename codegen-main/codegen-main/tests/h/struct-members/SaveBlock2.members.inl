@@ -15,6 +15,7 @@
    u16 regionMapZoom : 1;
    u16 optionsRunningToggle : 1;
    struct Pokedex pokedex;
+   u8 filler_90[8];
    struct Time localTimeOffset;
    struct Time lastBerryTreeUpdate;
    u32 gcnLinkFlags; // Read by Pokemon Colosseum/XD

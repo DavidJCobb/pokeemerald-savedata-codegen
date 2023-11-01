@@ -33,12 +33,16 @@ namespace ast {
          virtual constexpr std::size_t compute_single_element_bitcount() const = 0; // computes the bitcount of a single item, i.e. don't account for array ranks
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const = 0;
+         virtual constexpr size_t _get_alignment_impl() const = 0;
+         virtual constexpr size_t _compute_single_element_unpacked_bytecount() const = 0;
 
       public:
          constexpr const std::string as_c_declaration() const;
          constexpr std::vector<std::string> get_all_used_constants() const;
 
          constexpr size_t compute_total_bitcount() const;
+         constexpr size_t compute_total_unpacked_bytecount() const;
+         constexpr size_t compute_unpacked_alignment() const;
 
       public:
          std::string name;

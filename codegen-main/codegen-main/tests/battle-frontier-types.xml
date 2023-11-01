@@ -68,7 +68,7 @@
                <array-rank extent="EASY_CHAT_BATTLE_WORDS_COUNT" />
             </u16>
             <field name="party" c-type="BattleTowerPokemon" c-type-decl="struct">
-               <array-rank extent="FRONTIER_PARTY_SIZE" />
+               <array-rank extent="MAX_FRONTIER_PARTY_SIZE" />
             </field>
             <u8 name="language" inherit="$game-language" />
             <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->

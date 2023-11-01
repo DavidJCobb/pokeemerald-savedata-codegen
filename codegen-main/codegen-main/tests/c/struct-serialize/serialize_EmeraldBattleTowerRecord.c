@@ -17,8 +17,8 @@
 #if EASY_CHAT_BATTLE_WORDS_COUNT != 6
    #error Constant `EASY_CHAT_BATTLE_WORDS_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
-#if FRONTIER_PARTY_SIZE != 3
-   #error Constant `FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
+#if MAX_FRONTIER_PARTY_SIZE != 4
+   #error Constant `MAX_FRONTIER_PARTY_SIZE` changed in C, but XML not updated or codegen not re-run!
 #endif
 
 void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, const struct EmeraldBattleTowerRecord* src) {
@@ -52,7 +52,7 @@ void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, 
    }
    {
       u16 i;
-      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
+      for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; ++i) { 
             lu_BitstreamRead_BattleTowerPokemon(state, &src.party[i]);
       }
    }
@@ -90,7 +90,7 @@ void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state,
    }
    {
       u16 i;
-      for (i = 0; i < FRONTIER_PARTY_SIZE; ++i) { 
+      for (i = 0; i < MAX_FRONTIER_PARTY_SIZE; ++i) { 
             lu_BitstreamWrite_BattleTowerPokemon(state, &src.party[i]);
       }
    }

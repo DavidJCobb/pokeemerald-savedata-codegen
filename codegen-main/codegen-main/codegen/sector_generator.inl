@@ -6,6 +6,15 @@
 #include "./ast/member_types/_all.h"
 
 namespace codegen {
+   constexpr sector_generator::~sector_generator() {
+      for (auto& sector_items : this->items_by_sector) {
+         for (auto* item : sector_items)
+            delete item;
+         sector_items.clear();
+      }
+      this->items_by_sector.clear();
+   }
+
    constexpr std::vector<serialization_item::item_list> sector_generator::perform_expansions_and_splits(serialization_item::item_list src) const {
       std::vector<serialization_item::item_list> out;
       out.push_back({});
@@ -15,7 +24,7 @@ namespace codegen {
          auto* item = src[i];
 
          auto bitcount = item->bitcount();
-         if (bytespan_of(current_bits + bitcount) < this->sector_max_bytes) {
+         if (bytespan_of(current_bits + bitcount) < max_bytes_per_sector) {
             current_bits += bitcount;
             out.back().push_back(item);
             continue;
@@ -40,20 +49,23 @@ namespace codegen {
       return std::move(out);
    }
 
-   constexpr sector_generator::output sector_generator::generate(const std::vector<const ast::structure*>& structures) const {
-      std::vector<serialization_item::item_list> items_by_sector;
-      {
-         serialization_item::item_list base_list;
-         for (auto* s : structures) {
-            auto item = serialization_item::for_top_level_struct(*s);
-            base_list.push_back(new serialization_item(item));
-         }
-         items_by_sector = std::move(perform_expansions_and_splits(base_list));
+   constexpr void sector_generator::prepare(const std::vector<const ast::structure*>& structures) {
+      this->items_by_sector.clear();
+      this->top_level_structs = structures;
+      
+      serialization_item::item_list base_list;
+      for (auto* s : structures) {
+         auto item = serialization_item::for_top_level_struct(*s);
+         base_list.push_back(new serialization_item(item));
       }
+      this->items_by_sector = std::move(perform_expansions_and_splits(base_list));
+   }
 
+   constexpr sector_generator::output sector_generator::generate() const {
       output out;
+      out.sector_count = items_by_sector.size();
 
-      auto sector_id_to_function_decl = [this, &structures](size_t i, bool is_read) -> std::string {
+      auto sector_id_to_function_decl = [this](size_t i, bool is_read) -> std::string {
          std::string out = "void lu_";
          out += (is_read) ? "Read" : "Write";
          out += "SaveSector_";
@@ -68,12 +80,12 @@ namespace codegen {
          //
          // TODO: Only take args that are actually used within this sector.
          //
-         for (size_t j = 0; j < structures.size(); ++j) {
+         for (size_t j = 0; j < this->top_level_structs.size(); ++j) {
             out += "const ";
-            out += structures[j]->name;
+            out += this->top_level_structs[j]->name;
             out += "* p_";
-            out += structures[j]->name;
-            if (j + 1 < structures.size()) {
+            out += this->top_level_structs[j]->name;
+            if (j + 1 < this->top_level_structs.size()) {
                out += ", ";
             }
          }
@@ -105,6 +117,8 @@ namespace codegen {
          std::string code_write;
 
          for (size_t i = 0; i < items_by_sector.size(); ++i) {
+            auto& item_list = items_by_sector[i];
+
             code_read  += sector_id_to_function_decl(i, true);
             code_write += sector_id_to_function_decl(i, false);
             code_read  += " {\n";
@@ -121,7 +135,7 @@ namespace codegen {
             //
             {  // Forward-declare loop index variables
                size_t deepest_rank = 0;
-               for (const auto& item_ptr : items_by_sector[i]) {
+               for (const auto& item_ptr : item_list) {
                   if (item_ptr->member_definition) {
                      auto& extents = item_ptr->member_definition->array_extents;
 
@@ -170,9 +184,7 @@ namespace codegen {
             }
 
             // Function bodies
-            for (size_t j = 0; j < items_by_sector[i].size(); ++j) {
-               auto& item_list = items_by_sector[i];
-
+            for (size_t j = 0; j < item_list.size(); ++j) {
                const auto& item_ptr = item_list[j];
                std::string computed_accessor = item_ptr->accessor;
 
@@ -186,6 +198,31 @@ namespace codegen {
                   auto& extents = item_ptr->member_definition->array_extents;
 
                   if (indices.size() == extents.size()) {
+                     //
+                     // We previously expanded serialization items if they would've overflowed a sector 
+                     // boundary, so that we could serialize as much of a single item as possible on one 
+                     // side of the boundary, and then serialize the rest of it on the other side of the 
+                     // boundary. However, for array items, that means we can end up in situations like 
+                     // this:
+                     // 
+                     //       // ...
+                     //       lu_BitstreamWrite_u8(&state, array[0], 5);
+                     //       lu_BitstreamWrite_u8(&state, array[1], 5);
+                     //       lu_BitstreamWrite_u8(&state, array[2], 5);
+                     //    }
+                     // 
+                     //    void NextSerializationFunction(...) {
+                     //       // ...
+                     //       lu_BitstreamWrite_u8(&state, array[3], 5);
+                     //       lu_BitstreamWrite_u8(&state, array[4], 5);
+                     //       lu_BitstreamWrite_u8(&state, array[5], 5);
+                     //       // ...
+                     // 
+                     // Upon encountering our hypothetical `array[0]` and `array[3]`, it would be preferable 
+                     // to "swallow" the "next-array-sibling" items after it -- to emit partial loops; in 
+                     // the former case, a loop with range [0, 3); and in the latter case, a loop with range 
+                     // [3, 6). Here, then, we'll see how far we get to swallow.
+                     //
                      for (size_t k = j + 1; k < item_list.size(); ++k) {
                         if (item_list[k - 1]->arg_is_next_array_sibling(*item_list[k])) {
                            coalesce_array_siblings_up_through = k;
@@ -414,6 +451,10 @@ namespace codegen {
                   auto& extents = item_ptr->member_definition->array_extents;
 
                   if (coalesce_array_siblings_up_through > j) {
+                     //
+                     // Close the extra loop generated by swallowing "next-array-sibling" serialization items, 
+                     // above.
+                     //
                      indent = indent.substr(3);
                      common += indent;
                      common += "}\n";
@@ -430,6 +471,11 @@ namespace codegen {
                }
 
                if (coalesce_array_siblings_up_through > j) {
+                  //
+                  // Skip any swallowed "next-array-sibling" items. Note the use of the wording "up through" 
+                  // as opposed to "up to;" this variable indicates the last swallowed item. We set `j` to 
+                  // it, and then the loop we're inside of will increment `j` further and continue past it.
+                  //
                   j = coalesce_array_siblings_up_through;
                }
             }
@@ -461,12 +507,6 @@ namespace codegen {
          }
          out.implementation += code_read;
          out.implementation += code_write;
-      }
-
-      for (auto& list : items_by_sector) {
-         for (auto* item : list)
-            delete item;
-         list.clear();
       }
 
       return out;

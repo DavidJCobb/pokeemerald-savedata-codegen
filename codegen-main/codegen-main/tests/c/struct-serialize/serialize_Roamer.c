@@ -15,12 +15,6 @@ void lu_BitstreamRead_Roamer(struct lu_BitstreamState* state, const struct Roame
    src.smart = lu_BitstreamRead_u8(state, 8);
    src.tough = lu_BitstreamRead_u8(state, 8);
    src.active = lu_BitstreamRead_bool(state, src.active);
-   {
-      u16 i;
-      for (i = 0; i < 8; ++i) { 
-            src.filler[i] = lu_BitstreamRead_u8(state, 8);
-      }
-   }
 }
 void lu_BitstreamWrite_Roamer(struct lu_BitstreamState* state, const struct Roamer* src) {
    lu_BitstreamWrite_u32(state, src.ivs, 32);
@@ -35,10 +29,4 @@ void lu_BitstreamWrite_Roamer(struct lu_BitstreamState* state, const struct Roam
    lu_BitstreamWrite_u8(state, src.smart, 8);
    lu_BitstreamWrite_u8(state, src.tough, 8);
    lu_BitstreamWrite_bool(state, src.active);
-   {
-      u16 i;
-      for (i = 0; i < 8; ++i) { 
-            lu_BitstreamWrite_u8(state, src.filler[i], 8);
-      }
-   }
 }

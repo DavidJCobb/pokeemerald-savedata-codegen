@@ -59,10 +59,33 @@ namespace ast {
       return out;
    }
    constexpr size_t member::compute_total_bitcount() const {
+      if (this->skip_when_serializing)
+         return 0;
       size_t count = this->compute_single_element_bitcount();
       for (const auto& rank : this->array_extents) {
          count *= rank.extent.value;
       }
       return count;
+   }
+   constexpr size_t member::compute_total_unpacked_bytecount() const {
+      size_t single = this->_compute_single_element_unpacked_bytecount();
+      size_t count  = 1;
+      for (const auto& rank : this->array_extents) {
+         count *= rank.extent.value;
+      }
+      size_t bytes = single * count;
+      if (count > 1) {
+         size_t align    = this->compute_unpacked_alignment();
+         size_t misalign = single % align;
+         if (misalign) {
+            bytes += (align - misalign) * (count - 1);
+         }
+      }
+      return bytes;
+   }
+   constexpr size_t member::compute_unpacked_alignment() const {
+      if (this->c_alignment.has_value())
+         return this->c_alignment.value().value;
+      return this->_get_alignment_impl();
    }
 }

@@ -1,6 +1,6 @@
    u32 bestScore;
-   u32 berriesPicked;
-   u32 berriesPickedInRow;
+   u16 berriesPicked;
+   u16 berriesPickedInRow;
    u8 field_8;
    u8 field_9;
    u8 field_A;

@@ -20,8 +20,8 @@
                <line-comment>SEND_TYPE_*</line-comment>
             </u8>
             <u8 name="bgType" />
-            <string name="titleText" char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" />
-            <string name="bodyText"  char-type="u8" length="WONDER_NEWS_TEXT_LENGTH">
+            <string name="titleText" char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"  char-type="u8" length="WONDER_NEWS_TEXT_LENGTH" only-early-terminator="true">
                <array-rank extent="WONDER_NEWS_BODY_TEXT_LINES" />
             </string>
          </fields>
@@ -50,13 +50,13 @@
                <line-comment>SEND_TYPE_*</line-comment>
             </u8>
             <u8 name="maxStamps" />
-            <string name="titleText"    char-type="u8" length="WONDER_CARD_TEXT_LENGTH" />
-            <string name="subtitleText" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" />
-            <string name="bodyText"     char-type="u8" length="WONDER_CARD_TEXT_LENGTH">
+            <string name="titleText"    char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="subtitleText" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="bodyText"     char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true">
                <array-rank extent="WONDER_CARD_BODY_TEXT_LINES" />
             </string>
-            <string name="footerLine1Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" />
-            <string name="footerLine2Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" />
+            <string name="footerLine1Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
+            <string name="footerLine2Text" char-type="u8" length="WONDER_CARD_TEXT_LENGTH" only-early-terminator="true" />
          </fields>
       </struct>
       <struct name="WonderCardMetadata" header="global.h">

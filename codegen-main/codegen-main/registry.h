@@ -32,6 +32,7 @@ class registry : public lu::singleton<registry> {
       struct sector_info {
          std::string function_name_fragment;
          std::vector<std::string> top_level_struct_names;
+         size_t max_sector_count = 0;
       };
 
       struct path_set {
@@ -98,10 +99,10 @@ class registry : public lu::singleton<registry> {
 
       size_t bitcount_of_struct(std::string) const;
 
+      bool generate_all_files(const std::vector<sector_info>& sectors);
+
       void generate_all_struct_body_files();
 
       void generate_whole_struct_serialization_code();
       void generate_sector_code(std::vector<sector_info> sectors);
-
-      const ast::structure* lookup_struct_definition(const std::string&) const;
 };

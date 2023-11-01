@@ -1,8 +1,9 @@
 #pragma once
 #include "./structure.h"
 #include <algorithm>
-#include "./member_types/struct_member.h" // circular dependency? worried about the INL files...
-#include "./member_types/inlined_union_member.h" // circular dependency? worried about the INL files...
+#include "./member_types/inlined_union_member.h"
+#include "./member_types/integral_member.h"
+#include "./member_types/struct_member.h"
 
 namespace ast {
    constexpr const std::string structure::to_string() const {
@@ -78,5 +79,73 @@ namespace ast {
                return true;
       }
       return false;
+   }
+
+   constexpr size_t structure::compute_total_bitcount() const {
+      size_t bitcount = 0;
+      for (const auto& member_ptr : this->members) {
+         bitcount += member_ptr->compute_total_bitcount();
+      }
+      return bitcount;
+   }
+
+   constexpr size_t structure::compute_unpacked_bytecount() const {
+      return this->count_unpacked_bytecounts([](const member*, size_t, size_t, size_t, size_t) {});
+   }
+
+   template<typename Functor>
+   constexpr size_t structure::count_unpacked_bytecounts(Functor&& functor) const {
+      size_t offset        = 0;
+      size_t bitfield_bits = 0;
+      for (const auto& member_ptr : this->members) {
+         size_t this_bitfield = 0;
+         if (auto* casted = dynamic_cast<const integral_member*>(member_ptr.get())) {
+            if (casted->c_bitfield.has_value()) {
+               this_bitfield = casted->c_bitfield.value().value;
+            }
+         }
+         if (this_bitfield) {
+            //
+            // C doesn't support bitfield arrays or array bitfields, so no need to handle array ranks/extents here.
+            //
+            if (bitfield_bits > 8) {
+               offset += (bitfield_bits / 8);
+               bitfield_bits %= 8;
+            }
+            functor(member_ptr.get(), offset, bitfield_bits, 0, this_bitfield);
+            bitfield_bits += this_bitfield;
+            continue;
+         } else {
+            if (bitfield_bits)
+               offset += (bitfield_bits / 8) + ((bitfield_bits % 8) ? 1 : 0);
+            bitfield_bits = 0;
+         }
+
+         if (!this->c_type_info.is_packed) {
+            size_t align    = member_ptr->compute_unpacked_alignment();
+            size_t misalign = offset % align;
+            if (misalign) {
+               offset += (align - misalign);
+            }
+         }
+
+         size_t bytecount = member_ptr->compute_total_unpacked_bytecount();
+         functor(member_ptr.get(), offset, 0, bytecount, 0);
+         offset += bytecount;
+      }
+
+      if (bitfield_bits)
+         offset += (bitfield_bits / 8) + ((bitfield_bits % 8) ? 1 : 0);
+
+      if (!this->c_type_info.is_packed) {
+         size_t padding = offset % 4;
+         if (padding) {
+            offset += 4 - padding;
+         }
+      }
+
+      functor(nullptr, offset, 0, 0, 0);
+
+      return offset;
    }
 }

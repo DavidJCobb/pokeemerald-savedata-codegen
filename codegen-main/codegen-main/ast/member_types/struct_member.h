@@ -21,6 +21,8 @@ namespace ast {
          virtual constexpr std::size_t compute_single_element_bitcount() const override;
       protected:
          virtual constexpr std::vector<std::string> _get_all_used_constants_impl() const override;
+         virtual constexpr size_t _get_alignment_impl() const override;
+         virtual constexpr size_t _compute_single_element_unpacked_bytecount() const override;
 
       public:
          std::string      type_name;

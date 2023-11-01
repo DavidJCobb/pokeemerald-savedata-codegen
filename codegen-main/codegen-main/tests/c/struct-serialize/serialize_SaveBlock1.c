@@ -94,6 +94,9 @@
 #if DECOR_MAX_PLAYERS_HOUSE != 12
    #error Constant `DECOR_MAX_PLAYERS_HOUSE` changed in C, but XML not updated or codegen not re-run!
 #endif
+#if TV_SHOWS_COUNT != 25
+   #error Constant `TV_SHOWS_COUNT` changed in C, but XML not updated or codegen not re-run!
+#endif
 #if POKE_NEWS_COUNT != 16
    #error Constant `POKE_NEWS_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
@@ -210,12 +213,6 @@ void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, const struct S
             src.berryBlenderRecords[i] = lu_BitstreamRead_u16(state, 16);
       }
    }
-   {
-      u16 i;
-      for (i = 0; i < 6; ++i) { 
-            src.unused_9C2[i] = lu_BitstreamRead_u8(state, 8);
-      }
-   }
    src.trainerRematchStepCounter = lu_BitstreamRead_u16(state, 16);
    {
       u16 i;
@@ -325,7 +322,12 @@ void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, const struct S
             src.decorationCushions[i] = lu_BitstreamRead_u8(state, 8);
       }
    }
-   lu_BitstreamRead_buffer(state, &src.tvShows, 36);
+   {
+      u16 i;
+      for (i = 0; i < TV_SHOWS_COUNT; ++i) { 
+            lu_BitstreamRead_buffer(state, &src.tvShows[i], 36);
+      }
+   }
    {
       u16 i;
       for (i = 0; i < POKE_NEWS_COUNT; ++i) { 
@@ -412,12 +414,6 @@ void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, const struct S
    lu_BitstreamRead_MysteryGiftSave(state, &src.mysteryGift);
    {
       u16 i;
-      for (i = 0; i < 0x180; ++i) { 
-            src.unused_3598[i] = lu_BitstreamRead_u8(state, 8);
-      }
-   }
-   {
-      u16 i;
       for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) { 
             src.trainerHillTimes[i] = lu_BitstreamRead_u32(state, 32);
       }
@@ -443,12 +439,6 @@ void lu_BitstreamRead_SaveBlock1(struct lu_BitstreamState* state, const struct S
          for (j = 0; j < 21; ++j) { 
                src.registeredTexts[i][j] = lu_BitstreamRead_u8(state, 8);
          }
-      }
-   }
-   {
-      u16 i;
-      for (i = 0; i < 10; ++i) { 
-            src.unused_3D5A[i] = lu_BitstreamRead_u8(state, 8);
       }
    }
    lu_BitstreamRead_TrainerHillSave(state, &src.trainerHill);
@@ -534,12 +524,6 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
       u16 i;
       for (i = 0; i < 3; ++i) { 
             lu_BitstreamWrite_u16(state, src.berryBlenderRecords[i], 16);
-      }
-   }
-   {
-      u16 i;
-      for (i = 0; i < 6; ++i) { 
-            lu_BitstreamWrite_u8(state, src.unused_9C2[i], 8);
       }
    }
    lu_BitstreamWrite_u16(state, src.trainerRematchStepCounter, 16);
@@ -651,7 +635,12 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
             lu_BitstreamWrite_u8(state, src.decorationCushions[i], 8);
       }
    }
-   lu_BitstreamWrite_buffer(state, &src.tvShows, 36);
+   {
+      u16 i;
+      for (i = 0; i < TV_SHOWS_COUNT; ++i) { 
+            lu_BitstreamWrite_buffer(state, &src.tvShows[i], 36);
+      }
+   }
    {
       u16 i;
       for (i = 0; i < POKE_NEWS_COUNT; ++i) { 
@@ -738,12 +727,6 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_MysteryGiftSave(state, &src.mysteryGift);
    {
       u16 i;
-      for (i = 0; i < 0x180; ++i) { 
-            lu_BitstreamWrite_u8(state, src.unused_3598[i], 8);
-      }
-   }
-   {
-      u16 i;
       for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) { 
             lu_BitstreamWrite_u32(state, src.trainerHillTimes[i], 32);
       }
@@ -769,12 +752,6 @@ void lu_BitstreamWrite_SaveBlock1(struct lu_BitstreamState* state, const struct 
          for (j = 0; j < 21; ++j) { 
                lu_BitstreamWrite_u8(state, src.registeredTexts[i][j], 8);
          }
-      }
-   }
-   {
-      u16 i;
-      for (i = 0; i < 10; ++i) { 
-            lu_BitstreamWrite_u8(state, src.unused_3D5A[i], 8);
       }
    }
    lu_BitstreamWrite_TrainerHillSave(state, &src.trainerHill);

@@ -22,4 +22,7 @@ namespace ast {
       }
       return this->type_def->size_in_bytes * 8;
    }
+   /*virtual*/ constexpr size_t blind_union_member::_compute_single_element_unpacked_bytecount() const /*override*/ {
+      return this->type_def->size_in_bytes;
+   }
 }

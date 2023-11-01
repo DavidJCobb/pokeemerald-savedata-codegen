@@ -29,6 +29,23 @@ namespace ast{
 
       return out;
    }
+   /*virtual*/ constexpr size_t string_member::_get_alignment_impl() const /*override*/ {
+      auto bc = bitcount_of(this->char_type.value());
+      if (bc < 8)
+         return 8;
+      return bc / 8 + ((bc % 8) ? 1 : 0);
+   }
+   /*virtual*/ constexpr size_t string_member::_compute_single_element_unpacked_bytecount() const /*override*/ {
+      auto bc = bitcount_of(this->char_type.value());
+      if (bc < 8)
+         bc = 8;
+
+      size_t buffer = this->max_length.value;
+      if (!this->only_early_terminator)
+         buffer += 1;
+
+      return (bc / 8 + ((bc % 8) ? 1 : 0)) * buffer;
+   }
    /*virtual*/ constexpr std::size_t string_member::compute_single_element_bitcount() const /*override*/ {
       if (std::is_constant_evaluated()) {
          if (!this->char_type.has_value())

@@ -56,6 +56,18 @@ namespace ast {
 
       return out;
    }
+   /*virtual*/ constexpr size_t integral_member::_get_alignment_impl() const /*override*/ {
+      auto bc = bitcount_of(this->value_type.value());
+      if (bc < 8)
+         bc = 8;
+      return bc / 8 + ((bc % 8) ? 1 : 0);
+   }
+   /*virtual*/ constexpr size_t integral_member::_compute_single_element_unpacked_bytecount() const /*override*/ {
+      auto bc = bitcount_of(this->value_type.value());
+      if (bc < 8)
+         bc = 8;
+      return bc / 8 + ((bc % 8) ? 1 : 0);
+   }
    //
    constexpr bool integral_member::is_signed() const {
       return ::ast::is_signed(this->value_type.value());

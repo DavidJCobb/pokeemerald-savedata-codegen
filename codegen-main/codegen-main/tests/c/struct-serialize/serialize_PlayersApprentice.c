@@ -20,7 +20,6 @@ void lu_BitstreamRead_PlayersApprentice(struct lu_BitstreamState* state, const s
    src.leadMonId = lu_BitstreamRead_u8(state, 2);
    src.party = lu_BitstreamRead_u8(state, 3);
    src.saveId = lu_BitstreamRead_u8(state, 2);
-   src.unused = lu_BitstreamRead_u8(state, 8);
    {
       u16 i;
       for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 
@@ -41,7 +40,6 @@ void lu_BitstreamWrite_PlayersApprentice(struct lu_BitstreamState* state, const 
    lu_BitstreamWrite_u8(state, src.leadMonId, 2);
    lu_BitstreamWrite_u8(state, src.party, 3);
    lu_BitstreamWrite_u8(state, src.saveId, 2);
-   lu_BitstreamWrite_u8(state, src.unused, 8);
    {
       u16 i;
       for (i = 0; i < MULTI_PARTY_SIZE; ++i) { 

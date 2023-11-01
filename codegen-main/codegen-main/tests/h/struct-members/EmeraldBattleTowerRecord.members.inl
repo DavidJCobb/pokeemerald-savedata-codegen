@@ -6,6 +6,6 @@
    u16 greeting[EASY_CHAT_BATTLE_WORDS_COUNT];
    u16 speechWon[EASY_CHAT_BATTLE_WORDS_COUNT];
    u16 speechLost[EASY_CHAT_BATTLE_WORDS_COUNT];
-   struct BattleTowerPokemon party[FRONTIER_PARTY_SIZE];
+   struct BattleTowerPokemon party[MAX_FRONTIER_PARTY_SIZE];
    u8 language;
    u32 checksum;

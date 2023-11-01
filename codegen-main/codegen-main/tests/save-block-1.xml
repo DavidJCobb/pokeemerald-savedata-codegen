@@ -330,7 +330,7 @@
             </u8>
             
             <field name="tvShows" c-type="TVShow" c-type-decl="">
-               <arry-rank extent="TV_SHOWS_COUNT" />
+               <array-rank extent="TV_SHOWS_COUNT" />
             </field>
             <field name="pokeNews" c-type="PokeNews" c-type-decl="">
                <array-rank extent="POKE_NEWS_COUNT" />

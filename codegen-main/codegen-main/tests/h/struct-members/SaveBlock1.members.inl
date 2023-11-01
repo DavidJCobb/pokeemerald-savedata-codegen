@@ -44,7 +44,7 @@
    u8 decorationPosters[10];
    u8 decorationDolls[40];
    u8 decorationCushions[10];
-   TVShow tvShows;
+   TVShow tvShows[TV_SHOWS_COUNT];
    PokeNews pokeNews[POKE_NEWS_COUNT];
    u16 outbreakPokemonSpecies;
    u8 outbreakLocationMapNum;

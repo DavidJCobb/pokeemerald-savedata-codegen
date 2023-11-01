@@ -21,7 +21,11 @@
 #include "struct-serialize/serialize_ExternalEventFlags.h"
 #include "struct-serialize/serialize_Roamer.h"
 #include "struct-serialize/serialize_EnigmaBerry.h"
-#include "struct-serialize/serialize_MysteryGiftSave.h"
+#include "struct-serialize/serialize_WonderNews.h"
+#include "struct-serialize/serialize_WonderCard.h"
+#include "struct-serialize/serialize_WonderCardMetadata.h"
+#include "struct-serialize/serialize_WonderNewsMetadata.h"
+#include "struct-serialize/serialize_RamScript.h"
 #include "struct-serialize/serialize_RecordMixingGift.h"
 #include "struct-serialize/serialize_TrainerNameRecord.h"
 #include "struct-serialize/serialize_TrainerHillSave.h"
@@ -81,9 +85,6 @@ void lu_ReadSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < 3; ++i) {
       p_SaveBlock1->berryBlenderRecords[i] = lu_BitstreamRead_u16(&state, 16);
    }
-   for (i = 0; i < 6; ++i) {
-      p_SaveBlock1->unused_9C2[i] = lu_BitstreamRead_u8(&state, 8);
-   }
    p_SaveBlock1->trainerRematchStepCounter = lu_BitstreamRead_u16(&state, 16);
    for (i = 0; i < MAX_REMATCH_ENTRIES; ++i) {
       p_SaveBlock1->trainerRematches[i] = lu_BitstreamRead_u8(&state, 8);
@@ -97,7 +98,7 @@ void lu_ReadSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {
       p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   for (i = 0; i < 7; ++i) {
+   for (i = 0; i < 10; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
 };
@@ -108,7 +109,7 @@ void lu_ReadSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 7; i < 256; ++i) {
+   for (i = 10; i < 256; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -142,16 +143,18 @@ void lu_ReadSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < PARTY_SIZE; ++i) {
       p_SaveBlock1->secretBases[16].party.personality[i] = lu_BitstreamRead_u32(&state, 32);
    }
-   p_SaveBlock1->secretBases[16].party.moves[0] = lu_BitstreamRead_u16(&state, 16) + 0;
+   for (i = 0; i < 4; ++i) {
+      p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
+   }
 };
 
 void lu_ReadSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
-   u16 i;
+   u8 i, j;
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 1; i < 24; ++i) {
+   for (i = 4; i < 24; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -199,7 +202,9 @@ void lu_ReadSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < 10; ++i) {
       p_SaveBlock1->decorationCushions[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   lu_BitstreamRead_buffer(&state, &p_SaveBlock1->tvShows, 36);
+   for (i = 0; i < TV_SHOWS_COUNT; ++i) {
+      lu_BitstreamRead_buffer(&state, &p_SaveBlock1->tvShows[i], 36);
+   }
    for (i = 0; i < POKE_NEWS_COUNT; ++i) {
       lu_BitstreamRead_PokeNews(&state, &p_SaveBlock1->pokeNews[i]);
    }
@@ -250,32 +255,37 @@ void lu_ReadSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    lu_BitstreamRead_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamRead_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamRead_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   lu_BitstreamRead_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
-   for (i = 0; i < 0x180; ++i) {
-      p_SaveBlock1->unused_3598[i] = lu_BitstreamRead_u8(&state, 8);
+   p_SaveBlock1->mysteryGift.newsCrc = lu_BitstreamRead_u32(&state, 32);
+   lu_BitstreamRead_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
+   p_SaveBlock1->mysteryGift.cardCrc = lu_BitstreamRead_u32(&state, 32);
+   lu_BitstreamRead_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
+   p_SaveBlock1->mysteryGift.cardMetadataCrc = lu_BitstreamRead_u32(&state, 32);
+   lu_BitstreamRead_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
+   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
+      p_SaveBlock1->mysteryGift.questionnaireWords[i] = lu_BitstreamRead_u16(&state, 16);
    }
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
-      p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
-   }
-   p_SaveBlock1->ramScript.checksum = lu_BitstreamRead_u32(&state, 32);
-   p_SaveBlock1->ramScript.data.magic = lu_BitstreamRead_u8(&state, 8);
-   p_SaveBlock1->ramScript.data.mapGroup = lu_BitstreamRead_u8(&state, 8);
-   p_SaveBlock1->ramScript.data.mapNum = lu_BitstreamRead_u8(&state, 8);
-   p_SaveBlock1->ramScript.data.objectId = lu_BitstreamRead_u8(&state, 8);
-   for (i = 0; i < 397; ++i) {
-      p_SaveBlock1->ramScript.data.script[i] = lu_BitstreamRead_u8(&state, 8);
+   lu_BitstreamRead_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
+   for (j = 0; j < 2; ++j) {
+      p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
    }
 };
 
 void lu_ReadSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
-   u16 i, j;
+   u8 i, j;
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 397; i < 995; ++i) {
-      p_SaveBlock1->ramScript.data.script[i] = lu_BitstreamRead_u8(&state, 8);
+   for (j = 2; j < 5; ++j) {
+      p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
    }
+   for (j = 0; j < 5; ++j) {
+      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
+   }
+   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+      p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
+   }
+   lu_BitstreamRead_RamScript(&state, &p_SaveBlock1->ramScript);
    lu_BitstreamRead_RecordMixingGift(&state, &p_SaveBlock1->recordMixingGift);
    for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
       p_SaveBlock1->seen2[i] = lu_BitstreamRead_u8(&state, 8);
@@ -288,9 +298,6 @@ void lu_ReadSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
       for (j = 0; j < 21; ++j) {
          p_SaveBlock1->registeredTexts[i][j] = lu_BitstreamRead_u8(&state, 8);
       }
-   }
-   for (i = 0; i < 10; ++i) {
-      p_SaveBlock1->unused_3D5A[i] = lu_BitstreamRead_u8(&state, 8);
    }
    lu_BitstreamRead_TrainerHillSave(&state, &p_SaveBlock1->trainerHill);
    lu_BitstreamRead_WaldaPhrase(&state, &p_SaveBlock1->waldaPhrase);
@@ -350,9 +357,6 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < 3; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->berryBlenderRecords[i], 16);
    }
-   for (i = 0; i < 6; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->unused_9C2[i], 8);
-   }
    lu_BitstreamWrite_u16(&state, p_SaveBlock1->trainerRematchStepCounter, 16);
    for (i = 0; i < MAX_REMATCH_ENTRIES; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->trainerRematches[i], 8);
@@ -366,7 +370,7 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->flags[i], 8);
    }
-   for (i = 0; i < 7; ++i) {
+   for (i = 0; i < 10; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
 };
@@ -377,7 +381,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 7; i < 256; ++i) {
+   for (i = 10; i < 256; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -411,16 +415,18 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < PARTY_SIZE; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->secretBases[16].party.personality[i], 32);
    }
-   lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[0] - 0, 16);
+   for (i = 0; i < 4; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i] - 0, 16);
+   }
 };
 
 void lu_WriteSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
-   u16 i;
+   u8 i, j;
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 1; i < 24; ++i) {
+   for (i = 4; i < 24; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i] - 0, 16);
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -468,7 +474,9 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < 10; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->decorationCushions[i], 8);
    }
-   lu_BitstreamWrite_buffer(&state, &p_SaveBlock1->tvShows, 36);
+   for (i = 0; i < TV_SHOWS_COUNT; ++i) {
+      lu_BitstreamWrite_buffer(&state, &p_SaveBlock1->tvShows[i], 36);
+   }
    for (i = 0; i < POKE_NEWS_COUNT; ++i) {
       lu_BitstreamWrite_PokeNews(&state, &p_SaveBlock1->pokeNews[i]);
    }
@@ -519,32 +527,37 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    lu_BitstreamWrite_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamWrite_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamWrite_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   lu_BitstreamWrite_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
-   for (i = 0; i < 0x180; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->unused_3598[i], 8);
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.newsCrc, 32);
+   lu_BitstreamWrite_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardCrc, 32);
+   lu_BitstreamWrite_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardMetadataCrc, 32);
+   lu_BitstreamWrite_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
+   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
+      lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.questionnaireWords[i], 16);
    }
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
-   }
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->ramScript.checksum, 32);
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.magic, 8);
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.mapGroup, 8);
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.mapNum, 8);
-   lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.objectId, 8);
-   for (i = 0; i < 397; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.script[i], 8);
+   lu_BitstreamWrite_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
+   for (j = 0; j < 2; ++j) {
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
    }
 };
 
 void lu_WriteSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
-   u16 i, j;
+   u8 i, j;
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 397; i < 995; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->ramScript.data.script[i], 8);
+   for (j = 2; j < 5; ++j) {
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
    }
+   for (j = 0; j < 5; ++j) {
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
+   }
+   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
+   }
+   lu_BitstreamWrite_RamScript(&state, &p_SaveBlock1->ramScript);
    lu_BitstreamWrite_RecordMixingGift(&state, &p_SaveBlock1->recordMixingGift);
    for (i = 0; i < NUM_DEX_FLAG_BYTES; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->seen2[i], 8);
@@ -557,9 +570,6 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
       for (j = 0; j < 21; ++j) {
          lu_BitstreamWrite_u8(&state, p_SaveBlock1->registeredTexts[i][j], 8);
       }
-   }
-   for (i = 0; i < 10; ++i) {
-      lu_BitstreamWrite_u8(&state, p_SaveBlock1->unused_3D5A[i], 8);
    }
    lu_BitstreamWrite_TrainerHillSave(&state, &p_SaveBlock1->trainerHill);
    lu_BitstreamWrite_WaldaPhrase(&state, &p_SaveBlock1->waldaPhrase);

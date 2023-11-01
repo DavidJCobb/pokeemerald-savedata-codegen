@@ -22,6 +22,14 @@ namespace ast {
          constexpr std::vector<std::string> get_all_direct_constant_dependencies() const;
          constexpr std::vector<std::string> get_all_direct_struct_dependencies() const;
          constexpr bool has_any_string_members() const;
+
+         constexpr size_t compute_total_bitcount() const;
+
+         constexpr size_t compute_unpacked_bytecount() const;
+
+         // void functor(const ast::member*, size_t offset_bytes, size_t offset_bits, size_t bytecount, size_t bitfield_size);
+         template<typename Functor>
+         constexpr size_t count_unpacked_bytecounts(Functor&&) const;
    };
 }
 

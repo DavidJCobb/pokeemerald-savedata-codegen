@@ -35,10 +35,10 @@
             <u32 name="totalEarnedPokeCoupons" c-bitfield="24">
                <line-comment>Used by the JP Colosseum bonus disc. Determines PokéCoupon rank to distribute rewards. Unread in International games. Colosseum/XD caps this at 9,999,999.</line-comment>
             </u32>
-            <u32 name="unknownExternalDataFields4">
+            <u8 name="unknownExternalDataFields4">
                <line-comment>if actually used, may be broken up into different fields.</line-comment>
                <array-rank extent="5" />
-            </u32>
+            </u8>
          </fields>
       </struct>
    

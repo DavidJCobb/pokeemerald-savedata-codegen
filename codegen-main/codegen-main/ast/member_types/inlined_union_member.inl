@@ -26,6 +26,9 @@ namespace ast {
 
       return out;
    }
+   /*virtual*/ constexpr size_t inlined_union_member::_compute_single_element_unpacked_bytecount() const /*override*/ {
+      return this->get_member_to_serialize().compute_total_unpacked_bytecount();
+   }
    /*virtual*/ constexpr std::size_t inlined_union_member::compute_single_element_bitcount() const /*override*/ {
       return this->get_member_to_serialize().compute_single_element_bitcount();
    }

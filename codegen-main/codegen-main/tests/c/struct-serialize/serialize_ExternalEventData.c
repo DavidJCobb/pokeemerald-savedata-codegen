@@ -20,7 +20,7 @@ void lu_BitstreamRead_ExternalEventData(struct lu_BitstreamState* state, const s
    {
       u16 i;
       for (i = 0; i < 5; ++i) { 
-            src.unknownExternalDataFields4[i] = lu_BitstreamRead_u32(state, 32);
+            src.unknownExternalDataFields4[i] = lu_BitstreamRead_u8(state, 8);
       }
    }
 }
@@ -42,7 +42,7 @@ void lu_BitstreamWrite_ExternalEventData(struct lu_BitstreamState* state, const 
    {
       u16 i;
       for (i = 0; i < 5; ++i) { 
-            lu_BitstreamWrite_u32(state, src.unknownExternalDataFields4[i], 32);
+            lu_BitstreamWrite_u8(state, src.unknownExternalDataFields4[i], 8);
       }
    }
 }

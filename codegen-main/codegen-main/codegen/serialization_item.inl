@@ -8,16 +8,7 @@ namespace codegen {
    
    constexpr size_t serialization_item::bitcount() const {
       if (!this->member_definition) {
-         size_t count = 0;
-         for (const auto& member_ptr : this->struct_definition->members) {
-            const auto* member = member_ptr.get();
-            while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
-               member = &(casted->get_member_to_serialize());
-            }
-
-            count += member->compute_total_bitcount();
-         }
-         return count;
+         return this->struct_definition->compute_total_bitcount();
       }
 
       auto&  extents = this->member_definition->array_extents;
@@ -62,6 +53,8 @@ namespace codegen {
       for (const auto& member_ptr : my_type->members) {
          std::string member_accessor = this->accessor;
          const auto* member          = member_ptr.get();
+         if (member->skip_when_serializing)
+            continue;
          {
             bool is_top_level = (this->member_definition == nullptr);
             bool is_outermost = true;

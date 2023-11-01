@@ -77,7 +77,7 @@
             <u8 name="playerId">
                <array-rank extent="TRAINER_ID_LENGTH" />
             </u8>
-            <field name="playerName" inherit="$player-name" />
+            <field name="playerName" inherit="$player-name" only-early-terminator="true" />
             <u8 name="language" inherit="$game-language" />
             <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
          </fields>
@@ -96,8 +96,8 @@
       <struct name="BerryPickingResults" header="global.h">
          <fields>
             <u32 name="bestScore" />
-            <u32 name="berriesPicked" />
-            <u32 name="berriesPickedInRow" />
+            <u16 name="berriesPicked" />
+            <u16 name="berriesPickedInRow" />
             <u8 name="field_8" />
             <u8 name="field_9" />
             <u8 name="field_A" />
@@ -209,6 +209,10 @@
             <u16 name="optionsRunningToggle" c-bitfield="1" />
             
             <field name="pokedex" c-type="Pokedex" c-type-decl="struct" />
+            
+            <u8 name="filler_90" do-not-serialize="true">
+               <array-rank extent="8" />
+            </u8>
             
             <field name="localTimeOffset" c-type="Time" c-type-decl="struct" />
             <field name="lastBerryTreeUpdate" c-type="Time" c-type-decl="struct" />

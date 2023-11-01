@@ -416,6 +416,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       // attributes for strings
       std::string char_type;
       std::optional<ast::size_constant> length;
+      std::optional<bool> only_early_terminator;
 
       // attributes for inlined unions (we handle them in the special-case above, but 
       // we should still grab their attributes for more robust user warnings).
@@ -534,6 +535,16 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
             scaffold.error("Field: `length` attribute value is an unrecognized constant or otherwise not a valid unsigned integral (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
          }
          attributes.length = constant.value();
+         return;
+      }
+      if (attr_name == "only-early-terminator") {
+         if (attr_value == "true") {
+            attributes.only_early_terminator = true;
+         } else if (attr_value == "false") {
+            attributes.only_early_terminator = false;
+         } else {
+            scaffold.warn("Field: Unrecognized attribute value for `only-early-terminator` (seen: "s + std::string(attr_value) + "); ignoring...", attr); // can't wait for P2591...
+         }
          return;
       }
 
@@ -707,6 +718,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for integral fields).", node);
       if (!attributes.member_to_serialize.empty())
          scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for integral fields).", node);
+      if (attributes.only_early_terminator.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: only-early-terminator) (attribute is not valid for integral fields).", node);
 
       if (inherit_from && inherit_from->is_integral()) {
          if (!casted->value_type.has_value()) {
@@ -739,6 +752,9 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
             scaffold.warn("Field: The string max length cannot be zero.", node);
          }
          casted->max_length = v;
+      }
+      if (attributes.only_early_terminator.has_value()) {
+         casted->only_early_terminator = attributes.only_early_terminator.value();
       }
 
       if (!attributes.c_type.empty())
@@ -791,6 +807,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for struct fields).", node);
       if (!attributes.member_to_serialize.empty())
          scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for struct fields).", node);
+      if (attributes.only_early_terminator.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: only-early-terminator) (attribute is not valid for struct fields).", node);
 
       if (casted->type_name.empty()) {
          scaffold.error("Field: field seems to be a named struct/union, but no name was found.", node);
@@ -830,6 +848,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.warn("Field: Unrecognized attribute (name: length) (attribute is not valid for union fields).", node);
       if (!attributes.member_to_serialize.empty())
          scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for union fields).", node);
+      if (attributes.only_early_terminator.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: only-early-terminator) (attribute is not valid for union fields).", node);
 
       if (casted->type_name.empty()) {
          scaffold.error("Field: field seems to be a named union, but no name was found.", node);
@@ -860,6 +880,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.warn("Field: Unrecognized attribute (name: is-checksum) (attribute is not valid for pointer fields).", node);
       if (!attributes.member_to_serialize.empty())
          scaffold.warn("Field: Unrecognized attribute (name: member-to-serialize) (attribute is not valid for pointer fields).", node);
+      if (attributes.only_early_terminator.has_value())
+         scaffold.warn("Field: Unrecognized attribute (name: only-early-terminator) (attribute is not valid for pointer fields).", node);
 
       if (!casted->pointed_to_type.has_value()) {
          scaffold.error("Field: Unable to identify pointed-to value type (specify it via `c-type` or in a heritable).", node);
@@ -874,8 +896,17 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       scaffold.error("Field defined with an empty or missing name", node);
    }
 
-   lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field](std::string_view tagname, xml_node<>& node) {
+   bool is_bitfield = false;
+   if (auto* casted = dynamic_cast<const ast::integral_member*>(field.get())) {
+      if (casted->c_bitfield.has_value())
+         is_bitfield = true;
+   }
+
+   lu::rapidxml_helpers::for_each_child_element(node, [this, &scaffold, &field, is_bitfield](std::string_view tagname, xml_node<>& node) {
       if (tagname == "array-rank") {
+         if (is_bitfield) {
+            scaffold.error("Field: C does not support bitfield arrays or array bitfields.", node);
+         }
          ast::member::array_rank rank;
 
          lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &rank](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
@@ -970,6 +1001,14 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
             structure->name = attr_value;
          } else if (attr_name == "header") {
             structure->header = attr_value;
+         } else if (attr_name == "is-packed") {
+            if (attr_value == "true") {
+               structure->c_type_info.is_packed = true;
+            } else if (attr_value == "false") {
+               structure->c_type_info.is_packed = false;
+            } else {
+               scaffold.warn("Unrecognized value for `is-packed` attribute (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+            }
          } else {
             scaffold.warn("Unrecognized attribute (name "s + std::string(attr_name) + ")", attr); // can't wait for P2591...
          }
@@ -1107,6 +1146,321 @@ size_t registry::bitcount_of_struct(std::string name) const {
    return bitcount;
 }
 
+bool registry::generate_all_files(const std::vector<sector_info>& sector_groups) {
+   bool failed = false;
+
+   struct {
+      std::string overall_stats;
+      std::string struct_table;
+      std::vector<std::string> by_sector;
+   } report;
+   report.by_sector.resize(sector_groups.size());
+
+   // Generate report tables for overall stats and struct stats
+   {
+      std::unordered_map<const ast::structure*, size_t> all_structures;
+      for (auto& info : sector_groups)
+         for (auto& name : info.top_level_struct_names)
+            all_structures[this->structs.at(name).get()]++;
+
+      size_t sector_count = 0;
+      for (auto& info : sector_groups)
+         sector_count += info.max_sector_count;
+
+      size_t total_bytes_in_ram = 0;
+      size_t total_packed_bits  = 0;
+
+      report.struct_table += '\n';
+      report.struct_table += "| Name | Bytes in RAM (single) | Packed bitcount (single) | Count | Total bytes | Total packed bits |\n";
+      report.struct_table += "| - | -: | -: | -: | -: | -: |\n";
+      for (const auto& pair : all_structures) {
+         auto*  s     = pair.first;
+         size_t count = pair.second;
+
+         size_t bytes_in_ram = s->compute_unpacked_bytecount();
+         size_t packed_bits  = s->compute_total_bitcount();
+
+         report.struct_table += "| ";
+         report.struct_table += s->name;
+         report.struct_table += " | ";
+         report.struct_table += lu::strings::from_integer(bytes_in_ram);
+         report.struct_table += " | ";
+         report.struct_table += lu::strings::from_integer(packed_bits);
+         report.struct_table += " |";
+         report.struct_table += lu::strings::from_integer(count);
+         report.struct_table += " | ";
+         report.struct_table += lu::strings::from_integer(count * bytes_in_ram);
+         report.struct_table += " | ";
+         report.struct_table += lu::strings::from_integer(count * packed_bits);
+         report.struct_table += " |";
+         report.struct_table += '\n';
+
+         total_bytes_in_ram += bytes_in_ram * count;
+         total_packed_bits  += packed_bits  * count;
+      }
+
+      report.overall_stats += lu::strings::from_integer(total_bytes_in_ram);
+      report.overall_stats += " bytes in RAM / ";
+      report.overall_stats += lu::strings::from_integer(codegen::sector_generator::max_bytes_per_sector * sector_count);
+      report.overall_stats += " bytes available across ";
+      report.overall_stats += lu::strings::from_integer(sector_count);
+      report.overall_stats += " sectors (";
+      {
+         float perc = (float)total_bytes_in_ram / (float)(codegen::sector_generator::max_bytes_per_sector * sector_count);
+         report.overall_stats += lu::strings::from_integer((int)(perc * 100.0));
+      }
+      report.overall_stats += "% space usage)  \n";
+
+      report.overall_stats += lu::strings::from_integer(total_packed_bits);
+      report.overall_stats += " packed bits = ";
+      {
+         size_t bytespan = (total_packed_bits / 8) + ((total_packed_bits % 8) ? 1 : 0);
+         report.overall_stats += lu::strings::from_integer(bytespan);
+         report.overall_stats += " packed bytes (";
+         {
+            float perc = (float)bytespan / (float)(codegen::sector_generator::max_bytes_per_sector * sector_count);
+            report.overall_stats += lu::strings::from_integer((int)(perc * 100.0));
+         }
+      }
+      report.overall_stats += "% space usage)  \n";
+
+      #if _DEBUG
+      report.overall_stats += "### Debug output: struct RAM sizes\n";
+
+      auto _print_struct = [&report](const ast::structure* s) {
+         report.overall_stats += "#### ";
+         report.overall_stats += s->name;
+         report.overall_stats += '\n';
+         report.overall_stats += '\n'; // blank line needed before table
+         report.overall_stats += "| Member | Offset | Size |\n";
+         report.overall_stats += "| - | - |\n";
+
+         s->count_unpacked_bytecounts([&report](ast::member* member, size_t offset_bytes, size_t offset_bits, size_t bytecount, size_t bitfield_size) {
+            if (!member) {
+               report.overall_stats += "| -end- | ";
+               report.overall_stats += lu::strings::from_integer(offset_bytes);
+               report.overall_stats += " | |\n\n";
+               return;
+            }
+
+            report.overall_stats += "| ";
+            report.overall_stats += member->name;
+            report.overall_stats += " | ";
+            if (bitfield_size) {
+               report.overall_stats += lu::strings::from_integer(offset_bytes);
+               report.overall_stats += " + ";
+               report.overall_stats += lu::strings::from_integer(offset_bits);
+               report.overall_stats += " bits | ";
+               report.overall_stats += lu::strings::from_integer(bitfield_size);
+               report.overall_stats += " bits |\n";
+               return;
+            }
+            report.overall_stats += lu::strings::from_integer(offset_bytes);
+            report.overall_stats += " | ";
+            report.overall_stats += lu::strings::from_integer(bytecount);
+            report.overall_stats += " |\n";
+         });
+      };
+
+      for (const auto& pair : all_structures) {
+         auto* s = pair.first;
+         _print_struct(s);
+      }
+      _print_struct(this->structs["Roamer"].get());
+      #endif
+   }
+
+   std::vector<codegen::sector_generator> generators;
+   generators.resize(sector_groups.size());
+   for (size_t i = 0; i < sector_groups.size(); ++i) {
+      auto& info = sector_groups[i];
+      auto& gen  = generators[i];
+
+      gen.function_name_fragment               = info.function_name_fragment;
+      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.string().c_str();
+      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.string().c_str();
+      
+      std::vector<const ast::structure*> structures;
+      for (auto& name : info.top_level_struct_names) {
+         structures.push_back(this->structs.at(name).get());
+      }
+      gen.prepare(structures);
+
+      auto& sector_report = report.by_sector[i];
+      sector_report = "## Sector group: " + info.function_name_fragment + "\n";
+
+      bool this_sector_group_failed = gen.items_by_sector.size() > info.max_sector_count;
+
+      if (this_sector_group_failed) {
+         failed = true;
+         sector_report += "**Status:** Failed; overflowed max sector count, which was ";
+         sector_report += lu::strings::from_integer(info.max_sector_count);
+         sector_report += ".\n\n";
+      } else {
+         sector_report += "**Status:** Successfully packed into ";
+         sector_report += lu::strings::from_integer(info.max_sector_count);
+         sector_report += " sectors.\n\n";
+      }
+
+      sector_report += '\n';
+      sector_report += "| Sector # | Bits used | Bits available | % |\n";
+      sector_report += "| - | -: | -: |\n";
+      //
+      size_t total_packed_bits = 0;
+      for (size_t i = 0; i < gen.items_by_sector.size(); ++i) {
+         const auto& sector_items = gen.items_by_sector[i];
+
+         size_t bits_per_sector = 0;
+         for (const auto* item : sector_items) {
+            bits_per_sector += item->bitcount();
+         }
+         total_packed_bits += bits_per_sector;
+
+         sector_report += "| ";
+         sector_report += lu::strings::from_integer(i);
+         sector_report += " | ";
+         sector_report += lu::strings::from_integer(bits_per_sector);
+         sector_report += " | ";
+         {
+            size_t available = codegen::sector_generator::max_bytes_per_sector * 8;
+            sector_report += lu::strings::from_integer(available);
+            sector_report += " | ";
+            {
+               auto perc = (float)bits_per_sector / (float)available;
+               sector_report += lu::strings::from_integer((int)(perc * 100.0));
+               sector_report += '%';
+            }
+         }
+         sector_report += " |\n";
+      }
+      sector_report += "| Total | ";
+      sector_report += lu::strings::from_integer(total_packed_bits);
+      sector_report += " | ";
+      {
+         auto total_available = codegen::sector_generator::max_bytes_per_sector * 8 * gen.items_by_sector.size();
+         sector_report += lu::strings::from_integer(total_available);
+         sector_report += " | ";
+         {
+            auto perc = (float)total_packed_bits / (float)total_available;
+            sector_report += lu::strings::from_integer((int)(perc * 100.0));
+            sector_report += '%';
+         }
+      }
+      sector_report += " |\n\n";
+
+      sector_report += "### Member info\n";
+
+      auto serialization_item_to_field_name = [](const codegen::serialization_item& item) {
+         std::string out = item.accessor;
+         if (auto* member = item.member_definition) {
+            auto& indices = item.array_indices;
+            auto& extents = member->array_extents;
+            //
+            for (auto index : indices) {
+               out += '[';
+               out += lu::strings::from_integer(index);
+               out += ']';
+            }
+            for (size_t i = indices.size(); i < extents.size(); ++i) {
+               out += "[*]";
+            }
+         }
+         return out;
+      };
+
+      for (size_t i = 0; i < gen.items_by_sector.size(); ++i) {
+         const auto& sector_items = gen.items_by_sector[i];
+
+         sector_report += "* Last field serialized to sector ";
+         sector_report += lu::strings::from_integer(i);
+         sector_report += ": ";
+         if (sector_items.empty()) {
+            sector_report += "<none>";
+         } else {
+            auto* item = sector_items.back();
+            sector_report += '`';
+            sector_report += serialization_item_to_field_name(*item);
+            sector_report += '`';
+         }
+         sector_report += "\n";
+      }
+
+      if (this_sector_group_failed) {
+         sector_report += "\n";
+         for (size_t i = 0; i < gen.items_by_sector.size(); ++i) {
+            sector_report += "#### All fields in sector ";
+            sector_report += lu::strings::from_integer(i);
+            sector_report += "\n";
+            for (auto* item : gen.items_by_sector[i]) {
+               sector_report += "* `";
+               sector_report += serialization_item_to_field_name(*item);
+               sector_report += "`\n";
+            }
+            sector_report += '\n';
+         }
+      }
+   }
+
+   if (failed) {
+      auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
+
+      std::ofstream stream(out_folder / "last-failure.md");
+      assert(!!stream);
+      stream << "# Last failed codegen\n";
+      stream << "This report describes the last failed attempt at code generation.\n\n"; // TODO: include date
+      stream << "## Overall stats\n";
+      stream << report.overall_stats;
+      stream << "\n\n";
+      stream << "## Struct stats";
+      stream << report.struct_table;
+      stream << "\n\n";
+      for (const auto& s : report.by_sector)
+         stream << s;
+   } else {
+      {  // Save report
+         auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
+
+         std::ofstream stream(out_folder / "README.md");
+         assert(!!stream);
+         stream << "# Last failed codegen\n";
+         stream << "This report describes the last failed attempt at code generation.\n\n"; // TODO: include date
+         stream << "## Overall stats\n";
+         stream << report.overall_stats;
+         stream << "\n\n";
+         stream << "## Struct stats";
+         stream << report.struct_table;
+         stream << "\n\n";
+         for (const auto& s : report.by_sector)
+            stream << s;
+      }
+      this->generate_all_struct_body_files();
+      this->generate_whole_struct_serialization_code();
+      {
+         auto out_folder_h = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
+         auto out_folder_c = this->paths.output_paths.c / this->paths.output_paths.sector_serialize;
+         for (size_t i = 0; i < sector_groups.size(); ++i) {
+            auto& info = sector_groups[i];
+            auto& gen  = generators[i];
+
+            auto output = gen.generate();
+
+            {
+               std::ofstream stream(out_folder_h / std::filesystem::path(info.function_name_fragment + ".h"));
+               assert(!!stream);
+               stream << output.header;
+            }
+            {
+               std::ofstream stream(out_folder_c / std::filesystem::path(info.function_name_fragment + ".c"));
+               assert(!!stream);
+               stream << output.implementation;
+            }
+         }
+      }
+   }
+
+   return !failed;
+}
+
 void registry::generate_all_struct_body_files() {
    auto base_path = this->paths.output_paths.h / this->paths.output_paths.struct_members;
    for (auto& pair : this->structs) {
@@ -1177,6 +1531,8 @@ void registry::generate_whole_struct_serialization_code() {
          {
             stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState* state, const struct " << pair.first << "* src) {\n";
             for (const auto& m : pair.second->members) {
+               if (m->skip_when_serializing)
+                  continue;
                std::string member_access = m->name;
 
                const ast::member* member = m.get();
@@ -1221,7 +1577,12 @@ void registry::generate_whole_struct_serialization_code() {
                   }
                   stream << ";\n";
                   for (size_t i = 0; i < rank; ++i) {
-                     char var = ('i' + i);
+                     std::string var;
+                     if (array_indices_are_numbered) {
+                        var = "index_" + lu::strings::from_integer(i);
+                     } else {
+                        var +=(char)(first_array_index_name + (char)i);
+                     }
                      stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].as_c_expression() << "; ++" << var << ") { \n";
                      indent += "   ";
                   }
@@ -1236,7 +1597,11 @@ void registry::generate_whole_struct_serialization_code() {
                } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
                   assert(casted->max_length.value > 0);
 
-                  stream << indent << "   lu_BitstreamRead_string(";
+                  stream << indent << "   lu_BitstreamRead_string";
+                  if (casted->only_early_terminator) {
+                     stream << "_optional_terminator";
+                  }
+                  stream << '(';
                   stream << "state";
                   stream << ", ";
                   stream << "src." << member_access;
@@ -1306,6 +1671,8 @@ void registry::generate_whole_struct_serialization_code() {
          #pragma region Generate: BitstreamWrite_StructName
          stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState* state, const struct " << pair.first << "* src) {\n";
          for (const auto& m : pair.second->members) {
+            if (m->skip_when_serializing)
+               continue;
             std::string member_access = m->name;
 
             const ast::member* member = m.get();
@@ -1350,7 +1717,12 @@ void registry::generate_whole_struct_serialization_code() {
                }
                stream << ";\n";
                for (size_t i = 0; i < rank; ++i) {
-                  char var = ('i' + i);
+                  std::string var;
+                  if (array_indices_are_numbered) {
+                     var = "index_" + lu::strings::from_integer(i);
+                  } else {
+                     var += (char)(first_array_index_name + (char)i);
+                  }
                   stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].as_c_expression() << "; ++" << var << ") { \n";
                   indent += "   ";
                }
@@ -1365,7 +1737,11 @@ void registry::generate_whole_struct_serialization_code() {
             } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
                assert(casted->max_length.value > 0);
 
-               stream << indent << "   lu_BitstreamWrite_string(";
+               stream << indent << "   lu_BitstreamWrite_string";
+               if (casted->only_early_terminator) {
+                  stream << "_optional_terminator";
+               }
+               stream << '(';
                stream << "state";
                stream << ", ";
                stream << "src." << member_access;
@@ -1439,7 +1815,8 @@ void registry::generate_sector_code(std::vector<sector_info> sectors) {
       for (auto& name : info.top_level_struct_names) {
          structures.push_back(this->structs.at(name).get());
       }
-      auto output = gen.generate(structures);
+      gen.prepare(structures);
+      auto output = gen.generate();
 
       {
          std::ofstream stream(out_folder_h / std::filesystem::path(info.function_name_fragment + ".h"));
@@ -1451,11 +1828,15 @@ void registry::generate_sector_code(std::vector<sector_info> sectors) {
          assert(!!stream);
          stream << output.implementation;
       }
-   }
-}
 
-const ast::structure* registry::lookup_struct_definition(const std::string& name) const {
-   if (this->structs.contains(name))
-      return this->structs.at(name).get();
-   return nullptr;
+      if (output.sector_count > info.max_sector_count) {
+         throw std::runtime_error(
+            "Exceeded sector count for sector group "s
+            + info.function_name_fragment
+            + "; number of sectors is "s
+            + lu::strings::from_integer(output.sector_count)
+            + ". Code files saved anyway, for you to review output."
+         );
+      }
+   }
 }
