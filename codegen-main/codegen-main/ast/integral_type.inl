@@ -1,5 +1,6 @@
 #pragma once
 #include "./integral_type.h"
+#include <utility>
 
 namespace ast {
    constexpr std::size_t bitcount_of(integral_type t) {
@@ -17,6 +18,7 @@ namespace ast {
          case integral_type::_int:
             return 32;
       }
+      std::unreachable();
    }
    constexpr std::intmax_t minimum_of(integral_type v) {
       switch (v) {

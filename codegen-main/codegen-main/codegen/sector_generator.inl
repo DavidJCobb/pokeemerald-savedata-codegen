@@ -46,7 +46,7 @@ namespace codegen {
          --i;
       }
 
-      return std::move(out);
+      return out;
    }
 
    constexpr void sector_generator::prepare(const std::vector<const ast::structure*>& structures) {
@@ -348,15 +348,23 @@ namespace codegen {
                   
                   code_read  += indent;
                   code_write += indent;
-                  code_read  += "lu_BitstreamRead_string(&state, ";
-                  code_write += "lu_BitstreamWrite_string(&state, ";
+                  code_read  += "lu_BitstreamRead_string";
+                  code_write += "lu_BitstreamWrite_string";
+                  if (casted->only_early_terminator) {
+                     code_read  += "_optional_terminator";
+                     code_write += "_optional_terminator";
+                  }
+                  code_read  += "(&state, ";
+                  code_write += "(&state, ";
                   {
                      std::string common;
                      common += computed_accessor;
                      common += ", ";
                      common += casted->max_length.as_c_expression();
-                     common += ", ";
-                     common += lu::strings::from_integer(std::bit_width(casted->max_length.value));
+                     if (!casted->only_early_terminator) {
+                        common += ", ";
+                        common += lu::strings::from_integer(std::bit_width(casted->max_length.value));
+                     }
                      common += ");\n";
 
                      code_read  += common;

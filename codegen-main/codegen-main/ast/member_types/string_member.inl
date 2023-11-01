@@ -51,6 +51,6 @@ namespace ast{
          if (!this->char_type.has_value())
             throw;
       }
-      return ast::bitcount_of(this->char_type.value()) * this->max_length.value + std::bit_width(this->max_length.value);
+      return ast::bitcount_of(this->char_type.value()) * this->max_length.value + (this->only_early_terminator ? 0 : std::bit_width(this->max_length.value));
    }
 }

@@ -18,13 +18,13 @@
 void lu_BitstreamRead_BoxPokemon(struct lu_BitstreamState* state, const struct BoxPokemon* src) {
    src.personality = lu_BitstreamRead_u32(state, 32);
    src.otId = lu_BitstreamRead_u32(state, 32);
-   lu_BitstreamRead_string_optional_terminator(state, src.nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamRead_string_optional_terminator(state, src.nickname, POKEMON_NAME_LENGTH);
    src.language = lu_BitstreamRead_u8(state, 3);
    src.isBadEgg = lu_BitstreamRead_bool(state, src.isBadEgg);
    src.hasSpecies = lu_BitstreamRead_bool(state, src.hasSpecies);
    src.isEgg = lu_BitstreamRead_bool(state, src.isEgg);
    src.unused = lu_BitstreamRead_u8(state, 5);
-   lu_BitstreamRead_string_optional_terminator(state, src.otName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string_optional_terminator(state, src.otName, PLAYER_NAME_LENGTH);
    src.markings = lu_BitstreamRead_u8(state, 8);
    src.checksum = lu_BitstreamRead_u16(state, 16);
    src.unknown = lu_BitstreamRead_u16(state, 16);
@@ -38,13 +38,13 @@ void lu_BitstreamRead_BoxPokemon(struct lu_BitstreamState* state, const struct B
 void lu_BitstreamWrite_BoxPokemon(struct lu_BitstreamState* state, const struct BoxPokemon* src) {
    lu_BitstreamWrite_u32(state, src.personality, 32);
    lu_BitstreamWrite_u32(state, src.otId, 32);
-   lu_BitstreamWrite_string_optional_terminator(state, src.nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamWrite_string_optional_terminator(state, src.nickname, POKEMON_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, src.language, 3);
    lu_BitstreamWrite_bool(state, src.isBadEgg);
    lu_BitstreamWrite_bool(state, src.hasSpecies);
    lu_BitstreamWrite_bool(state, src.isEgg);
    lu_BitstreamWrite_u8(state, src.unused, 5);
-   lu_BitstreamWrite_string_optional_terminator(state, src.otName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string_optional_terminator(state, src.otName, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, src.markings, 8);
    lu_BitstreamWrite_u16(state, src.checksum, 16);
    lu_BitstreamWrite_u16(state, src.unknown, 16);

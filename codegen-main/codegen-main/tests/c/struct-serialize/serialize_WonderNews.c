@@ -16,11 +16,11 @@ void lu_BitstreamRead_WonderNews(struct lu_BitstreamState* state, const struct W
    src.id = lu_BitstreamRead_u16(state, 16);
    src.sendType = lu_BitstreamRead_u8(state, 8);
    src.bgType = lu_BitstreamRead_u8(state, 8);
-   lu_BitstreamRead_string_optional_terminator(state, src.titleText, WONDER_NEWS_TEXT_LENGTH, 6);
+   lu_BitstreamRead_string_optional_terminator(state, src.titleText, WONDER_NEWS_TEXT_LENGTH);
    {
       u16 i;
       for (i = 0; i < WONDER_NEWS_BODY_TEXT_LINES; ++i) { 
-            lu_BitstreamRead_string_optional_terminator(state, src.bodyText[i], WONDER_NEWS_TEXT_LENGTH, 6);
+            lu_BitstreamRead_string_optional_terminator(state, src.bodyText[i], WONDER_NEWS_TEXT_LENGTH);
       }
    }
 }
@@ -28,11 +28,11 @@ void lu_BitstreamWrite_WonderNews(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_u16(state, src.id, 16);
    lu_BitstreamWrite_u8(state, src.sendType, 8);
    lu_BitstreamWrite_u8(state, src.bgType, 8);
-   lu_BitstreamWrite_string_optional_terminator(state, src.titleText, WONDER_NEWS_TEXT_LENGTH, 6);
+   lu_BitstreamWrite_string_optional_terminator(state, src.titleText, WONDER_NEWS_TEXT_LENGTH);
    {
       u16 i;
       for (i = 0; i < WONDER_NEWS_BODY_TEXT_LINES; ++i) { 
-            lu_BitstreamWrite_string_optional_terminator(state, src.bodyText[i], WONDER_NEWS_TEXT_LENGTH, 6);
+            lu_BitstreamWrite_string_optional_terminator(state, src.bodyText[i], WONDER_NEWS_TEXT_LENGTH);
       }
    }
 }

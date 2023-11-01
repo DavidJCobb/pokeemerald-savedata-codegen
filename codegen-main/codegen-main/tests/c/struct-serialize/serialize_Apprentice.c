@@ -44,7 +44,7 @@ void lu_BitstreamRead_Apprentice(struct lu_BitstreamState* state, const struct A
             src.playerId[i] = lu_BitstreamRead_u8(state, 8);
       }
    }
-   lu_BitstreamRead_string_optional_terminator(state, src.playerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string_optional_terminator(state, src.playerName, PLAYER_NAME_LENGTH);
    src.language = lu_BitstreamRead_u8(state, 3);
    src.checksum = lu_BitstreamRead_u32(state, 32);
 }
@@ -71,7 +71,7 @@ void lu_BitstreamWrite_Apprentice(struct lu_BitstreamState* state, const struct 
             lu_BitstreamWrite_u8(state, src.playerId[i], 8);
       }
    }
-   lu_BitstreamWrite_string_optional_terminator(state, src.playerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string_optional_terminator(state, src.playerName, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, src.language, 3);
    lu_BitstreamWrite_u32(state, src.checksum, 32);
 }

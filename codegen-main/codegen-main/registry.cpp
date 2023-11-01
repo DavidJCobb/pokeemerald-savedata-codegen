@@ -1037,7 +1037,6 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
       lu::rapidxml_helpers::for_each_child_element(*fields_node, [this, &scaffold, &structure](std::string_view tagname, xml_node<>& node) {
          bool is_checksum;
          auto field = this->_parse_member(scaffold, node, is_checksum);
-         structure->members.push_back(std::move(field));
          if (is_checksum) {
             if (structure->checksum_member_index.has_value()) {
                scaffold.error(
@@ -1049,6 +1048,9 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
                   node
                );
             }
+         }
+         structure->members.push_back(std::move(field));
+         if (is_checksum) {
             structure->checksum_member_index = structure->members.size() - 1;
          }
       });
@@ -1158,10 +1160,10 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
 
    // Generate report tables for overall stats and struct stats
    {
-      std::unordered_map<const ast::structure*, size_t> all_structures;
+      std::vector<const ast::structure*> all_structures;
       for (auto& info : sector_groups)
          for (auto& name : info.top_level_struct_names)
-            all_structures[this->structs.at(name).get()]++;
+            all_structures.push_back(this->structs.at(name).get());
 
       size_t sector_count = 0;
       for (auto& info : sector_groups)
@@ -1171,14 +1173,12 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       size_t total_packed_bits  = 0;
 
       report.struct_table += '\n';
-      report.struct_table += "| Name | Bytes in RAM (single) | Packed bitcount (single) | Count | Total bytes | Total packed bits |\n";
-      report.struct_table += "| - | -: | -: | -: | -: | -: |\n";
-      for (const auto& pair : all_structures) {
-         auto*  s     = pair.first;
-         size_t count = pair.second;
-
+      report.struct_table += "| Name | Bytes in RAM | Packed bits | Packed bytes | Savings |\n";
+      report.struct_table += "| - | -: | -: | -: | -: |\n";
+      for (const auto* s : all_structures) {
          size_t bytes_in_ram = s->compute_unpacked_bytecount();
          size_t packed_bits  = s->compute_total_bitcount();
+         size_t packed_bytes = packed_bits / 8 + ((packed_bits % 8) ? 1 : 0);
 
          report.struct_table += "| ";
          report.struct_table += s->name;
@@ -1187,16 +1187,37 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
          report.struct_table += " | ";
          report.struct_table += lu::strings::from_integer(packed_bits);
          report.struct_table += " |";
-         report.struct_table += lu::strings::from_integer(count);
+         report.struct_table += lu::strings::from_integer(packed_bytes);
          report.struct_table += " | ";
-         report.struct_table += lu::strings::from_integer(count * bytes_in_ram);
-         report.struct_table += " | ";
-         report.struct_table += lu::strings::from_integer(count * packed_bits);
-         report.struct_table += " |";
-         report.struct_table += '\n';
+         report.struct_table += lu::strings::from_integer(bytes_in_ram - packed_bytes);
+         report.struct_table += " (";
+         {
+            float perc = (float)packed_bytes / (float)bytes_in_ram;
+            report.struct_table += lu::strings::from_integer((int64_t)(100.0 - perc * 100.0));
+         }
+         report.struct_table += " %)";
+         report.struct_table += " |\n";
 
-         total_bytes_in_ram += bytes_in_ram * count;
-         total_packed_bits  += packed_bits  * count;
+         total_bytes_in_ram += bytes_in_ram;
+         total_packed_bits  += packed_bits;
+      }
+      report.struct_table += "| **Total** | ";
+      report.struct_table += lu::strings::from_integer(total_bytes_in_ram);
+      report.struct_table += " | ";
+      report.struct_table += lu::strings::from_integer(total_packed_bits);
+      report.struct_table += " |";
+      {
+         size_t total_packed_bytes = total_packed_bits / 8 + ((total_packed_bits % 8) ? 1 : 0);
+         report.struct_table += lu::strings::from_integer(total_packed_bytes);
+         report.struct_table += " | ";
+         report.struct_table += lu::strings::from_integer(total_bytes_in_ram - total_packed_bytes);
+         report.struct_table += " (";
+         {
+            float perc = (float)total_packed_bytes / (float)total_bytes_in_ram;
+            report.struct_table += lu::strings::from_integer((int64_t)(100.0 - perc * 100.0));
+         }
+         report.struct_table += " %)";
+         report.struct_table += " |\n";
       }
 
       report.overall_stats += lu::strings::from_integer(total_bytes_in_ram);
@@ -1224,7 +1245,7 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       }
       report.overall_stats += "% space usage)  \n";
 
-      #if _DEBUG
+      #if _DEBUG && 0
       report.overall_stats += "### Debug output: struct RAM sizes\n";
 
       auto _print_struct = [&report](const ast::structure* s) {
@@ -1233,7 +1254,7 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
          report.overall_stats += '\n';
          report.overall_stats += '\n'; // blank line needed before table
          report.overall_stats += "| Member | Offset | Size |\n";
-         report.overall_stats += "| - | - |\n";
+         report.overall_stats += "| - | -: | -: |\n";
 
          s->count_unpacked_bytecounts([&report](ast::member* member, size_t offset_bytes, size_t offset_bits, size_t bytecount, size_t bitfield_size) {
             if (!member) {
@@ -1608,8 +1629,10 @@ void registry::generate_whole_struct_serialization_code() {
                   _serialize_indices();
                   stream << ", ";
                   stream << casted->max_length.as_c_expression();
-                  stream << ", ";
-                  stream << std::bit_width(casted->max_length.value);
+                  if (!casted->only_early_terminator) {
+                     stream << ", ";
+                     stream << std::bit_width(casted->max_length.value);
+                  }
                   stream << ");\n";
                } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
                   stream << indent << "   lu_BitstreamRead_buffer(";
@@ -1748,8 +1771,10 @@ void registry::generate_whole_struct_serialization_code() {
                _serialize_indices();
                stream << ", ";
                stream << casted->max_length.as_c_expression();
-               stream << ", ";
-               stream << std::bit_width(casted->max_length.value);
+               if (!casted->only_early_terminator) {
+                  stream << ", ";
+                  stream << std::bit_width(casted->max_length.value);
+               }
                stream << ");\n";
             } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
                stream << indent << "   lu_BitstreamWrite_buffer(";

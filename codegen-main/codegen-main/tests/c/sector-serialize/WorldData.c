@@ -98,7 +98,7 @@ void lu_ReadSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {
       p_SaveBlock1->flags[i] = lu_BitstreamRead_u8(&state, 8);
    }
-   for (i = 0; i < 10; ++i) {
+   for (i = 0; i < 13; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
 };
@@ -109,7 +109,7 @@ void lu_ReadSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 10; i < 256; ++i) {
+   for (i = 13; i < 256; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -126,7 +126,7 @@ void lu_ReadSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    p_SaveBlock1->secretBases[16].gender = lu_BitstreamRead_bool(&state, );
    p_SaveBlock1->secretBases[16].battledOwnerToday = lu_BitstreamRead_bool(&state, );
    p_SaveBlock1->secretBases[16].registryStatus = lu_BitstreamRead_u8(&state, 2);
-   lu_BitstreamRead_string(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
       p_SaveBlock1->secretBases[16].trainerId[i] = lu_BitstreamRead_u8(&state, 8);
    }
@@ -143,7 +143,7 @@ void lu_ReadSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < PARTY_SIZE; ++i) {
       p_SaveBlock1->secretBases[16].party.personality[i] = lu_BitstreamRead_u32(&state, 32);
    }
-   for (i = 0; i < 4; ++i) {
+   for (i = 0; i < 10; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
 };
@@ -154,7 +154,7 @@ void lu_ReadSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 4; i < 24; ++i) {
+   for (i = 10; i < 24; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -265,8 +265,11 @@ void lu_ReadSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
       p_SaveBlock1->mysteryGift.questionnaireWords[i] = lu_BitstreamRead_u16(&state, 16);
    }
    lu_BitstreamRead_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   for (j = 0; j < 2; ++j) {
+   for (j = 0; j < 5; ++j) {
       p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
+   }
+   for (j = 0; j < 4; ++j) {
+      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
    }
 };
 
@@ -276,12 +279,7 @@ void lu_ReadSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (j = 2; j < 5; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
-   }
-   for (j = 0; j < 5; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
-   }
+   p_SaveBlock1->mysteryGift.trainerIds[1][4] = lu_BitstreamRead_u32(&state, 32);
    for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
       p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
    }
@@ -370,7 +368,7 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < NUM_FLAG_BYTES; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->flags[i], 8);
    }
-   for (i = 0; i < 10; ++i) {
+   for (i = 0; i < 13; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
 };
@@ -381,7 +379,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 10; i < 256; ++i) {
+   for (i = 13; i < 256; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
    for (i = 0; i < NUM_GAME_STATS; ++i) {
@@ -398,7 +396,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].gender, );
    lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].battledOwnerToday, );
    lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].registryStatus, 2);
-   lu_BitstreamWrite_string(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
       lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].trainerId[i], 8);
    }
@@ -415,7 +413,7 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const SaveBlock1* p_SaveBlock1) {
    for (i = 0; i < PARTY_SIZE; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->secretBases[16].party.personality[i], 32);
    }
-   for (i = 0; i < 4; ++i) {
+   for (i = 0; i < 10; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i] - 0, 16);
    }
 };
@@ -426,7 +424,7 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (i = 4; i < 24; ++i) {
+   for (i = 10; i < 24; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i] - 0, 16);
    }
    for (i = 0; i < PARTY_SIZE; ++i) {
@@ -537,8 +535,11 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const SaveBlock1* p_SaveBlock1) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.questionnaireWords[i], 16);
    }
    lu_BitstreamWrite_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   for (j = 0; j < 2; ++j) {
+   for (j = 0; j < 5; ++j) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
+   }
+   for (j = 0; j < 4; ++j) {
+      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
    }
 };
 
@@ -548,12 +549,7 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const SaveBlock1* p_SaveBlock1) {
    state.target = dst;
    state.shift  = 0;
 
-   for (j = 2; j < 5; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
-   }
-   for (j = 0; j < 5; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
-   }
+   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][4], 32);
    for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
    }

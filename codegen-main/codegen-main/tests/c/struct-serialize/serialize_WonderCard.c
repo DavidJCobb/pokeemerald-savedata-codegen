@@ -23,16 +23,16 @@ void lu_BitstreamRead_WonderCard(struct lu_BitstreamState* state, const struct W
    src.bgType = lu_BitstreamRead_u8(state, 4);
    src.sendType = lu_BitstreamRead_u8(state, 2);
    src.maxStamps = lu_BitstreamRead_u8(state, 8);
-   lu_BitstreamRead_string_optional_terminator(state, src.titleText, WONDER_CARD_TEXT_LENGTH, 6);
-   lu_BitstreamRead_string_optional_terminator(state, src.subtitleText, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamRead_string_optional_terminator(state, src.titleText, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamRead_string_optional_terminator(state, src.subtitleText, WONDER_CARD_TEXT_LENGTH);
    {
       u16 i;
       for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) { 
-            lu_BitstreamRead_string_optional_terminator(state, src.bodyText[i], WONDER_CARD_TEXT_LENGTH, 6);
+            lu_BitstreamRead_string_optional_terminator(state, src.bodyText[i], WONDER_CARD_TEXT_LENGTH);
       }
    }
-   lu_BitstreamRead_string_optional_terminator(state, src.footerLine1Text, WONDER_CARD_TEXT_LENGTH, 6);
-   lu_BitstreamRead_string_optional_terminator(state, src.footerLine2Text, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamRead_string_optional_terminator(state, src.footerLine1Text, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamRead_string_optional_terminator(state, src.footerLine2Text, WONDER_CARD_TEXT_LENGTH);
 }
 void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct WonderCard* src) {
    lu_BitstreamWrite_u16(state, src.flagId, 16);
@@ -42,14 +42,14 @@ void lu_BitstreamWrite_WonderCard(struct lu_BitstreamState* state, const struct 
    lu_BitstreamWrite_u8(state, src.bgType, 4);
    lu_BitstreamWrite_u8(state, src.sendType, 2);
    lu_BitstreamWrite_u8(state, src.maxStamps, 8);
-   lu_BitstreamWrite_string_optional_terminator(state, src.titleText, WONDER_CARD_TEXT_LENGTH, 6);
-   lu_BitstreamWrite_string_optional_terminator(state, src.subtitleText, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamWrite_string_optional_terminator(state, src.titleText, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamWrite_string_optional_terminator(state, src.subtitleText, WONDER_CARD_TEXT_LENGTH);
    {
       u16 i;
       for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) { 
-            lu_BitstreamWrite_string_optional_terminator(state, src.bodyText[i], WONDER_CARD_TEXT_LENGTH, 6);
+            lu_BitstreamWrite_string_optional_terminator(state, src.bodyText[i], WONDER_CARD_TEXT_LENGTH);
       }
    }
-   lu_BitstreamWrite_string_optional_terminator(state, src.footerLine1Text, WONDER_CARD_TEXT_LENGTH, 6);
-   lu_BitstreamWrite_string_optional_terminator(state, src.footerLine2Text, WONDER_CARD_TEXT_LENGTH, 6);
+   lu_BitstreamWrite_string_optional_terminator(state, src.footerLine1Text, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamWrite_string_optional_terminator(state, src.footerLine2Text, WONDER_CARD_TEXT_LENGTH);
 }
