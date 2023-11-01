@@ -1,6 +1,7 @@
 #include "./registry.h"
 #include <bit>
 #include <fstream>
+#include <map>
 #include <stdexcept>
 #include <string_view>
 #include "RapidXml/rapidxml.hpp"
@@ -1155,27 +1156,29 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       std::string overall_stats;
       std::string struct_table;
       std::vector<std::string> by_sector;
+      std::string every_struct;
    } report;
    report.by_sector.resize(sector_groups.size());
 
+   std::vector<const ast::structure*> top_level_structures;
+   size_t total_bytes_in_ram = 0;
+
    // Generate report tables for overall stats and struct stats
    {
-      std::vector<const ast::structure*> all_structures;
       for (auto& info : sector_groups)
          for (auto& name : info.top_level_struct_names)
-            all_structures.push_back(this->structs.at(name).get());
+            top_level_structures.push_back(this->structs.at(name).get());
 
       size_t sector_count = 0;
       for (auto& info : sector_groups)
          sector_count += info.max_sector_count;
 
-      size_t total_bytes_in_ram = 0;
       size_t total_packed_bits  = 0;
 
       report.struct_table += '\n';
       report.struct_table += "| Name | Bytes in RAM | Packed bits | Packed bytes | Savings |\n";
       report.struct_table += "| - | -: | -: | -: | -: |\n";
-      for (const auto* s : all_structures) {
+      for (const auto* s : top_level_structures) {
          size_t bytes_in_ram = s->compute_unpacked_bytecount();
          size_t packed_bits  = s->compute_total_bitcount();
          size_t packed_bytes = packed_bits / 8 + ((packed_bits % 8) ? 1 : 0);
@@ -1195,7 +1198,7 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
             float perc = (float)packed_bytes / (float)bytes_in_ram;
             report.struct_table += lu::strings::from_integer((int64_t)(100.0 - perc * 100.0));
          }
-         report.struct_table += " %)";
+         report.struct_table += "%)";
          report.struct_table += " |\n";
 
          total_bytes_in_ram += bytes_in_ram;
@@ -1216,7 +1219,7 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
             float perc = (float)total_packed_bytes / (float)total_bytes_in_ram;
             report.struct_table += lu::strings::from_integer((int64_t)(100.0 - perc * 100.0));
          }
-         report.struct_table += " %)";
+         report.struct_table += "%)";
          report.struct_table += " |\n";
       }
 
@@ -1422,6 +1425,90 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       }
    }
 
+   {
+      struct struct_info {
+         size_t count       = 0;
+         size_t ram_bytes   = 0;
+         size_t packed_bits = 0;
+      };
+      std::map<std::string, struct_info> all_structs;
+
+      auto _walk_struct = [&all_structs](this auto&& recurse, const ast::structure& s, const ast::member* m, size_t containing_array_count) -> void {
+         auto& entry = all_structs[s.name];
+
+         size_t total_count = 1;
+         if (m) {
+            for (auto& rank : m->array_extents)
+               total_count *= rank.extent.value;
+         }
+         entry.count += containing_array_count * total_count;
+
+         if (!entry.ram_bytes) {
+            entry.ram_bytes = s.compute_unpacked_bytecount();
+         }
+         if (!entry.packed_bits) {
+            entry.packed_bits = s.compute_total_bitcount();
+         }
+
+         for (auto& member_ptr : s.members) {
+            auto* member = member_ptr.get();
+            while (auto* casted = dynamic_cast<ast::inlined_union_member*>(member)) {
+               member = &casted->get_member_to_serialize();
+            }
+            if (auto* casted = dynamic_cast<ast::struct_member*>(member)) {
+               recurse(*casted->type_def, casted, containing_array_count * total_count);
+            }
+         }
+      };
+      for (auto* s : top_level_structures) {
+         _walk_struct(*s, nullptr, 1);
+      }
+      report.every_struct += '\n';
+      report.every_struct += "| Name | Bytes in RAM | Packed bits | Packed bytes | Savings per | Count | Savings total |\n";
+      report.every_struct += "| - | -: | -: | -: | -: | -: | -: |\n";
+      for (const auto& pair : all_structs) {
+         auto& name  = pair.first;
+         auto& stats = pair.second;
+
+         size_t packed_bytes = stats.packed_bits / 8 + (stats.packed_bits % 8 ? 1 : 0);
+
+         report.every_struct += "| ";
+         report.every_struct += name;
+         report.every_struct += " | ";
+         report.every_struct += lu::strings::from_integer(stats.ram_bytes);
+         report.every_struct += " | ";
+         report.every_struct += lu::strings::from_integer(stats.packed_bits);
+         report.every_struct += " | ";
+         report.every_struct += lu::strings::from_integer(packed_bytes);
+         report.every_struct += " | ";
+         {  // Savings per
+            report.every_struct += lu::strings::from_integer(stats.ram_bytes - packed_bytes);
+            report.every_struct += " (";
+            {
+               float perc = (float)packed_bytes / (float)stats.ram_bytes;
+               report.every_struct += lu::strings::from_integer((int64_t)(100.0 - perc * 100.0));
+            }
+            report.every_struct += "%)";
+         }
+         report.every_struct += " | ";
+         report.every_struct += lu::strings::from_integer(stats.count);
+         report.every_struct += " | ";
+         {  // Savings total
+            size_t numer = packed_bytes * stats.count;
+
+            report.every_struct += lu::strings::from_integer((stats.ram_bytes * stats.count) - numer);
+            report.every_struct += " (";
+            {
+               float perc = (float)numer / (float)total_bytes_in_ram;
+               report.every_struct += lu::strings::from_integer((int64_t)(perc * 100.0));
+            }
+            report.every_struct += "%)";
+         }
+         report.every_struct += " |\n";
+      }
+      report.every_struct += '\n';
+   }
+
    if (failed) {
       auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
 
@@ -1437,6 +1524,12 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
       stream << "\n\n";
       for (const auto& s : report.by_sector)
          stream << s;
+      stream << "\n\n## Every struct\n";
+      stream << "The \"Savings\" columns are measured in bytes. The percentage in the \"Savings per\" column indicates by "
+                "how much the struct itself has been made smaller thanks to bitpacking. The percentage in the \"Savings "
+                "total\" column indicates by how much the total size of all serialized data has been made smaller as a "
+                "result of bitpacking that row's specific struct type.\n";
+      stream << report.every_struct;
    } else {
       {  // Save report
          auto out_folder = this->paths.output_paths.h / this->paths.output_paths.sector_serialize;
@@ -1458,6 +1551,12 @@ bool registry::generate_all_files(const std::vector<sector_info>& sector_groups)
          stream << "\n\n";
          for (const auto& s : report.by_sector)
             stream << s;
+         stream << "\n\n## Every struct\n";
+         stream << "The \"Savings\" columns are measured in bytes. The percentage in the \"Savings per\" column indicates by "
+                   "how much the struct itself has been made smaller thanks to bitpacking. The percentage in the \"Savings "
+                   "total\" column indicates by how much the total size of all serialized data has been made smaller as a "
+                   "result of bitpacking that row's specific struct type.\n";
+         stream << report.every_struct;
       }
       this->generate_all_struct_body_files();
       this->generate_whole_struct_serialization_code();
