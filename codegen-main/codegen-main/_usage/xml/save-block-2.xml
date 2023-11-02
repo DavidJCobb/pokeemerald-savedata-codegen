@@ -80,6 +80,16 @@
             <field name="playerName" inherit="$player-name" only-early-terminator="true" />
             <u8 name="language" inherit="$game-language" />
             <u32 name="checksum" is-checksum="true" /> <!-- game ensures that all padding bits/bytes are zero -->
+            <!--
+               NOTES:
+               
+                - `ResetApprenticeStruct` sets all speechWon words to `EC_EMPTY_WORD`, which is 0xFFFF
+                
+                - `ResetApprenticeStruct` sets  `playerName[0]` to EOS, but doesn't set anything else
+                
+                - `ResetAllApprenticeData` behaves the same as `ResetApprenticeStruct`, but for all of 
+                  the stored apprentices. It's only invoked once, when starting a new playthrough.
+            -->
          </fields>
       </struct>
       

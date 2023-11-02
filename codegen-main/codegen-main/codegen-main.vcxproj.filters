@@ -96,6 +96,117 @@
     <ClInclude Include="ast\member_types\blind_union_member.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lu\type_traits\function_traits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\macros\static_warning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\macros\macro_concat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\any.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\bad_enum_read.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\container_length_too_large.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\missing_data_header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\read_exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\read_past_end.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\exceptions\write_exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\bitcount_of_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\bitpacked_primitive_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\enum_has_contiguous_valid_values.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\enum_has_explicit_bitcount_override.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\enum_has_valid_values_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\enum_type_information.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\enum_valid_value_range.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\util\memcpyable_primitive_type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\_base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\bitstreamable_container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\bitstreamable_primitive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\bitstreamable_struct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\data_header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\enum_serialization_options.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\override_bitcount.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\parse_step_info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\position.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\round_trip_test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\round_trip_test_scramble.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\round_trip_test_with_targeted_scramble.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\bitstreams\writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\name_of.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\uint_of_size.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\macros\static_warning.undef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\macros\macro_concat.undef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cobb\type_traits\strip_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\member.inl">
@@ -127,6 +238,16 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="ast\member_types\blind_union_member.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Directory.Build.props" />
+    <None Include="cobb\bitstreams\position.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="cobb\bitstreams\reader.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="cobb\bitstreams\writer.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

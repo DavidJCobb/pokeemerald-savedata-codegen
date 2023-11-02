@@ -1,0 +1,41 @@
+Sector 14 has ID 13.
+Sector 17 has ID 2.
+Sector 19 has ID 4.
+Sector 20 has ID 5.
+Sector 21 has ID 6.
+Sector 22 has ID 7.
+Sector 23 has ID 8.
+Sector 24 has ID 9.
+Sector 25 has ID 10.
+Sector 26 has ID 11.
+Sector 27 has ID 12.
+
+
+# Slot 1
+
+## Character data
+
+Incomplete/missing!
+
+## Pokemon Storage
+
+Incomplete/missing!
+
+## World data
+
+Incomplete/missing!
+
+# Slot 2
+
+## Character data
+
+Incomplete/missing!
+
+## Pokemon Storage
+
+Dump not implemented!
+
+## World data
+
+Incomplete/missing!
+

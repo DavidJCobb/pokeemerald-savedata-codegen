@@ -1,6 +1,7 @@
 #pragma once
 #include "./structure.h"
 #include <algorithm>
+#include "lu/type_traits/function_traits.h"
 #include "./member_types/inlined_union_member.h"
 #include "./member_types/integral_member.h"
 #include "./member_types/struct_member.h"
@@ -94,10 +95,29 @@ namespace ast {
    }
 
    template<typename Functor>
-   constexpr size_t structure::count_unpacked_bytecounts(Functor&& functor) const {
+   constexpr size_t structure::count_unpacked_bytecounts(Functor&& functor) const requires impl::_structure::is_valid_bytecounter<Functor> {
+      constexpr const bool track_accessor = impl::_structure::is_bytecounter_wants_accessor<Functor>;
+      //
+      using accessor_tracker_t = std::conditional_t<
+         impl::_structure::is_bytecounter_wants_accessor<Functor>,
+         std::string,
+         int
+      >;
+
       size_t offset        = 0;
       size_t bitfield_bits = 0;
       for (const auto& member_ptr : this->members) {
+         accessor_tracker_t accessor = {};
+         if constexpr (track_accessor) {
+            const auto* member = member_ptr.get();
+            while (auto* casted = dynamic_cast<const inlined_union_member*>(member)) {
+               accessor += member->name;
+               accessor += '.';
+               member = &casted->get_member_to_serialize();
+            }
+            accessor += member->name;
+         }
+
          size_t this_bitfield = 0;
          if (auto* casted = dynamic_cast<const integral_member*>(member_ptr.get())) {
             if (casted->c_bitfield.has_value()) {
@@ -112,7 +132,11 @@ namespace ast {
                offset += (bitfield_bits / 8);
                bitfield_bits %= 8;
             }
-            functor(member_ptr.get(), offset, bitfield_bits, 0, this_bitfield);
+            if constexpr (track_accessor) {
+               functor(accessor, member_ptr.get(), offset, bitfield_bits, 0, this_bitfield);
+            } else {
+               functor(member_ptr.get(), offset, bitfield_bits, 0, this_bitfield);
+            }
             bitfield_bits += this_bitfield;
             continue;
          } else {
@@ -130,7 +154,11 @@ namespace ast {
          }
 
          size_t bytecount = member_ptr->compute_total_unpacked_bytecount();
-         functor(member_ptr.get(), offset, 0, bytecount, 0);
+         if constexpr (track_accessor) {
+            functor(accessor, member_ptr.get(), offset, 0, bytecount, 0);
+         } else {
+            functor(member_ptr.get(), offset, 0, bytecount, 0);
+         }
          offset += bytecount;
       }
 

@@ -89,6 +89,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>false</EnableModules>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,6 +106,8 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>false</EnableModules>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +123,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>false</EnableModules>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,6 +140,8 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <EnableModules>false</EnableModules>
+      <ObjectFileName>$(IntDir)$(ProjectName)\%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,6 +164,42 @@
     <ClInclude Include="ast\member_types\string_member.h" />
     <ClInclude Include="ast\member_types\struct_member.h" />
     <ClInclude Include="ast\member_types\_all.h" />
+    <ClInclude Include="cobb\bitstreams\bitstreamable_container.h" />
+    <ClInclude Include="cobb\bitstreams\bitstreamable_primitive.h" />
+    <ClInclude Include="cobb\bitstreams\bitstreamable_struct.h" />
+    <ClInclude Include="cobb\bitstreams\data_header.h" />
+    <ClInclude Include="cobb\bitstreams\enum_serialization_options.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\any.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\bad_enum_read.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\container_length_too_large.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\missing_data_header.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\read_exception.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\read_past_end.h" />
+    <ClInclude Include="cobb\bitstreams\exceptions\write_exception.h" />
+    <ClInclude Include="cobb\bitstreams\override_bitcount.h" />
+    <ClInclude Include="cobb\bitstreams\parse_step_info.h" />
+    <ClInclude Include="cobb\bitstreams\position.h" />
+    <ClInclude Include="cobb\bitstreams\reader.h" />
+    <ClInclude Include="cobb\bitstreams\round_trip_test.h" />
+    <ClInclude Include="cobb\bitstreams\round_trip_test_scramble.h" />
+    <ClInclude Include="cobb\bitstreams\round_trip_test_with_targeted_scramble.h" />
+    <ClInclude Include="cobb\bitstreams\util\bitcount_of_type.h" />
+    <ClInclude Include="cobb\bitstreams\util\bitpacked_primitive_type.h" />
+    <ClInclude Include="cobb\bitstreams\util\enum_has_contiguous_valid_values.h" />
+    <ClInclude Include="cobb\bitstreams\util\enum_has_explicit_bitcount_override.h" />
+    <ClInclude Include="cobb\bitstreams\util\enum_has_valid_values_list.h" />
+    <ClInclude Include="cobb\bitstreams\util\enum_type_information.h" />
+    <ClInclude Include="cobb\bitstreams\util\enum_valid_value_range.h" />
+    <ClInclude Include="cobb\bitstreams\util\memcpyable_primitive_type.h" />
+    <ClInclude Include="cobb\bitstreams\writer.h" />
+    <ClInclude Include="cobb\bitstreams\_base.h" />
+    <ClInclude Include="cobb\macros\macro_concat.h" />
+    <ClInclude Include="cobb\macros\macro_concat.undef.h" />
+    <ClInclude Include="cobb\macros\static_warning.h" />
+    <ClInclude Include="cobb\macros\static_warning.undef.h" />
+    <ClInclude Include="cobb\name_of.h" />
+    <ClInclude Include="cobb\type_traits\strip_enum.h" />
+    <ClInclude Include="cobb\uint_of_size.h" />
     <ClInclude Include="codegen\sector_generator.h" />
     <ClInclude Include="codegen\serialization_item.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h" />
@@ -166,6 +210,7 @@
     <ClInclude Include="lu\rapidxml_helpers\parsing_scaffold.h" />
     <ClInclude Include="lu\strings\char_to_integer.h" />
     <ClInclude Include="lu\strings\to_integer.h" />
+    <ClInclude Include="lu\type_traits\function_traits.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="ast\structure.h" />
     <ClInclude Include="lu\singleton.h" />
@@ -182,13 +227,22 @@
     <None Include="ast\member_types\string_member.inl" />
     <None Include="ast\member_types\struct_member.inl" />
     <None Include="ast\structure.inl" />
+    <None Include="cobb\bitstreams\position.inl" />
+    <None Include="cobb\bitstreams\reader.inl" />
+    <None Include="cobb\bitstreams\writer.inl" />
     <None Include="codegen\serialization_item.inl" />
+    <None Include="Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="codegen\sector_generator.inl" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp" />
     <ClCompile Include="registry.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RapidXml\RapidXml.vcxproj">
+      <Project>{d9f0e76a-b41b-4ca9-b86c-aa43348f52e4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

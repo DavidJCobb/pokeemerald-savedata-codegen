@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Debug\RapidXml.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Debug\codegen-main.exe</FullPath>
+    </ProjectOutput>
+    <ProjectOutput>
+      <FullPath>D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Debug\dumper.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles />
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>
