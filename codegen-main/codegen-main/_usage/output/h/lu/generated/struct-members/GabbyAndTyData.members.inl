@@ -14,4 +14,4 @@
    u8 playerLostAMon2 : 1;
    u8 playerUsedHealingItem2 : 1;
    u8 playerThrewABall2 : 1;
-   u8 valB_5 : 4;
+   u8 valB_4 : 4;

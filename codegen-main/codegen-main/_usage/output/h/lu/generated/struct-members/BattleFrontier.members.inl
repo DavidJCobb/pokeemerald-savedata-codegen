@@ -39,7 +39,7 @@
    u16 palaceRecordWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 arenaPrize;
    u16 arenaWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
-   u16 arenaRecordWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
+   u16 arenaRecordStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 factoryWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 factoryRecordWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 factoryRentsCount[2][FRONTIER_LVL_MODE_COUNT];
@@ -49,18 +49,18 @@
    u16 pikeRecordStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 pikeTotalStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u8 pikeHintedRoomIndex : 3;
-   u8 pikeHintedRoomType : 3;
+   u8 pikeHintedRoomType : 4;
    u8 pikeHealingRoomsDisabled : 1;
    u16 pikeHeldItemsBackup[FRONTIER_PARTY_SIZE];
    u16 pyramidPrize;
    u16 pyramidWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
-   u16 pyramidRecordWinStreaks[2][FRONTIER_LVL_MODE_COUNT];
+   u16 pyramidRecordStreaks[2][FRONTIER_LVL_MODE_COUNT];
    u16 pyramidRandoms[4];
    u8 pyramidTrainerFlags; // 1 bit for each trainer (MAX_PYRAMID_TRAINERS)
    struct PyramidBag pyramidBag;
    u8 pyramidLightRadius;
    u16 verdanturfTentPrize;
-   u16 fallaborTentPrize;
+   u16 fallarborTentPrize;
    u16 slateportTentPrize;
    struct RentalMon rentalMons[FRONTIER_PARTY_SIZE * 2];
    u16 battlePoints;

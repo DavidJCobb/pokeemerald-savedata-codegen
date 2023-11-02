@@ -3,7 +3,9 @@
 
 #include "lu/bitstreams.h"
 
-void lu_ReadSaveSector_CharacterData00(u8* dst, struct SaveBlock2* p_SaveBlock2);
+struct SaveBlock2;
+
+void lu_ReadSaveSector_CharacterData00(const u8* src, struct SaveBlock2* p_SaveBlock2);
 void lu_WriteSaveSector_CharacterData00(u8* dst, const struct SaveBlock2* p_SaveBlock2);
 
 #endif

@@ -17,7 +17,7 @@ namespace lu::strings {
       if constexpr (std::is_signed_v<Integer>)
          is_signed = (i < 0);
 
-      while (i > 0) {
+      while (i != 0) {
          int digit = i % 10;
          if constexpr (std::is_signed_v<Integer>) {
             //

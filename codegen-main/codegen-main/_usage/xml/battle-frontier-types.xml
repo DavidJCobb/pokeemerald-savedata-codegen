@@ -36,13 +36,13 @@
             <u8 name="spAttackEV" />
             <u8 name="spDefenseEV" />
             <u32 name="otId" />
-            <u8 name="hpIV" c-bitfield="5" />
-            <u8 name="attackIV" c-bitfield="5" />
-            <u8 name="defenseIV" c-bitfield="5" />
-            <u8 name="speedIV" c-bitfield="5" />
-            <u8 name="spAttackIV" c-bitfield="5" />
-            <u8 name="spDefenseIV" c-bitfield="5" />
-            <u8 name="gap" c-bitfield="1" do-not-serialize="true" />
+            <u32 name="hpIV" c-bitfield="5" />
+            <u32 name="attackIV" c-bitfield="5" />
+            <u32 name="defenseIV" c-bitfield="5" />
+            <u32 name="speedIV" c-bitfield="5" />
+            <u32 name="spAttackIV" c-bitfield="5" />
+            <u32 name="spDefenseIV" c-bitfield="5" />
+            <u32 name="gap" c-bitfield="1" do-not-serialize="true" />
             <u32 name="abilityNum" c-bitfield="1" />
             <u32 name="personality" />
             <field name="nickname" inherit="$pokemon-nickname" />
@@ -51,7 +51,9 @@
       </struct>
       <struct name="EmeraldBattleTowerRecord" header="global.h">
          <fields>
-            <u8 name="lvlMode" />
+            <u8 name="lvlMode">
+               <line-comment>0 = level 50, 1 = level 100</line-comment>
+            </u8>
             <u8 name="facilityClass" />
             <u16 name="winStreak" />
             <field name="name" inherit="$player-name" />
@@ -240,7 +242,7 @@
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
-            <u16 name="arenaRecordWinStreaks">
+            <u16 name="arenaRecordStreaks">
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
@@ -276,7 +278,7 @@
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
             <u8 name="pikeHintedRoomIndex" c-bitfield="3" />
-            <u8 name="pikeHintedRoomType" c-bitfield="3" />
+            <u8 name="pikeHintedRoomType" c-bitfield="4" />
             <u8 name="pikeHealingRoomsDisabled" c-bitfield="1" />
             <u16 name="pikeHeldItemsBackup" inherit="$global-item-id">
                <array-rank extent="FRONTIER_PARTY_SIZE" />
@@ -287,7 +289,7 @@
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
-            <u16 name="pyramidRecordWinStreaks">
+            <u16 name="pyramidRecordStreaks">
                <array-rank extent="2" />
                <array-rank extent="FRONTIER_LVL_MODE_COUNT" />
             </u16>
@@ -301,7 +303,7 @@
             <u8 name="pyramidLightRadius" />
             
             <u16 name="verdanturfTentPrize" />
-            <u16 name="fallaborTentPrize" />
+            <u16 name="fallarborTentPrize" />
             <u16 name="slateportTentPrize" />
             
             <field name="rentalMons" c-type="RentalMon" c-type-decl="struct">

@@ -1,18 +1,21 @@
 #include "lu/generated/struct-serialize//serialize_WarpData.h"
 
-#include "global.h" // struct definition
+#include "global.h"
 
-void lu_BitstreamRead_WarpData(struct lu_BitstreamState* state, const struct WarpData* src) {
-   src.mapGroup = lu_BitstreamRead_u8(state, 8);
-   src.mapNum = lu_BitstreamRead_u8(state, 8);
-   src.warpId = lu_BitstreamRead_u8(state, 8);
-   src.x = lu_BitstreamRead_u16(state, 16);
-   src.y = lu_BitstreamRead_u16(state, 16);
+#include "lu/bitstreams.h"
+
+void lu_BitstreamRead_WarpData(struct lu_BitstreamState* state, struct WarpData* v) {
+   v->mapGroup = lu_BitstreamRead_s8(state, 8);
+   v->mapNum = lu_BitstreamRead_s8(state, 8);
+   v->warpId = lu_BitstreamRead_s8(state, 8);
+   v->x = lu_BitstreamRead_s16(state, 16);
+   v->y = lu_BitstreamRead_s16(state, 16);
 }
-void lu_BitstreamWrite_WarpData(struct lu_BitstreamState* state, const struct WarpData* src) {
-   lu_BitstreamWrite_u8(state, src.mapGroup, 8);
-   lu_BitstreamWrite_u8(state, src.mapNum, 8);
-   lu_BitstreamWrite_u8(state, src.warpId, 8);
-   lu_BitstreamWrite_u16(state, src.x, 16);
-   lu_BitstreamWrite_u16(state, src.y, 16);
+
+void lu_BitstreamWrite_WarpData(struct lu_BitstreamState* state, const struct WarpData* v) {
+   lu_BitstreamWrite_s8(state, v->mapGroup, 8);
+   lu_BitstreamWrite_s8(state, v->mapNum, 8);
+   lu_BitstreamWrite_s8(state, v->warpId, 8);
+   lu_BitstreamWrite_s16(state, v->x, 16);
+   lu_BitstreamWrite_s16(state, v->y, 16);
 }

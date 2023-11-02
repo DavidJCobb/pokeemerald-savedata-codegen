@@ -1,19 +1,21 @@
 #include "lu/generated/struct-serialize//serialize_SaveBlock2.h"
 
-#include "global.h" // struct definition
+#include "global.h"
+
+#include "lu/bitstreams.h"
 
 // dependencies
-#include "./serialize_Pokedex.h"
-#include "./serialize_Time.h"
-#include "./serialize_Time.h"
-#include "./serialize_PlayersApprentice.h"
-#include "./serialize_Apprentice.h"
-#include "./serialize_BerryCrush.h"
-#include "./serialize_PokemonJumpRecords.h"
-#include "./serialize_BerryPickingResults.h"
-#include "./serialize_RankingHall1P.h"
-#include "./serialize_RankingHall2P.h"
-#include "./serialize_BattleFrontier.h"
+#include "lu/generated/struct-serialize//serialize_Pokedex.h"
+#include "lu/generated/struct-serialize//serialize_Time.h"
+#include "lu/generated/struct-serialize//serialize_Time.h"
+#include "lu/generated/struct-serialize//serialize_PlayersApprentice.h"
+#include "lu/generated/struct-serialize//serialize_Apprentice.h"
+#include "lu/generated/struct-serialize//serialize_BerryCrush.h"
+#include "lu/generated/struct-serialize//serialize_PokemonJumpRecords.h"
+#include "lu/generated/struct-serialize//serialize_BerryPickingResults.h"
+#include "lu/generated/struct-serialize//serialize_RankingHall1P.h"
+#include "lu/generated/struct-serialize//serialize_RankingHall2P.h"
+#include "lu/generated/struct-serialize//serialize_BattleFrontier.h"
 
 #include "string_util.h" // gflib; for StringLength
 
@@ -49,49 +51,49 @@
    #error Constant `CONTESTANT_COUNT` changed in C, but XML not updated or codegen not re-run!
 #endif
 
-void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, const struct SaveBlock2* src) {
-   lu_BitstreamRead_string(state, src.playerName, PLAYER_NAME_LENGTH, 3);
-   src.playerGender = lu_BitstreamRead_bool(state, src.playerGender);
-   src.specialSaveWarpFlags = lu_BitstreamRead_u8(state, 8);
+void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, struct SaveBlock2* v) {
+   lu_BitstreamRead_string(state, v->playerName, PLAYER_NAME_LENGTH, 3);
+   v->playerGender = lu_BitstreamRead_bool(state);
+   v->specialSaveWarpFlags = lu_BitstreamRead_u8(state, 8);
    {
       u16 i;
       for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-            src.playerTrainerId[i] = lu_BitstreamRead_u8(state, 8);
+         v->playerTrainerId[i] = lu_BitstreamRead_u8(state, 8);
       }
    }
-   src.playTimeHours = lu_BitstreamRead_u16(state, 16);
-   src.playTimeMinutes = lu_BitstreamRead_u8(state, 6);
-   src.playTimeSeconds = lu_BitstreamRead_u8(state, 6);
-   src.playTimeVBlanks = lu_BitstreamRead_u8(state, 8);
-   src.optionsButtonMode = lu_BitstreamRead_u8(state, 2);
-   src.optionsTextSpeed = lu_BitstreamRead_u8(state, 3);
-   src.optionsWindowFrameType = lu_BitstreamRead_u8(state, 5);
-   src.optionsSound = lu_BitstreamRead_bool(state, src.optionsSound);
-   src.optionsBattleStyle = lu_BitstreamRead_bool(state, src.optionsBattleStyle);
-   src.optionsBattleSceneOff = lu_BitstreamRead_bool(state, src.optionsBattleSceneOff);
-   src.regionMapZoom = lu_BitstreamRead_bool(state, src.regionMapZoom);
-   src.optionsRunningToggle = lu_BitstreamRead_bool(state, src.optionsRunningToggle);
-   lu_BitstreamRead_Pokedex(state, &src.pokedex);
-   lu_BitstreamRead_Time(state, &src.localTimeOffset);
-   lu_BitstreamRead_Time(state, &src.lastBerryTreeUpdate);
-   src.gcnLinkFlags = lu_BitstreamRead_u32(state, 32);
-   src.encryptionKey = lu_BitstreamRead_u32(state, 32);
-   lu_BitstreamRead_PlayersApprentice(state, &src.playerApprentice);
+   v->playTimeHours = lu_BitstreamRead_u16(state, 16);
+   v->playTimeMinutes = lu_BitstreamRead_u8(state, 6) + 0;
+   v->playTimeSeconds = lu_BitstreamRead_u8(state, 6) + 0;
+   v->playTimeVBlanks = lu_BitstreamRead_u8(state, 8);
+   v->optionsButtonMode = lu_BitstreamRead_u8(state, 2) + 0;
+   v->optionsTextSpeed = lu_BitstreamRead_u8(state, 3);
+   v->optionsWindowFrameType = lu_BitstreamRead_u8(state, 5);
+   v->optionsSound = lu_BitstreamRead_bool(state);
+   v->optionsBattleStyle = lu_BitstreamRead_bool(state);
+   v->optionsBattleSceneOff = lu_BitstreamRead_bool(state);
+   v->regionMapZoom = lu_BitstreamRead_bool(state);
+   v->optionsRunningToggle = lu_BitstreamRead_bool(state);
+   lu_BitstreamRead_Pokedex(state, &v->pokedex);
+   lu_BitstreamRead_Time(state, &v->localTimeOffset);
+   lu_BitstreamRead_Time(state, &v->lastBerryTreeUpdate);
+   v->gcnLinkFlags = lu_BitstreamRead_u32(state, 32);
+   v->encryptionKey = lu_BitstreamRead_u32(state, 32);
+   lu_BitstreamRead_PlayersApprentice(state, &v->playerApprentice);
    {
       u16 i;
       for (i = 0; i < APPRENTICE_COUNT; ++i) { 
-            lu_BitstreamRead_Apprentice(state, &src.apprentices[i]);
+         lu_BitstreamRead_Apprentice(state, &v->apprentices[i]);
       }
    }
-   lu_BitstreamRead_BerryCrush(state, &src.berryCrush);
-   lu_BitstreamRead_PokemonJumpRecords(state, &src.pokeJump);
-   lu_BitstreamRead_BerryPickingResults(state, &src.berryPick);
+   lu_BitstreamRead_BerryCrush(state, &v->berryCrush);
+   lu_BitstreamRead_PokemonJumpRecords(state, &v->pokeJump);
+   lu_BitstreamRead_BerryPickingResults(state, &v->berryPick);
    {
       u16 i, j, k;
       for (i = 0; i < HALL_FACILITIES_COUNT; ++i) { 
          for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
             for (k = 0; k < HALL_RECORDS_COUNT; ++k) { 
-                  lu_BitstreamRead_RankingHall1P(state, &src.hallRecords1P[i][j][k]);
+               lu_BitstreamRead_RankingHall1P(state, &v->hallRecords1P[i][j][k]);
             }
          }
       }
@@ -100,7 +102,7 @@ void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, const struct S
       u16 i, j;
       for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
          for (j = 0; j < HALL_RECORDS_COUNT; ++j) { 
-               lu_BitstreamRead_RankingHall2P(state, &src.hallRecords2P[i][j]);
+            lu_BitstreamRead_RankingHall2P(state, &v->hallRecords2P[i][j]);
          }
       }
    }
@@ -108,55 +110,56 @@ void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, const struct S
       u16 i, j;
       for (i = 0; i < CONTEST_CATEGORIES_COUNT; ++i) { 
          for (j = 0; j < CONTESTANT_COUNT; ++j) { 
-               src.contestLinkResults[i][j] = lu_BitstreamRead_u16(state, 16);
+            v->contestLinkResults[i][j] = lu_BitstreamRead_u16(state, 16);
          }
       }
    }
-   lu_BitstreamRead_BattleFrontier(state, &src.frontier);
+   lu_BitstreamRead_BattleFrontier(state, &v->frontier);
 }
-void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct SaveBlock2* src) {
-   lu_BitstreamWrite_string(state, src.playerName, PLAYER_NAME_LENGTH, 3);
-   lu_BitstreamWrite_bool(state, src.playerGender);
-   lu_BitstreamWrite_u8(state, src.specialSaveWarpFlags, 8);
+
+void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct SaveBlock2* v) {
+   lu_BitstreamWrite_string(state, v->playerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_bool(state, v->playerGender);
+   lu_BitstreamWrite_u8(state, v->specialSaveWarpFlags, 8);
    {
       u16 i;
       for (i = 0; i < TRAINER_ID_LENGTH; ++i) { 
-            lu_BitstreamWrite_u8(state, src.playerTrainerId[i], 8);
+         lu_BitstreamWrite_u8(state, v->playerTrainerId[i], 8);
       }
    }
-   lu_BitstreamWrite_u16(state, src.playTimeHours, 16);
-   lu_BitstreamWrite_u8(state, src.playTimeMinutes, 6);
-   lu_BitstreamWrite_u8(state, src.playTimeSeconds, 6);
-   lu_BitstreamWrite_u8(state, src.playTimeVBlanks, 8);
-   lu_BitstreamWrite_u8(state, src.optionsButtonMode, 2);
-   lu_BitstreamWrite_u8(state, src.optionsTextSpeed, 3);
-   lu_BitstreamWrite_u8(state, src.optionsWindowFrameType, 5);
-   lu_BitstreamWrite_bool(state, src.optionsSound);
-   lu_BitstreamWrite_bool(state, src.optionsBattleStyle);
-   lu_BitstreamWrite_bool(state, src.optionsBattleSceneOff);
-   lu_BitstreamWrite_bool(state, src.regionMapZoom);
-   lu_BitstreamWrite_bool(state, src.optionsRunningToggle);
-   lu_BitstreamWrite_Pokedex(state, &src.pokedex);
-   lu_BitstreamWrite_Time(state, &src.localTimeOffset);
-   lu_BitstreamWrite_Time(state, &src.lastBerryTreeUpdate);
-   lu_BitstreamWrite_u32(state, src.gcnLinkFlags, 32);
-   lu_BitstreamWrite_u32(state, src.encryptionKey, 32);
-   lu_BitstreamWrite_PlayersApprentice(state, &src.playerApprentice);
+   lu_BitstreamWrite_u16(state, v->playTimeHours, 16);
+   lu_BitstreamWrite_u8(state, v->playTimeMinutes - 0, 6);
+   lu_BitstreamWrite_u8(state, v->playTimeSeconds - 0, 6);
+   lu_BitstreamWrite_u8(state, v->playTimeVBlanks, 8);
+   lu_BitstreamWrite_u8(state, v->optionsButtonMode - 0, 2);
+   lu_BitstreamWrite_u8(state, v->optionsTextSpeed, 3);
+   lu_BitstreamWrite_u8(state, v->optionsWindowFrameType, 5);
+   lu_BitstreamWrite_bool(state, v->optionsSound);
+   lu_BitstreamWrite_bool(state, v->optionsBattleStyle);
+   lu_BitstreamWrite_bool(state, v->optionsBattleSceneOff);
+   lu_BitstreamWrite_bool(state, v->regionMapZoom);
+   lu_BitstreamWrite_bool(state, v->optionsRunningToggle);
+   lu_BitstreamWrite_Pokedex(state, &v->pokedex);
+   lu_BitstreamWrite_Time(state, &v->localTimeOffset);
+   lu_BitstreamWrite_Time(state, &v->lastBerryTreeUpdate);
+   lu_BitstreamWrite_u32(state, v->gcnLinkFlags, 32);
+   lu_BitstreamWrite_u32(state, v->encryptionKey, 32);
+   lu_BitstreamWrite_PlayersApprentice(state, &v->playerApprentice);
    {
       u16 i;
       for (i = 0; i < APPRENTICE_COUNT; ++i) { 
-            lu_BitstreamWrite_Apprentice(state, &src.apprentices[i]);
+         lu_BitstreamWrite_Apprentice(state, &v->apprentices[i]);
       }
    }
-   lu_BitstreamWrite_BerryCrush(state, &src.berryCrush);
-   lu_BitstreamWrite_PokemonJumpRecords(state, &src.pokeJump);
-   lu_BitstreamWrite_BerryPickingResults(state, &src.berryPick);
+   lu_BitstreamWrite_BerryCrush(state, &v->berryCrush);
+   lu_BitstreamWrite_PokemonJumpRecords(state, &v->pokeJump);
+   lu_BitstreamWrite_BerryPickingResults(state, &v->berryPick);
    {
       u16 i, j, k;
       for (i = 0; i < HALL_FACILITIES_COUNT; ++i) { 
          for (j = 0; j < FRONTIER_LVL_MODE_COUNT; ++j) { 
             for (k = 0; k < HALL_RECORDS_COUNT; ++k) { 
-                  lu_BitstreamWrite_RankingHall1P(state, &src.hallRecords1P[i][j][k]);
+               lu_BitstreamWrite_RankingHall1P(state, &v->hallRecords1P[i][j][k]);
             }
          }
       }
@@ -165,7 +168,7 @@ void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct 
       u16 i, j;
       for (i = 0; i < FRONTIER_LVL_MODE_COUNT; ++i) { 
          for (j = 0; j < HALL_RECORDS_COUNT; ++j) { 
-               lu_BitstreamWrite_RankingHall2P(state, &src.hallRecords2P[i][j]);
+            lu_BitstreamWrite_RankingHall2P(state, &v->hallRecords2P[i][j]);
          }
       }
    }
@@ -173,9 +176,9 @@ void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct 
       u16 i, j;
       for (i = 0; i < CONTEST_CATEGORIES_COUNT; ++i) { 
          for (j = 0; j < CONTESTANT_COUNT; ++j) { 
-               lu_BitstreamWrite_u16(state, src.contestLinkResults[i][j], 16);
+            lu_BitstreamWrite_u16(state, v->contestLinkResults[i][j], 16);
          }
       }
    }
-   lu_BitstreamWrite_BattleFrontier(state, &src.frontier);
+   lu_BitstreamWrite_BattleFrontier(state, &v->frontier);
 }

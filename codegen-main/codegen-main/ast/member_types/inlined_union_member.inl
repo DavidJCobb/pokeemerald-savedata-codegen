@@ -44,30 +44,17 @@ namespace ast {
 
    constexpr std::vector<std::string> inlined_union_member::get_all_direct_struct_dependencies() const {
       std::vector<std::string> out;
-      for (const auto& member : this->members) {
-         if (auto* casted = dynamic_cast<const struct_member*>(member.get())) {
-            out.push_back(casted->type_name);
-            continue;
-         }
-         if (auto* casted = dynamic_cast<const inlined_union_member*>(member.get())) {
-            auto list = casted->get_all_direct_struct_dependencies();
-            for (const auto& item : list) {
-               {
-                  bool already = false;
-                  for (auto& prior : out) {
-                     if (prior == item) {
-                        already = true;
-                        break;
-                     }
-                  }
-                  if (already)
-                     continue;
-               }
-               out.push_back(item);
-            }
-         }
+
+      auto* member = &this->get_member_to_serialize();
+      if (auto* casted = dynamic_cast<const struct_member*>(member)) {
+         out.push_back(casted->type_name);
+         return out;
       }
-      return out;
+      if (auto* casted = dynamic_cast<const inlined_union_member*>(member)) {
+         return casted->get_all_direct_struct_dependencies();
+      }
+
+      return {};
    }
    constexpr bool inlined_union_member::has_any_string_members() const {
       for (const auto& member : members) {

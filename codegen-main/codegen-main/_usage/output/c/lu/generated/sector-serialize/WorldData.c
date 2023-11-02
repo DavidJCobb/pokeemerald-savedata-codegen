@@ -21,22 +21,18 @@
 #include "lu/generated/struct-serialize/serialize_ExternalEventFlags.h"
 #include "lu/generated/struct-serialize/serialize_Roamer.h"
 #include "lu/generated/struct-serialize/serialize_EnigmaBerry.h"
-#include "lu/generated/struct-serialize/serialize_WonderNews.h"
-#include "lu/generated/struct-serialize/serialize_WonderCard.h"
-#include "lu/generated/struct-serialize/serialize_WonderCardMetadata.h"
-#include "lu/generated/struct-serialize/serialize_WonderNewsMetadata.h"
+#include "lu/generated/struct-serialize/serialize_MysteryGiftSave.h"
 #include "lu/generated/struct-serialize/serialize_RamScript.h"
 #include "lu/generated/struct-serialize/serialize_RecordMixingGift.h"
 #include "lu/generated/struct-serialize/serialize_TrainerNameRecord.h"
 #include "lu/generated/struct-serialize/serialize_TrainerHillSave.h"
 #include "lu/generated/struct-serialize/serialize_WaldaPhrase.h"
 
-void lu_ReadSaveSector_WorldData00(u8* dst, struct SaveBlock1* p_SaveBlock1) {
+void lu_ReadSaveSector_WorldData00(const u8* src, struct SaveBlock1* p_SaveBlock1) {
    u16 i;
    struct lu_BitstreamState state;
-   state.target = dst;
+   state.target = (u8*)src;
    state.shift  = 0;
-
    lu_BitstreamRead_Coords16(&state, &p_SaveBlock1->pos);
    lu_BitstreamRead_WarpData(&state, &p_SaveBlock1->location);
    lu_BitstreamRead_WarpData(&state, &p_SaveBlock1->continueGameWarp);
@@ -103,12 +99,11 @@ void lu_ReadSaveSector_WorldData00(u8* dst, struct SaveBlock1* p_SaveBlock1) {
    }
 };
 
-void lu_ReadSaveSector_WorldData01(u8* dst, struct SaveBlock1* p_SaveBlock1) {
+void lu_ReadSaveSector_WorldData01(const u8* src, struct SaveBlock1* p_SaveBlock1) {
    u16 i;
    struct lu_BitstreamState state;
-   state.target = dst;
+   state.target = (u8*)src;
    state.shift  = 0;
-
    for (i = 13; i < 256; ++i) {
       p_SaveBlock1->vars[i] = lu_BitstreamRead_u16(&state, 16);
    }
@@ -123,8 +118,8 @@ void lu_ReadSaveSector_WorldData01(u8* dst, struct SaveBlock1* p_SaveBlock1) {
    }
    p_SaveBlock1->secretBases[16].secretBaseId = lu_BitstreamRead_u8(&state, 8);
    p_SaveBlock1->secretBases[16].toRegister = lu_BitstreamRead_u8(&state, 4);
-   p_SaveBlock1->secretBases[16].gender = lu_BitstreamRead_bool(&state, );
-   p_SaveBlock1->secretBases[16].battledOwnerToday = lu_BitstreamRead_bool(&state, );
+   p_SaveBlock1->secretBases[16].gender = lu_BitstreamRead_bool(&state);
+   p_SaveBlock1->secretBases[16].battledOwnerToday = lu_BitstreamRead_bool(&state);
    p_SaveBlock1->secretBases[16].registryStatus = lu_BitstreamRead_u8(&state, 2);
    lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
@@ -148,12 +143,11 @@ void lu_ReadSaveSector_WorldData01(u8* dst, struct SaveBlock1* p_SaveBlock1) {
    }
 };
 
-void lu_ReadSaveSector_WorldData02(u8* dst, struct SaveBlock1* p_SaveBlock1) {
-   u8 i, j;
+void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock1) {
+   u8 i;
    struct lu_BitstreamState state;
-   state.target = dst;
+   state.target = (u8*)src;
    state.shift  = 0;
-
    for (i = 10; i < 24; ++i) {
       p_SaveBlock1->secretBases[16].party.moves[i] = lu_BitstreamRead_u16(&state, 16) + 0;
    }
@@ -255,32 +249,15 @@ void lu_ReadSaveSector_WorldData02(u8* dst, struct SaveBlock1* p_SaveBlock1) {
    lu_BitstreamRead_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamRead_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamRead_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   p_SaveBlock1->mysteryGift.newsCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
-   p_SaveBlock1->mysteryGift.cardCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
-   p_SaveBlock1->mysteryGift.cardMetadataCrc = lu_BitstreamRead_u32(&state, 32);
-   lu_BitstreamRead_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
-   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
-      p_SaveBlock1->mysteryGift.questionnaireWords[i] = lu_BitstreamRead_u16(&state, 16);
-   }
-   lu_BitstreamRead_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   for (j = 0; j < 5; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[0][j] = lu_BitstreamRead_u32(&state, 32);
-   }
-   for (j = 0; j < 4; ++j) {
-      p_SaveBlock1->mysteryGift.trainerIds[1][j] = lu_BitstreamRead_u32(&state, 32);
-   }
+   lu_BitstreamRead_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
 };
 
-void lu_ReadSaveSector_WorldData03(u8* dst, struct SaveBlock1* p_SaveBlock1) {
+void lu_ReadSaveSector_WorldData03(const u8* src, struct SaveBlock1* p_SaveBlock1) {
    u8 i, j;
    struct lu_BitstreamState state;
-   state.target = dst;
+   state.target = (u8*)src;
    state.shift  = 0;
-
-   p_SaveBlock1->mysteryGift.trainerIds[1][4] = lu_BitstreamRead_u32(&state, 32);
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+   for (i = 0; i < 4; ++i) {
       p_SaveBlock1->trainerHillTimes[i] = lu_BitstreamRead_u32(&state, 32);
    }
    lu_BitstreamRead_RamScript(&state, &p_SaveBlock1->ramScript);
@@ -306,7 +283,6 @@ void lu_WriteSaveSector_WorldData00(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
-
    lu_BitstreamWrite_Coords16(&state, &p_SaveBlock1->pos);
    lu_BitstreamWrite_WarpData(&state, &p_SaveBlock1->location);
    lu_BitstreamWrite_WarpData(&state, &p_SaveBlock1->continueGameWarp);
@@ -378,7 +354,6 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
-
    for (i = 13; i < 256; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->vars[i], 16);
    }
@@ -393,8 +368,8 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
    }
    lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].secretBaseId, 8);
    lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].toRegister, 4);
-   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].gender, );
-   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].battledOwnerToday, );
+   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].gender);
+   lu_BitstreamWrite_bool(&state, p_SaveBlock1->secretBases[16].battledOwnerToday);
    lu_BitstreamWrite_u8(&state, p_SaveBlock1->secretBases[16].registryStatus, 2);
    lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->secretBases[16].trainerName, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
@@ -419,11 +394,10 @@ void lu_WriteSaveSector_WorldData01(u8* dst, const struct SaveBlock1* p_SaveBloc
 };
 
 void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
-   u8 i, j;
+   u8 i;
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
-
    for (i = 10; i < 24; ++i) {
       lu_BitstreamWrite_u16(&state, p_SaveBlock1->secretBases[16].party.moves[i] - 0, 16);
    }
@@ -525,22 +499,7 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
    lu_BitstreamWrite_ExternalEventFlags(&state, &p_SaveBlock1->externalEventFlags);
    lu_BitstreamWrite_Roamer(&state, &p_SaveBlock1->roamer);
    lu_BitstreamWrite_EnigmaBerry(&state, &p_SaveBlock1->enigmaBerry);
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.newsCrc, 32);
-   lu_BitstreamWrite_WonderNews(&state, &p_SaveBlock1->mysteryGift.news);
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardCrc, 32);
-   lu_BitstreamWrite_WonderCard(&state, &p_SaveBlock1->mysteryGift.card);
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.cardMetadataCrc, 32);
-   lu_BitstreamWrite_WonderCardMetadata(&state, &p_SaveBlock1->mysteryGift.cardMetadata);
-   for (i = 0; i < NUM_QUESTIONNAIRE_WORDS; ++i) {
-      lu_BitstreamWrite_u16(&state, p_SaveBlock1->mysteryGift.questionnaireWords[i], 16);
-   }
-   lu_BitstreamWrite_WonderNewsMetadata(&state, &p_SaveBlock1->mysteryGift.newsMetadata);
-   for (j = 0; j < 5; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[0][j], 32);
-   }
-   for (j = 0; j < 4; ++j) {
-      lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][j], 32);
-   }
+   lu_BitstreamWrite_MysteryGiftSave(&state, &p_SaveBlock1->mysteryGift);
 };
 
 void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
@@ -548,9 +507,7 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBloc
    struct lu_BitstreamState state;
    state.target = dst;
    state.shift  = 0;
-
-   lu_BitstreamWrite_u32(&state, p_SaveBlock1->mysteryGift.trainerIds[1][4], 32);
-   for (i = 0; i < NUM_TRAINER_HILL_MODES; ++i) {
+   for (i = 0; i < 4; ++i) {
       lu_BitstreamWrite_u32(&state, p_SaveBlock1->trainerHillTimes[i], 32);
    }
    lu_BitstreamWrite_RamScript(&state, &p_SaveBlock1->ramScript);

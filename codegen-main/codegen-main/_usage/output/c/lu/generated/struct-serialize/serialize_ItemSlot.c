@@ -1,12 +1,15 @@
 #include "lu/generated/struct-serialize//serialize_ItemSlot.h"
 
-#include "global.h" // struct definition
+#include "global.h"
 
-void lu_BitstreamRead_ItemSlot(struct lu_BitstreamState* state, const struct ItemSlot* src) {
-   src.itemId = lu_BitstreamRead_u16(state, 9);
-   src.quantity = lu_BitstreamRead_u8(state, 7);
+#include "lu/bitstreams.h"
+
+void lu_BitstreamRead_ItemSlot(struct lu_BitstreamState* state, struct ItemSlot* v) {
+   v->itemId = lu_BitstreamRead_u16(state, 9);
+   v->quantity = lu_BitstreamRead_u8(state, 7) + 0;
 }
-void lu_BitstreamWrite_ItemSlot(struct lu_BitstreamState* state, const struct ItemSlot* src) {
-   lu_BitstreamWrite_u16(state, src.itemId, 9);
-   lu_BitstreamWrite_u8(state, src.quantity, 7);
+
+void lu_BitstreamWrite_ItemSlot(struct lu_BitstreamState* state, const struct ItemSlot* v) {
+   lu_BitstreamWrite_u16(state, v->itemId, 9);
+   lu_BitstreamWrite_u8(state, v->quantity - 0, 7);
 }

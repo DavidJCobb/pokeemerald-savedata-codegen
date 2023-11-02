@@ -12,6 +12,7 @@ namespace ast {
          std::vector<std::unique_ptr<member>> members;
          std::optional<size_t> checksum_member_index;
          struct {
+            bool is_defined_via_typedef = false; // if true, you never use the `struct` keyword to prefix types of variables
             bool is_packed = false;
          } c_type_info;
    

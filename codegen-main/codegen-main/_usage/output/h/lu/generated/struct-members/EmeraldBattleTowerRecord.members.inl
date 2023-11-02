@@ -1,4 +1,4 @@
-   u8 lvlMode;
+   u8 lvlMode; // 0 = level 50, 1 = level 100
    u8 facilityClass;
    u16 winStreak;
    u8 name[PLAYER_NAME_LENGTH + 1];

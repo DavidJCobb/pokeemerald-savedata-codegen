@@ -17,7 +17,7 @@
          <constant name="NUM_DEX_FLAG_BYTES" value="52" />
          
          <!-- == ROUND_BITS_TO_BYTES(NUM_TRENDY_SAYINGS), i.e. ceil(NUM_TRENDY_SAYINGS / 8) -->
-         <constant name="NUM_TRENDY_SAYING_BYTES" value="7" />
+         <constant name="NUM_TRENDY_SAYING_BYTES" value="5" />
          
          <constant name="LINK_B_RECORDS_COUNT" value="5" />
       </header>
@@ -62,7 +62,9 @@
       <struct name="ItemSlot" header="global.h">
          <fields>
             <u16 name="itemId" inherit="$global-item-id" />
-            <u16 name="quantity" min="0" max="99" />
+            <u16 name="quantity" min="0" max="99">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToBagItems_` in `item.c`</line-comment>
+            </u16>
          </fields>
       </struct>
       <struct name="Pokeblock" header="global.h">
@@ -80,12 +82,14 @@
       <union name="LilycoveLady" header="global.h"
          do-not-codegen="true"
          sizeof="64"
+         defined-via-typedef="true"
       />
       
       <!-- old man in Mauville City (e.g. bard, hipster, etc.) -->
       <union name="OldMan" header="global.h"
          do-not-codegen="true"
          sizeof="64"
+         defined-via-typedef="true"
       />
       
       <!-- link -->
@@ -235,8 +239,12 @@
                <array-rank extent="PARTY_SIZE" />
             </field>
             
-            <u32 name="money" />
-            <u16 name="coins" />
+            <u32 name="money">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`</line-comment>
+            </u32>
+            <u16 name="coins">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`</line-comment>
+            </u16>
             <u16 name="registeredItem" inherit="$global-item-id" />
             <field name="pcItems" c-type="ItemSlot" c-type-decl="struct">
                <array-rank extent="PC_ITEMS_COUNT" />
@@ -288,6 +296,7 @@
                <array-rank extent="VARS_COUNT" />
             </u16>
             <u32 name="gameStats">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToGameStats` in `overworld.c`</line-comment>
                <array-rank extent="NUM_GAME_STATS" />
             </u32>
             

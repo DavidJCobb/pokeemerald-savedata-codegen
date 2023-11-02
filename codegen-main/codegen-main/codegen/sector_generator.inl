@@ -76,18 +76,31 @@ namespace codegen {
             id.insert(id.begin(), '0');
          out += id;
 
-         out += "(u8* dst, ";
+         out += "(";
+         if (is_read) {
+            out += "const ";
+         }
+         out += "u8* ";
+         if (is_read) {
+            out += "src";
+         } else {
+            out += "dst";
+         }
+         out += ", ";
          //
          // TODO: Only take args that are actually used within this sector.
          //
          for (size_t j = 0; j < this->top_level_structs.size(); ++j) {
+            const auto* s = this->top_level_structs[j];
             if (!is_read) {
                out += "const ";
             }
-            out += "struct ";
-            out += this->top_level_structs[j]->name;
+            if (!s->c_type_info.is_defined_via_typedef) {
+               out += "struct ";
+            }
+            out += s->name;
             out += "* p_";
-            out += this->top_level_structs[j]->name;
+            out += s->name;
             if (j + 1 < this->top_level_structs.size()) {
                out += ", ";
             }
@@ -102,6 +115,30 @@ namespace codegen {
          out.header += "\n\n";
 
          out.header += "#include \"lu/bitstreams.h\"\n\n";
+
+         // need to forward-declare structs outside of parameter lists
+         bool included_global = false;
+         for (auto* s_def : this->top_level_structs) {
+            if (s_def->c_type_info.is_defined_via_typedef) {
+               //
+               // Cannot forward-declare structs defined as `typedef struct { ... } name`.
+               //
+               if (!s_def->header.empty()) {
+                  if (!included_global && s_def->header != "global.h") {
+                     out.header += "#include \"global.h\"\n"; // lots of pokeemerald stuff breaks if this isn't included first/at all
+                  }
+                  out.header += "#include \"";
+                  out.header += s_def->header;
+                  out.header += "\"\n";
+               }
+               continue;
+            }
+            out.header += "struct ";
+            out.header += s_def->name;
+            out.header += ";\n";
+         }
+         out.header += "\n";
+
          for (size_t i = 0; i < items_by_sector.size(); ++i) {
             out.header += sector_id_to_function_decl(i, true); // read
             out.header += ";\n";
@@ -182,15 +219,13 @@ namespace codegen {
                }
             }
 
-            {
-               std::string common;
-               common += "   struct lu_BitstreamState state;\n";
-               common += "   state.target = dst;\n";
-               common += "   state.shift  = 0;\n\n";
-
-               code_read += common;
-               code_write += common;
-            }
+            code_read  += "   struct lu_BitstreamState state;\n";
+            code_read  += "   state.target = (u8*)src;\n";
+            code_read  += "   state.shift  = 0;\n";
+            //
+            code_write += "   struct lu_BitstreamState state;\n";
+            code_write += "   state.target = dst;\n";
+            code_write += "   state.shift  = 0;\n";
 
             // Function bodies
             for (size_t j = 0; j < item_list.size(); ++j) {
@@ -327,7 +362,9 @@ namespace codegen {
                   {
                      std::string common;
                      common += struct_type->name;
-                     common += "(&state, &";
+                     common += "(&state, ";
+                     if (item_ptr->member_definition)
+                        common += '&';
                      common += computed_accessor;
                      common += ");\n";
 
@@ -339,10 +376,12 @@ namespace codegen {
                } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(item_ptr->member_definition)) {
                   code_read  += indent;
                   code_write += indent;
-                  code_read  += "lu_BitstreamRead_buffer(&state, &";
-                  code_write += "lu_BitstreamWrite_buffer(&state, &";
+                  code_read  += "lu_BitstreamRead_buffer(&state, ";
+                  code_write += "lu_BitstreamWrite_buffer(&state, ";
                   {
                      std::string common;
+                     if (item_ptr->member_definition)
+                        common += '&';
                      common += computed_accessor;
                      common += ", ";
                      common += lu::strings::from_integer(casted->type_def->size_in_bytes);
@@ -390,25 +429,33 @@ namespace codegen {
                   code_write += "lu_BitstreamWrite_";
 
                   size_t bitcount_per = casted->compute_single_element_bitcount();
+                  if (bitcount_per == 1) {
+                     code_read  += "bool(&state);\n";
+
+                     code_write += "bool(&state, ";
+                     code_write += computed_accessor;
+                     code_write += ");\n";
+
+                     continue;
+                  }
 
                   {
                      std::string common;
 
-                     if (bitcount_per == 1) {
-                        common += "bool";
+                     if (casted->is_signed() && !casted->min.has_value()) {
+                        // If it has a minimum value, then we subtract that minimum value 
+                        // when serializing. If that value is negative, then that means we 
+                        // *increase* the serialized value to 0 or above.
+                        common += "s";
                      } else {
-                        if (casted->is_signed()) {
-                           common += "s";
-                        } else {
-                           common += "u";
-                        }
-                        if (bitcount_per <= 8) {
-                           common += "8";
-                        } else if (bitcount_per <= 16) {
-                           common += "16";
-                        } else {
-                           common += "32";
-                        }
+                        common += "u";
+                     }
+                     if (bitcount_per <= 8) {
+                        common += "8";
+                     } else if (bitcount_per <= 16) {
+                        common += "16";
+                     } else {
+                        common += "32";
                      }
                      common += "(&state, ";
 
@@ -447,6 +494,7 @@ namespace codegen {
                   code_read  += "lu_BitstreamRead_u32(&state, ";
                   code_write += "lu_BitstreamWrite_u32(&state, ";
 
+                  code_write += "(u32)";
                   code_write += computed_accessor;
                   code_write += ", ";
 

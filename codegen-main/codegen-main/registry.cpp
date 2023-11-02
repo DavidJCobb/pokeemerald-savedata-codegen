@@ -1010,6 +1010,14 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
             } else {
                scaffold.warn("Unrecognized value for `is-packed` attribute (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
             }
+         } else if (attr_name == "defined-via-typedef") {
+            if (attr_value == "true") {
+               structure->c_type_info.is_defined_via_typedef = true;
+            } else if (attr_value == "false") {
+               structure->c_type_info.is_defined_via_typedef = false;
+            } else {
+               scaffold.warn("Unrecognized value for `defined-via-typedef` attribute (seen: "s + std::string(attr_value) + ")", attr); // can't wait for P2591...
+            }
          } else {
             scaffold.warn("Unrecognized attribute (name "s + std::string(attr_name) + ")", attr); // can't wait for P2591...
          }
@@ -1633,6 +1641,8 @@ void registry::generate_whole_struct_serialization_code() {
    auto out_folder_h = this->paths.output_paths.h / this->paths.output_paths.struct_serialize;
    auto out_folder_c = this->paths.output_paths.c / this->paths.output_paths.struct_serialize;
    for (auto& pair : this->structs) {
+      const auto* s_def = pair.second.get();
+
       {  // h
          std::ofstream stream(out_folder_h / std::filesystem::path("serialize_"s + pair.first + ".h"));
          assert(!!stream);
@@ -1640,8 +1650,34 @@ void registry::generate_whole_struct_serialization_code() {
          stream << "#ifndef GUARD_LU_SERIALIZE_" << pair.first << "\n";
          stream << "#define GUARD_LU_SERIALIZE_" << pair.first << "\n";
          stream << '\n';
-         stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, struct " << pair.first << "* dst);\n";
-         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, const struct " << pair.first << "* src);\n";
+         stream << "struct lu_BitstreamState;\n"; // must declare struct for it to be globally scoped
+         if (s_def->c_type_info.is_defined_via_typedef) {
+            //
+            // Cannot forward-declare structs defined as `typedef struct { ... } name`.
+            //
+            if (!s_def->header.empty()) {
+               if (s_def->header != "global.h") {
+                  stream << "#include \"global.h\"\n"; // lots of pokeemerald stuff breaks if this isn't included first/at all
+               }
+               stream << "#include \"" << s_def->header << "\"\n";
+            }
+         } else {
+            stream << "struct " << pair.first << ";\n"; // must declare struct for it to be globally scoped
+         }
+         stream << '\n';
+
+         stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState*, ";
+         if (!s_def->c_type_info.is_defined_via_typedef) {
+            stream << "struct ";
+         }
+         stream << pair.first << "* dst);\n";
+
+         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState*, const ";
+         if (!s_def->c_type_info.is_defined_via_typedef) {
+            stream << "struct ";
+         }
+         stream << pair.first << "* src);\n";
+
          stream << '\n';
          stream << "#endif";
       }
@@ -1651,18 +1687,24 @@ void registry::generate_whole_struct_serialization_code() {
 
          stream << "#include \"" << this->paths.output_paths.struct_serialize.string() << "/serialize_" << pair.first << ".h\"\n\n";
 
-         if (!pair.second->header.empty()) {
+         stream << "#include \"global.h\"\n"; // lots of pokeemerald stuff breaks if this isn't included first/at all
+         if (!s_def->header.empty() && s_def->header != "global.h") {
             // this should also take care of including all preprocessor constants referenced by the struct's members
-            stream << "#include \"" << pair.second->header << "\" // struct definition\n\n";
+            stream << "#include \"" << s_def->header << "\" // struct definition\n";
          }
+         stream << '\n';
 
-         std::vector<std::string> dependencies = pair.second->get_all_direct_struct_dependencies();
-         bool has_any_strings = pair.second->has_any_string_members();
+         stream << "#include \"lu/bitstreams.h\"\n\n";
+
+         std::vector<std::string> dependencies = s_def->get_all_direct_struct_dependencies();
+         bool has_any_strings = s_def->has_any_string_members();
 
          if (dependencies.size()) {
             stream << "// dependencies\n";
             for (const auto& name : dependencies) {
-               stream << "#include \"./serialize_" << name << ".h\"\n";
+               stream << "#include \"";
+               stream << this->paths.output_paths.struct_serialize.string();
+               stream << "/serialize_" << name << ".h\"\n";
             }
             stream << '\n';
          }
@@ -1671,7 +1713,7 @@ void registry::generate_whole_struct_serialization_code() {
          }
 
          {
-            auto constants = pair.second->get_all_direct_constant_dependencies();
+            auto constants = s_def->get_all_direct_constant_dependencies();
             if (!constants.empty()) {
                stream << "// check constants:\n";
                for (const auto& item : constants) {
@@ -1685,15 +1727,32 @@ void registry::generate_whole_struct_serialization_code() {
             }
          }
 
-         #pragma region Generate: BitstreamRead_StructName
+         std::string code_read;
+         std::string code_write;
+
          {
-            stream << "void lu_BitstreamRead_" << pair.first << "(struct lu_BitstreamState* state, const struct " << pair.first << "* src) {\n";
-            for (const auto& m : pair.second->members) {
+            code_read   = "void lu_BitstreamRead_";
+            code_write  = "void lu_BitstreamWrite_";
+            code_read  += pair.first;
+            code_write += pair.first;
+            code_read  += "(struct lu_BitstreamState* state, ";
+            code_write += "(struct lu_BitstreamState* state, const ";
+            if (!s_def->c_type_info.is_defined_via_typedef) {
+               code_read  += "struct ";
+               code_write += "struct ";
+            }
+            code_read  += pair.first;
+            code_write += pair.first;
+            code_read  += "* v) {\n";
+            code_write += "* v) {\n";
+
+            for (const auto& m : s_def->members) {
                if (m->skip_when_serializing)
                   continue;
-               std::string member_access = m->name;
 
-               const ast::member* member = m.get();
+               const ast::member* member        = m.get();
+               std::string        member_access = "v->"s + m->name;
+               //
                while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
                   member = &(casted->get_member_to_serialize());
 
@@ -1707,33 +1766,43 @@ void registry::generate_whole_struct_serialization_code() {
                constexpr const char first_array_index_name = 'i';
                bool array_indices_are_numbered = rank > ('z' - 'i');
 
-               auto _serialize_indices = [&stream, rank, array_indices_are_numbered]() {
+               auto _serialize_indices = [&code_read, &code_write, rank, array_indices_are_numbered]() {
+                  std::string common;
                   for (size_t i = 0; i < rank; ++i) {
-                     stream << '[';
+                     common += '[';
                      if (array_indices_are_numbered) {
-                        stream << "index_" << i;
+                        common += "index_";
+                        common += lu::strings::from_integer(i);
                      } else {
-                        stream << (char)(first_array_index_name + (char)i);
+                        common += (char)(first_array_index_name + (char)i);
                      }
-                     stream << ']';
+                     common += ']';
                   }
+                  return common;
                };
 
-               std::string indent;
+               std::string indent = "   ";
                if (rank > 0) {
-                  stream << "   {\n";
-                  stream << "      u16 ";
+                  std::string common;
+                  common += indent;
+                  common += "{\n";
+                  
+                  indent += "   ";
+
+                  common += indent;
+                  common += "u16 ";
                   for (size_t i = 0; i < rank; ++i) {
                      if (array_indices_are_numbered) {
-                        stream << "index_" << i;
+                        common += "index_";
+                        common += lu::strings::from_integer(i);
                      } else {
-                        stream << (char)(first_array_index_name + (char)i);
+                        common += (char)(first_array_index_name + (char)i);
                      }
                      if (i + 1 < rank) {
-                        stream << ", ";
+                        common += ", ";
                      }
                   }
-                  stream << ";\n";
+                  common += ";\n";
                   for (size_t i = 0; i < rank; ++i) {
                      std::string var;
                      if (array_indices_are_numbered) {
@@ -1741,225 +1810,185 @@ void registry::generate_whole_struct_serialization_code() {
                      } else {
                         var +=(char)(first_array_index_name + (char)i);
                      }
-                     stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].as_c_expression() << "; ++" << var << ") { \n";
+                     common += indent;
+                     common += "for (";
+                     common += var;
+                     common += " = 0; ";
+                     common += var;
+                     common += " < ";
+                     common += extents[i].as_c_expression();
+                     common += "; ++";
+                     common += var;
+                     common += ") { \n";
+                     
                      indent += "   ";
                   }
-                  stream << "      ";
+
+                  code_read  += common;
+                  code_write += common;
                }
 
                if (auto* casted = dynamic_cast<const ast::struct_member*>(member)) {
-                  stream << indent << "   lu_BitstreamRead_" << casted->type_name << "(state, ";
-                  stream << "&src." << member_access;
-                  _serialize_indices();
-                  stream << ");\n";
+                  code_read  += indent;
+                  code_write += indent;
+                  code_read  += "lu_BitstreamRead_";
+                  code_write += "lu_BitstreamWrite_";
+                  code_read  += casted->type_name;
+                  code_write += casted->type_name;
+                  code_read  += "(state, &";
+                  code_write += "(state, &";
+                  {
+                     std::string common = member_access + _serialize_indices();
+                     code_read  += common;
+                     code_write += common;
+                  }
+                  code_read  += ");\n";
+                  code_write += ");\n";
                } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
                   assert(casted->max_length.value > 0);
+                  
+                  code_read  += indent;
+                  code_write += indent;
+                  code_read  += "lu_BitstreamRead_string";
+                  code_write += "lu_BitstreamWrite_string";
 
-                  stream << indent << "   lu_BitstreamRead_string";
+                  std::string common;
                   if (casted->only_early_terminator) {
-                     stream << "_optional_terminator";
+                     common += "_optional_terminator";
                   }
-                  stream << '(';
-                  stream << "state";
-                  stream << ", ";
-                  stream << "src." << member_access;
-                  _serialize_indices();
-                  stream << ", ";
-                  stream << casted->max_length.as_c_expression();
+                  common += "(state, ";
+                  common += member_access + _serialize_indices();
+                  common += ", ";
+                  common += casted->max_length.as_c_expression();
                   if (!casted->only_early_terminator) {
-                     stream << ", ";
-                     stream << std::bit_width(casted->max_length.value);
+                     common += ", ";
+                     common += lu::strings::from_integer(std::bit_width(casted->max_length.value));
                   }
-                  stream << ");\n";
-               } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
-                  stream << indent << "   lu_BitstreamRead_buffer(";
-                  stream << "state";
-                  stream << ", ";
-                  stream << "&src." << member_access;
-                  _serialize_indices();
-                  stream << ", ";
-                  stream << lu::strings::from_integer(casted->type_def->size_in_bytes);
-                  stream << ");\n";
-               } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
-                  stream << indent << "   ";
-                  stream << "src." << member_access;
-                  _serialize_indices();
-                  stream << " = ";
+                  common += ");\n";
 
-                  size_t bitcount = member->compute_single_element_bitcount();
-                  if (bitcount == 1) {
-                     stream << "lu_BitstreamRead_bool(state, src." << member_access;
-                     _serialize_indices();
-                     stream << ");\n";
-                  } else {
-                     stream << "lu_BitstreamRead_u";
-                     if (bitcount > 16)
-                        stream << "32";
-                     else if (bitcount > 8)
-                        stream << "16";
-                     else
-                        stream << "8";
-                     stream << "(state, " << bitcount << ");\n";
+                  code_read  += common;
+                  code_write += common;
+               } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
+                  code_read  += indent;
+                  code_write += indent;
+                  code_read  += "lu_BitstreamRead_buffer(state, &";
+                  code_write += "lu_BitstreamWrite_buffer(state, &";
+                  code_read  += member_access + _serialize_indices();
+                  code_write += member_access + _serialize_indices();
+                  code_read  += ", ";
+                  code_write += ", ";
+                  code_read  += lu::strings::from_integer(casted->type_def->size_in_bytes);
+                  code_write += lu::strings::from_integer(casted->type_def->size_in_bytes);
+                  code_read  += ");\n";
+                  code_write += ");\n";
+               } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
+                  code_read  += indent;
+                  code_write += indent;
+
+                  code_read += member_access + _serialize_indices();
+                  code_read += " = ";
+
+                  code_read  += "lu_BitstreamRead_";
+                  code_write += "lu_BitstreamWrite_";
+
+                  size_t bitcount_per = casted->compute_single_element_bitcount();
+                  if (bitcount_per == 1) {
+                     code_read  += "bool(state);\n";
+
+                     code_write += "bool(state, ";
+                     code_write += member_access + _serialize_indices();
+                     code_write += ");\n";
+
+                     continue;
                   }
+
+                  {
+                     std::string common;
+
+                     if (casted->is_signed() && !casted->min.has_value()) {
+                        // If it has a minimum value, then we subtract that minimum value 
+                        // when serializing. If that value is negative, then that means we 
+                        // *increase* the serialized value to 0 or above.
+                        common += "s";
+                     } else {
+                        common += "u";
+                     }
+                     if (bitcount_per <= 8) {
+                        common += "8";
+                     } else if (bitcount_per <= 16) {
+                        common += "16";
+                     } else {
+                        common += "32";
+                     }
+                     common += "(state, ";
+
+                     code_read  += common;
+                     code_write += common;
+                  }
+
+                  code_write += member_access + _serialize_indices();
+                  if (casted->min.has_value()) {
+                     code_write += " - ";
+                     code_write += lu::strings::from_integer(casted->min.value());
+                  }
+                  code_write += ", ";
+
+                  if (bitcount_per != 1) {
+                     code_read  += lu::strings::from_integer(bitcount_per);
+                     code_write += lu::strings::from_integer(bitcount_per);
+                  }
+                  code_read += ")";
+                  if (casted->min.has_value()) {
+                     code_read += " + ";
+                     code_read += lu::strings::from_integer(casted->min.value());
+                  }
+                  code_read += ";\n";
+
+                  code_write += ");\n";
                } else if (auto* casted = dynamic_cast<const ast::pointer_member*>(member)) {
-                  //
-                  // Reading a pointer to ROM.
-                  //
-                  stream << indent << "   ";
-                  stream << member_access;
-                  _serialize_indices();
-                  stream << " = (";
-                  stream << ast::integral_type_to_string(casted->pointed_to_type.value());
-                  stream << "*) lu_BitstreamREad_u32(state, 32);\n";
+                  code_read  += indent;
+                  code_write += indent;
+
+                  code_read += member_access + _serialize_indices();
+                  code_read += " = (";
+                  code_read += ast::integral_type_to_string(casted->pointed_to_type.value());
+                  code_read += "*) ";
+
+                  code_read  += "lu_BitstreamRead_u32(state, ";
+                  code_write += "lu_BitstreamWrite_u32(state, ";
+
+                  code_write += "(u32)";
+                  code_write += member_access + _serialize_indices();
+                  code_write += ", ";
+
+                  code_read  += "32);\n";
+                  code_write += "32);\n";
                }
 
                if (rank > 0) {
-                  for (size_t i = 0; i < rank; ++i) {
-                     stream << indent << "   }\n"; // close (nested) for-loop
+                  std::string common;
+                  for (size_t i = 0; i < rank; ++i) { // close (nested) for-loops
                      indent = indent.substr(3);
+                     common += indent;
+                     common += "}\n";
                   }
-                  stream << "   }\n"; // close anonymous block containing loop iterator var
-               }
-
-            }
-            stream << "}";
-         }
-         #pragma endregion
-
-         stream << '\n';
-
-         #pragma region Generate: BitstreamWrite_StructName
-         stream << "void lu_BitstreamWrite_" << pair.first << "(struct lu_BitstreamState* state, const struct " << pair.first << "* src) {\n";
-         for (const auto& m : pair.second->members) {
-            if (m->skip_when_serializing)
-               continue;
-            std::string member_access = m->name;
-
-            const ast::member* member = m.get();
-            while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
-               member = &(casted->get_member_to_serialize());
-
-               member_access += '.';
-               member_access += member->name;
-            }
-
-            auto&  extents = member->array_extents;
-            size_t rank    = extents.size();
-
-            constexpr const char first_array_index_name = 'i';
-            bool array_indices_are_numbered = rank > ('z' - 'i');
-
-            auto _serialize_indices = [&stream, rank, array_indices_are_numbered]() {
-               for (size_t i = 0; i < rank; ++i) {
-                  stream << '[';
-                  if (array_indices_are_numbered) {
-                     stream << "index_" << i;
-                  } else {
-                     stream << (char)(first_array_index_name + (char)i);
-                  }
-                  stream << ']';
-               }
-            };
-
-            std::string indent;
-            if (rank > 0) {
-               stream << "   {\n";
-               stream << "      u16 ";
-               for (size_t i = 0; i < rank; ++i) {
-                  if (array_indices_are_numbered) {
-                     stream << "index_" << i;
-                  } else {
-                     stream << (char)(first_array_index_name + (char)i);
-                  }
-                  if (i + 1 < rank) {
-                     stream << ", ";
-                  }
-               }
-               stream << ";\n";
-               for (size_t i = 0; i < rank; ++i) {
-                  std::string var;
-                  if (array_indices_are_numbered) {
-                     var = "index_" + lu::strings::from_integer(i);
-                  } else {
-                     var += (char)(first_array_index_name + (char)i);
-                  }
-                  stream << indent << "      for (" << var << " = 0; " << var << " < " << extents[i].as_c_expression() << "; ++" << var << ") { \n";
-                  indent += "   ";
-               }
-               stream << "      ";
-            }
-
-            if (auto* casted = dynamic_cast<const ast::struct_member*>(member)) {
-               stream << indent << "   lu_BitstreamWrite_" << casted->type_name << "(state, ";
-               stream << "&src." << member_access;
-               _serialize_indices();
-               stream << ");\n";
-            } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
-               assert(casted->max_length.value > 0);
-
-               stream << indent << "   lu_BitstreamWrite_string";
-               if (casted->only_early_terminator) {
-                  stream << "_optional_terminator";
-               }
-               stream << '(';
-               stream << "state";
-               stream << ", ";
-               stream << "src." << member_access;
-               _serialize_indices();
-               stream << ", ";
-               stream << casted->max_length.as_c_expression();
-               if (!casted->only_early_terminator) {
-                  stream << ", ";
-                  stream << std::bit_width(casted->max_length.value);
-               }
-               stream << ");\n";
-            } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
-               stream << indent << "   lu_BitstreamWrite_buffer(";
-               stream << "state";
-               stream << ", ";
-               stream << "&src." << member_access;
-               _serialize_indices();
-               stream << ", ";
-               stream << lu::strings::from_integer(casted->type_def->size_in_bytes);
-               stream << ");\n";
-            } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
-               size_t bitcount = member->compute_single_element_bitcount();
-               if (bitcount == 1) {
-                  stream << indent << "   lu_BitstreamWrite_bool(state, src." << member_access;
-                  _serialize_indices();
-                  stream << ");\n";
-               } else {
-                  stream << indent << "   lu_BitstreamWrite_u";
-                  if (bitcount > 16)
-                     stream << "32";
-                  else if (bitcount > 8)
-                     stream << "16";
-                  else
-                     stream << "8";
-                  stream << "(state, src." << member_access;
-                  _serialize_indices();
-                  stream << ", " << bitcount << ");\n";
-               }
-            } else if (auto* casted = dynamic_cast<const ast::pointer_member*>(member)) {
-               //
-               // Writing in a pointer to ROM.
-               //
-               stream << indent << "   lu_BitstreamWrite_u32(state, src." << member_access;
-               _serialize_indices();
-               stream << ", 32);\n";
-            }
-
-            if (rank > 0) {
-               for (size_t i = 0; i < rank; ++i) {
-                  stream << indent << "   }\n"; // close (nested) for-loop
                   indent = indent.substr(3);
+                  common += indent;
+                  common += "}\n"; // close anonymous block containing loop iterator var
+
+                  code_read  += common;
+                  code_write += common;
                }
-               stream << "   }\n"; // close anonymous block containing loop iterator var
+
             }
 
+            code_read  += "}\n";
+            code_write += "}\n";
          }
-         stream << "}";
-         #pragma endregion
+
+         stream << code_read;
+         stream << '\n';
+         stream << code_write;
       }
    }
 }

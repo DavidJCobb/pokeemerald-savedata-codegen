@@ -18,9 +18,10 @@
       <union name="TVShow" header="global.tv.h"
          do-not-codegen="true"
          sizeof="36"
+         defined-via-typedef="true"
       />
       
-      <struct name="PokeNews" header="global.tv.h">
+      <struct name="PokeNews" header="global.tv.h" defined-via-typedef="true">
          <fields>
             <u8 name="kind" />
             <u8 name="state" />
@@ -48,7 +49,7 @@
             <u8 name="playerLostAMon2" c-bitfield="1" />
             <u8 name="playerUsedHealingItem2" c-bitfield="1" />
             <u8 name="playerThrewABall2" c-bitfield="1" />
-            <u8 name="valB_5" c-bitfield="4" />
+            <u8 name="valB_4" c-bitfield="4" />
          </fields>
       </struct>
    </types>

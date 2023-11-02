@@ -12,8 +12,8 @@
    u16 mapView[0x100];
    u8 playerPartyCount;
    struct Pokemon playerParty[PARTY_SIZE];
-   u32 money;
-   u16 coins;
+   u32 money; // Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`
+   u16 coins; // Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToAllEncryptedData` in `load_save.c`
    u16 registeredItem;
    struct ItemSlot pcItems[PC_ITEMS_COUNT];
    struct ItemSlot bagPocket_Items[BAG_ITEMS_COUNT];
@@ -31,7 +31,7 @@
    struct ObjectEventTemplate objectEventTemplates[OBJECT_EVENT_TEMPLATES_COUNT];
    u8 flags[NUM_FLAG_BYTES];
    u16 vars[VARS_COUNT];
-   u32 gameStats[NUM_GAME_STATS];
+   u32 gameStats[NUM_GAME_STATS]; // Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToGameStats` in `overworld.c`
    struct BerryTree berryTrees[BERRY_TREES_COUNT];
    struct SecretBase secretBases[SECRET_BASES_COUNT];
    u8 playerRoomDecorations[DECOR_MAX_PLAYERS_HOUSE];
