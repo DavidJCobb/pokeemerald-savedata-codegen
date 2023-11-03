@@ -17,7 +17,7 @@
 void lu_BitstreamRead_ContestWinner(struct lu_BitstreamState* state, struct ContestWinner* v) {
    v->personality = lu_BitstreamRead_u32(state, 32);
    v->trainerId = lu_BitstreamRead_u32(state, 32);
-   v->species = lu_BitstreamRead_u16(state, 11) + 0;
+   v->species = lu_BitstreamRead_u16(state, 11);
    v->contestCategory = lu_BitstreamRead_u8(state, 8);
    lu_BitstreamRead_string(state, v->monName, POKEMON_NAME_LENGTH, 4);
    lu_BitstreamRead_string(state, v->trainerName, PLAYER_NAME_LENGTH, 3);

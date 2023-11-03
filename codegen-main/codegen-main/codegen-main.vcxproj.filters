@@ -207,6 +207,9 @@
     <ClInclude Include="cobb\type_traits\strip_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="codegen\serialization_function_body.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ast\member.inl">
@@ -248,6 +251,9 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="cobb\bitstreams\writer.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="codegen\serialization_function_body.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

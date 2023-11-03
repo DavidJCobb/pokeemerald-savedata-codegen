@@ -15,11 +15,11 @@
 #endif
 
 void lu_BitstreamRead_BattleTowerInterview(struct lu_BitstreamState* state, struct BattleTowerInterview* v) {
-   v->playerSpecies = lu_BitstreamRead_u16(state, 11) + 0;
-   v->opponentSpecies = lu_BitstreamRead_u16(state, 11) + 0;
+   v->playerSpecies = lu_BitstreamRead_u16(state, 11);
+   v->opponentSpecies = lu_BitstreamRead_u16(state, 11);
    lu_BitstreamRead_string(state, v->opponentName, PLAYER_NAME_LENGTH, 3);
    lu_BitstreamRead_string(state, v->opponentMonNickname, POKEMON_NAME_LENGTH, 4);
-   v->opponentLanguage = lu_BitstreamRead_u8(state, 3) + 0;
+   v->opponentLanguage = lu_BitstreamRead_u8(state, 3);
 }
 
 void lu_BitstreamWrite_BattleTowerInterview(struct lu_BitstreamState* state, const struct BattleTowerInterview* v) {

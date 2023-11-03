@@ -201,6 +201,7 @@
     <ClInclude Include="cobb\type_traits\strip_enum.h" />
     <ClInclude Include="cobb\uint_of_size.h" />
     <ClInclude Include="codegen\sector_generator.h" />
+    <ClInclude Include="codegen\serialization_function_body.h" />
     <ClInclude Include="codegen\serialization_item.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h" />
     <ClInclude Include="lu\rapidxml_helpers\for_each_child_element.h" />
@@ -230,6 +231,7 @@
     <None Include="cobb\bitstreams\position.inl" />
     <None Include="cobb\bitstreams\reader.inl" />
     <None Include="cobb\bitstreams\writer.inl" />
+    <None Include="codegen\serialization_function_body.inl" />
     <None Include="codegen\serialization_item.inl" />
     <None Include="Directory.Build.props" />
   </ItemGroup>

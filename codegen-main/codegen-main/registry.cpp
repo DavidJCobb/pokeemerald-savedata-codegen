@@ -18,6 +18,7 @@
 #include "./ast/structure.h"
 
 #include "./codegen/sector_generator.h"
+#include "./codegen/serialization_function_body.h"
 
 using namespace std::literals::string_literals;
 
@@ -1746,240 +1747,23 @@ void registry::generate_whole_struct_serialization_code() {
             code_read  += "* v) {\n";
             code_write += "* v) {\n";
 
-            for (const auto& m : s_def->members) {
-               if (m->skip_when_serializing)
-                  continue;
+            {
+               auto item = codegen::serialization_item::for_top_level_struct(*s_def);
+               item.accessor = "v"; // override the default, which is p_StructName
 
-               const ast::member* member        = m.get();
-               std::string        member_access = "v->"s + m->name;
+               codegen::serialization_function_body body;
+               body.item_list = item.expand();
                //
-               while (auto* casted = dynamic_cast<const ast::inlined_union_member*>(member)) {
-                  member = &(casted->get_member_to_serialize());
+               body.state_is_argument      = true;
+               body.writes_can_debug_print = false;
 
-                  member_access += '.';
-                  member_access += member->name;
-               }
+               body.generate();
 
-               auto&  extents = member->array_extents;
-               size_t rank    = extents.size();
+               code_read  += body.out.read;
+               code_write += body.out.write;
 
-               constexpr const char first_array_index_name = 'i';
-               bool array_indices_are_numbered = rank > ('z' - 'i');
-
-               auto _serialize_indices = [&code_read, &code_write, rank, array_indices_are_numbered]() {
-                  std::string common;
-                  for (size_t i = 0; i < rank; ++i) {
-                     common += '[';
-                     if (array_indices_are_numbered) {
-                        common += "index_";
-                        common += lu::strings::from_integer(i);
-                     } else {
-                        common += (char)(first_array_index_name + (char)i);
-                     }
-                     common += ']';
-                  }
-                  return common;
-               };
-
-               std::string indent = "   ";
-               if (rank > 0) {
-                  std::string common;
-                  common += indent;
-                  common += "{\n";
-                  
-                  indent += "   ";
-
-                  common += indent;
-                  common += "u16 ";
-                  for (size_t i = 0; i < rank; ++i) {
-                     if (array_indices_are_numbered) {
-                        common += "index_";
-                        common += lu::strings::from_integer(i);
-                     } else {
-                        common += (char)(first_array_index_name + (char)i);
-                     }
-                     if (i + 1 < rank) {
-                        common += ", ";
-                     }
-                  }
-                  common += ";\n";
-                  for (size_t i = 0; i < rank; ++i) {
-                     std::string var;
-                     if (array_indices_are_numbered) {
-                        var = "index_" + lu::strings::from_integer(i);
-                     } else {
-                        var +=(char)(first_array_index_name + (char)i);
-                     }
-                     common += indent;
-                     common += "for (";
-                     common += var;
-                     common += " = 0; ";
-                     common += var;
-                     common += " < ";
-                     common += extents[i].as_c_expression();
-                     common += "; ++";
-                     common += var;
-                     common += ") { \n";
-                     
-                     indent += "   ";
-                  }
-
-                  code_read  += common;
-                  code_write += common;
-               }
-
-               if (auto* casted = dynamic_cast<const ast::struct_member*>(member)) {
-                  code_read  += indent;
-                  code_write += indent;
-                  code_read  += "lu_BitstreamRead_";
-                  code_write += "lu_BitstreamWrite_";
-                  code_read  += casted->type_name;
-                  code_write += casted->type_name;
-                  code_read  += "(state, &";
-                  code_write += "(state, &";
-                  {
-                     std::string common = member_access + _serialize_indices();
-                     code_read  += common;
-                     code_write += common;
-                  }
-                  code_read  += ");\n";
-                  code_write += ");\n";
-               } else if (auto* casted = dynamic_cast<const ast::string_member*>(member)) {
-                  assert(casted->max_length.value > 0);
-                  
-                  code_read  += indent;
-                  code_write += indent;
-                  code_read  += "lu_BitstreamRead_string";
-                  code_write += "lu_BitstreamWrite_string";
-
-                  std::string common;
-                  if (casted->only_early_terminator) {
-                     common += "_optional_terminator";
-                  }
-                  common += "(state, ";
-                  common += member_access + _serialize_indices();
-                  common += ", ";
-                  common += casted->max_length.as_c_expression();
-                  if (!casted->only_early_terminator) {
-                     common += ", ";
-                     common += lu::strings::from_integer(std::bit_width(casted->max_length.value));
-                  }
-                  common += ");\n";
-
-                  code_read  += common;
-                  code_write += common;
-               } else if (auto* casted = dynamic_cast<const ast::blind_union_member*>(member)) {
-                  code_read  += indent;
-                  code_write += indent;
-                  code_read  += "lu_BitstreamRead_buffer(state, &";
-                  code_write += "lu_BitstreamWrite_buffer(state, &";
-                  code_read  += member_access + _serialize_indices();
-                  code_write += member_access + _serialize_indices();
-                  code_read  += ", ";
-                  code_write += ", ";
-                  code_read  += lu::strings::from_integer(casted->type_def->size_in_bytes);
-                  code_write += lu::strings::from_integer(casted->type_def->size_in_bytes);
-                  code_read  += ");\n";
-                  code_write += ");\n";
-               } else if (auto* casted = dynamic_cast<const ast::integral_member*>(member)) {
-                  code_read  += indent;
-                  code_write += indent;
-
-                  code_read += member_access + _serialize_indices();
-                  code_read += " = ";
-
-                  code_read  += "lu_BitstreamRead_";
-                  code_write += "lu_BitstreamWrite_";
-
-                  size_t bitcount_per = casted->compute_single_element_bitcount();
-                  if (bitcount_per == 1) {
-                     code_read  += "bool(state);\n";
-
-                     code_write += "bool(state, ";
-                     code_write += member_access + _serialize_indices();
-                     code_write += ");\n";
-
-                     continue;
-                  }
-
-                  {
-                     std::string common;
-
-                     if (casted->is_signed() && !casted->min.has_value()) {
-                        // If it has a minimum value, then we subtract that minimum value 
-                        // when serializing. If that value is negative, then that means we 
-                        // *increase* the serialized value to 0 or above.
-                        common += "s";
-                     } else {
-                        common += "u";
-                     }
-                     if (bitcount_per <= 8) {
-                        common += "8";
-                     } else if (bitcount_per <= 16) {
-                        common += "16";
-                     } else {
-                        common += "32";
-                     }
-                     common += "(state, ";
-
-                     code_read  += common;
-                     code_write += common;
-                  }
-
-                  code_write += member_access + _serialize_indices();
-                  if (casted->min.has_value() && casted->min.value() != 0) {
-                     code_write += " - ";
-                     code_write += lu::strings::from_integer(casted->min.value());
-                  }
-                  code_write += ", ";
-
-                  if (bitcount_per != 1) {
-                     code_read  += lu::strings::from_integer(bitcount_per);
-                     code_write += lu::strings::from_integer(bitcount_per);
-                  }
-                  code_read += ")";
-                  if (casted->min.has_value() && casted->min.value() != 0) {
-                     code_read += " + ";
-                     code_read += lu::strings::from_integer(casted->min.value());
-                  }
-                  code_read += ";\n";
-
-                  code_write += ");\n";
-               } else if (auto* casted = dynamic_cast<const ast::pointer_member*>(member)) {
-                  code_read  += indent;
-                  code_write += indent;
-
-                  code_read += member_access + _serialize_indices();
-                  code_read += " = (";
-                  code_read += ast::integral_type_to_string(casted->pointed_to_type.value());
-                  code_read += "*) ";
-
-                  code_read  += "lu_BitstreamRead_u32(state, ";
-                  code_write += "lu_BitstreamWrite_u32(state, ";
-
-                  code_write += "(u32)";
-                  code_write += member_access + _serialize_indices();
-                  code_write += ", ";
-
-                  code_read  += "32);\n";
-                  code_write += "32);\n";
-               }
-
-               if (rank > 0) {
-                  std::string common;
-                  for (size_t i = 0; i < rank; ++i) { // close (nested) for-loops
-                     indent = indent.substr(3);
-                     common += indent;
-                     common += "}\n";
-                  }
-                  indent = indent.substr(3);
-                  common += indent;
-                  common += "}\n"; // close anonymous block containing loop iterator var
-
-                  code_read  += common;
-                  code_write += common;
-               }
-
+               for (auto* item : body.item_list)
+                  delete item;
             }
 
             code_read  += "}\n";

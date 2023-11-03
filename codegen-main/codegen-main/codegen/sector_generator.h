@@ -31,7 +31,7 @@ namespace codegen {
          std::string whole_struct_serialize_header_folder;
 
          std::vector<const ast::structure*> top_level_structs;
-         std::vector<serialization_item::item_list> items_by_sector;
+         std::vector<serialization_item::item_list> items_by_sector; // owned
          size_t out_sector_count = 0;
 
       protected:
