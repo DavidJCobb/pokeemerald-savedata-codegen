@@ -31,7 +31,7 @@ namespace cobb::bitstreams {
    }
    constexpr void reader::_read_header() {
       this->_header = {};
-      this->_header.stream(*this);
+      //this->_header.stream(*this);
    }
 
    constexpr size_t reader::bits_remaining() const noexcept {
