@@ -12,8 +12,10 @@ namespace codegen {
       }
 
       auto&  extents = this->member_definition->array_extents;
+      auto&  indices = this->array_indices;
+
       size_t element = this->member_definition->compute_single_element_bitcount();
-      for (size_t i = this->array_indices.size(); i < extents.size(); ++i) {
+      for (size_t i = indices.size(); i < extents.size(); ++i) {
          element *= extents[i].extent.value;
       }
       return element;

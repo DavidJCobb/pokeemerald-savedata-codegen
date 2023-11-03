@@ -220,12 +220,10 @@ namespace codegen {
             }
 
             code_read  += "   struct lu_BitstreamState state;\n";
-            code_read  += "   state.target = (u8*)src;\n";
-            code_read  += "   state.shift  = 0;\n";
+            code_read  += "   lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here\n";
             //
             code_write += "   struct lu_BitstreamState state;\n";
-            code_write += "   state.target = dst;\n";
-            code_write += "   state.shift  = 0;\n";
+            code_write += "   lu_BitstreamInitialize(&state, dst);\n";
 
             // Function bodies
             for (size_t j = 0; j < item_list.size(); ++j) {
@@ -235,6 +233,18 @@ namespace codegen {
                size_t coalesce_array_siblings_up_through = j;
 
                std::string indent = "   ";
+               
+               if constexpr (enable_debug_prints) {
+                  code_write += indent;
+                  code_write += "#ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE\n";
+                  code_write += indent;
+                  code_write += "   DebugPrintf(\"Writing field: ";
+                  code_write += computed_accessor;
+                  code_write += "\", 0);\n";
+                  code_write += indent;
+                  code_write += "#endif\n";
+               }
+
                if (item_ptr->is_array()) {
                   std::string common;
 
@@ -325,7 +335,11 @@ namespace codegen {
                      common += " = 0; ";
                      common += rank_to_var(i);
                      common += " < ";
-                     common += extents[i].as_c_expression();
+                     if constexpr (enable_array_extent_expressions) {
+                        common += extents[i].as_c_expression();
+                     } else {
+                        common += lu::strings::from_integer(extents[i].extent.value);
+                     }
                      common += "; ++";
                      common += rank_to_var(i);
                      common += ") {\n";
@@ -464,7 +478,7 @@ namespace codegen {
                   }
 
                   code_write += computed_accessor;
-                  if (casted->min.has_value()) {
+                  if (casted->min.has_value() && casted->min.value() != 0) {
                      code_write += " - ";
                      code_write += lu::strings::from_integer(casted->min.value());
                   }

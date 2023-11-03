@@ -20,6 +20,9 @@ namespace codegen {
          static constexpr const size_t sector_footer                = 128; // only 12 bytes are actually used lol
          static constexpr const size_t max_bytes_per_sector = sector_size_including_footer - sector_footer;
 
+         static constexpr const bool enable_debug_prints = true;
+         static constexpr const bool enable_array_extent_expressions = true;
+
       public:
          constexpr ~sector_generator();
 

@@ -7,6 +7,10 @@
 #include "codegen-main/ast/member_types/_all.h"
 
 std::string struct_bitwalker::_pull_value(const std::string& accessor, const ast::member& m_def) {
+   if (m_def.skip_when_serializing) {
+      return "<skipped when serializing>";
+   }
+
    if (auto* casted = dynamic_cast<const ast::blind_union_member*>(&m_def)) {
       for (size_t i = 0; i < casted->type_def->size_in_bytes; ++i) {
          uint8_t dummy;
