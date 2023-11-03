@@ -56,7 +56,9 @@ namespace codegen {
       std::string gen;
       gen += "for (";
       gen += var;
-      gen += " = 0; ";
+      gen += " = ";
+      gen += lu::strings::from_integer(start);
+      gen += "; ";
       gen += var;
       gen += " < ";
       gen += stop;
