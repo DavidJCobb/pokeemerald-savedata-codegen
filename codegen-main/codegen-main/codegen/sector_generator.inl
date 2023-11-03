@@ -229,6 +229,10 @@ namespace codegen {
             for (size_t j = 0; j < item_list.size(); ++j) {
                const auto& item_ptr = item_list[j];
                std::string computed_accessor = item_ptr->accessor;
+               if (item_ptr->member_definition) {
+                  if (item_ptr->member_definition->skip_when_serializing) // `serialization_item`s should never be generated for these members
+                     throw;
+               }
 
                size_t coalesce_array_siblings_up_through = j;
 

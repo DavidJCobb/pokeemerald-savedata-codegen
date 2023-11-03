@@ -23,6 +23,10 @@ namespace ast {
       if (this->serialization_bitcount.has_value())
          return this->serialization_bitcount.value().value;
 
+      std::intmax_t cap = ast::maximum_of(this->value_type.value());
+      if (this->c_bitfield.has_value())
+         cap = (1 << this->c_bitfield.value().value) - 1;
+
       if (!this->min.has_value() && !this->max.has_value()) {
          if (this->c_bitfield.has_value())
             return this->c_bitfield.value().value;
@@ -39,7 +43,7 @@ namespace ast {
       if (this->max.has_value()) {
          max = this->max.value();
       } else {
-         max = ast::maximum_of(this->value_type.value());
+         max = cap;
       }
       return std::bit_width((std::uintmax_t)(max - min));
    }
