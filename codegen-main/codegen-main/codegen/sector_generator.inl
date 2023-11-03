@@ -493,7 +493,7 @@ namespace codegen {
                      code_write += lu::strings::from_integer(bitcount_per);
                   }
                   code_read += ")";
-                  if (casted->min.has_value()) {
+                  if (casted->min.has_value() && casted->min.value() != 0) {
                      code_read += " + ";
                      code_read += lu::strings::from_integer(casted->min.value());
                   }

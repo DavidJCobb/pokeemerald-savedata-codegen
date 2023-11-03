@@ -44,22 +44,31 @@ std::string struct_bitwalker::_pull_value(const std::string& accessor, const ast
    if (auto* casted = dynamic_cast<const ast::string_member*>(&m_def)) { // NOTE: this'll be in GF encoding for now
       auto char_type = casted->char_type.value_or(ast::integral_type::u8);
 
-      size_t buffer_len = casted->max_length.value;
-      if (!casted->only_early_terminator)
-         ++buffer_len;
-
       std::string out;
+
+      size_t length_prefix = 0;
+      if (!casted->only_early_terminator) {
+         length_prefix = this->reader.stream_bits(std::bit_width(casted->max_length.value));
+         out += "<length: ";
+         out += lu::strings::from_integer(length_prefix);
+         out += "> ";
+      }
+
+      size_t buffer_len = casted->max_length.value;
       for (size_t i = 0; i < buffer_len; ++i) {
          auto ch = this->reader.stream_bits(ast::bitcount_of(char_type));
-         out += lu::strings::from_integer(ch);
-
-         if (i + 1 < buffer_len) {
-            if (!casted->only_early_terminator && i + 1 == casted->max_length.value) {
-               out += " | ";
-            } else {
-               out += ' ';
-            }
+         if (ch >= 0xBB && ch <= 0xD4) {
+            out += '\'';
+            out += ((char)(ch - 0xBB) + 'A');
+            out += '\'';
+         } else if (ch >= 0xD5 && ch <= 0xEE) {
+            out += '\'';
+            out += ((char)(ch - 0xD5) + 'a');
+            out += '\'';
+         } else {
+            out += lu::strings::from_integer(ch);
          }
+         out += ' ';
       }
       return out;
    }
@@ -133,7 +142,7 @@ void struct_bitwalker::_walk_struct(const std::string& accessor, const ast::stru
          this->output += line;
 
          if (as_struct_member) {
-            _walk_struct(computed_accessor, *as_struct_member->type_def);
+            _walk_struct(computed_accessor + indices, *as_struct_member->type_def);
          }
       }
    }

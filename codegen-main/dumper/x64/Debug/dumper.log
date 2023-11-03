@@ -5,5 +5,5 @@ D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstre
 D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(21,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(25,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(216,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bitwalker.cpp(37,18): warning C4244: 'initializing': conversion from 'uintmax_t' to 'uint32_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bitwalker.cpp(41,18): warning C4244: 'initializing': conversion from 'uintmax_t' to 'uint32_t', possible loss of data
   dumper.vcxproj -> D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Debug\dumper.exe
