@@ -8,6 +8,9 @@ namespace ast {
 }
 
 class struct_bitwalker {
+   public:
+      static constexpr const bool show_offsets = true;
+
    protected:
       cobb::bitstreams::reader reader;
 
@@ -15,6 +18,7 @@ class struct_bitwalker {
       std::string output;
 
    protected:
+      std::string _stringify_pos() const;
       std::string _pull_value(const std::string& accessor, const ast::member&);
       void _walk_struct(const std::string& accessor, const ast::structure&);
 
