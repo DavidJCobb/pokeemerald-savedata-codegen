@@ -30,7 +30,7 @@ namespace ast {
       return this->get_member_to_serialize().compute_total_unpacked_bytecount();
    }
    /*virtual*/ constexpr std::size_t inlined_union_member::compute_single_element_bitcount() const /*override*/ {
-      return this->get_member_to_serialize().compute_single_element_bitcount();
+      return this->get_member_to_serialize().compute_total_bitcount();
    }
    
 

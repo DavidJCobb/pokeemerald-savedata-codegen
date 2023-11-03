@@ -5,15 +5,15 @@ In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (chara
 
 ## Overall stats
 19664 bytes in RAM / 19840 bytes available across 5 sectors (99% space usage)  
-136164 packed bits = 17021 packed bytes (85% space usage)  
+138980 packed bits = 17373 packed bytes (87% space usage)  
 
 
 ## Struct stats
 | Name | Bytes in RAM | Packed bits | Packed bytes | Savings |
 | - | -: | -: | -: | -: |
 | SaveBlock2 | 3912 | 28018 |3503 | 409 (10%) |
-| SaveBlock1 | 15752 | 108146 |13519 | 2233 (14%) |
-| **Total** | 19664 | 136164 |17021 | 2643 (13%) |
+| SaveBlock1 | 15752 | 110962 |13871 | 1881 (11%) |
+| **Total** | 19664 | 138980 |17373 | 2291 (11%) |
 
 
 ## Sector group: CharacterData
@@ -34,15 +34,15 @@ In vanilla `pokeemerald`, the `SaveBlock1` (world state) and `SaveBlock2` (chara
 | Sector # | Bits used | Bits available | % |
 | - | -: | -: |
 | 0 | 31736 | 31744 | 99% |
-| 1 | 31723 | 31744 | 99% |
-| 2 | 31721 | 31744 | 99% |
-| 3 | 12966 | 31744 | 40% |
-| Total | 108146 | 126976 | 85% |
+| 1 | 31730 | 31744 | 99% |
+| 2 | 31575 | 31744 | 99% |
+| 3 | 15921 | 31744 | 50% |
+| Total | 110962 | 126976 | 87% |
 
 ### Member info
-* Last field serialized to sector 0: `p_SaveBlock1->vars[12]`
-* Last field serialized to sector 1: `p_SaveBlock1->secretBases[16].party.moves[9]`
-* Last field serialized to sector 2: `p_SaveBlock1->mysteryGift`
+* Last field serialized to sector 0: `p_SaveBlock1->flags[61]`
+* Last field serialized to sector 1: `p_SaveBlock1->secretBases[14].party.species[2]`
+* Last field serialized to sector 2: `p_SaveBlock1->mysteryGift.card.titleText`
 * Last field serialized to sector 3: `p_SaveBlock1->waldaPhrase`
 
 
@@ -63,12 +63,12 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | BerryCrush | 16 | 128 | 16 | 0 (0%) | 1 | 0 (0%) |
 | BerryPickingResults | 16 | 128 | 16 | 0 (0%) | 1 | 0 (0%) |
 | BerryTree | 8 | 48 | 6 | 2 (25%) | 128 | 256 (3%) |
-| BoxPokemon | 80 | 283 | 36 | 44 (55%) | 8 | 352 (1%) |
+| BoxPokemon | 80 | 635 | 80 | 0 (0%) | 8 | 0 (3%) |
 | ContestWinner | 32 | 234 | 30 | 2 (6%) | 13 | 26 (1%) |
 | Coords16 | 4 | 32 | 4 | 0 (0%) | 49 | 0 (0%) |
-| DayCare | 288 | 1478 | 185 | 103 (35%) | 1 | 103 (0%) |
+| DayCare | 288 | 2182 | 273 | 15 (5%) | 1 | 15 (1%) |
 | DaycareMail | 56 | 404 | 51 | 5 (8%) | 2 | 10 (0%) |
-| DaycareMon | 140 | 719 | 90 | 50 (35%) | 2 | 100 (0%) |
+| DaycareMon | 140 | 1071 | 134 | 6 (4%) | 2 | 12 (1%) |
 | DewfordTrend | 8 | 63 | 8 | 0 (0%) | 5 | 0 (0%) |
 | DomeMonData | 16 | 120 | 15 | 1 (6%) | 3 | 3 (0%) |
 | EmeraldBattleTowerRecord | 236 | 1782 | 223 | 13 (5%) | 6 | 78 (6%) |
@@ -87,7 +87,7 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | PokeNews | 4 | 32 | 4 | 0 (0%) | 16 | 0 (0%) |
 | Pokeblock | 8 | 56 | 7 | 1 (12%) | 40 | 40 (1%) |
 | Pokedex | 120 | 960 | 120 | 0 (0%) | 1 | 0 (0%) |
-| Pokemon | 100 | 442 | 56 | 44 (43%) | 6 | 264 (1%) |
+| Pokemon | 100 | 794 | 100 | 0 (0%) | 6 | 0 (3%) |
 | PokemonJumpRecords | 16 | 112 | 14 | 2 (12%) | 1 | 2 (0%) |
 | PyramidBag | 60 | 320 | 40 | 20 (33%) | 1 | 20 (0%) |
 | RamScript | 1004 | 8024 | 1003 | 1 (0%) | 1 | 1 (5%) |
@@ -98,7 +98,7 @@ The "Savings" columns are measured in bytes. The percentage in the "Savings per"
 | RecordMixingGiftData | 12 | 89 | 12 | 0 (0%) | 1 | 0 (0%) |
 | RentalMon | 12 | 59 | 8 | 4 (33%) | 6 | 24 (0%) |
 | Roamer | 28 | 147 | 19 | 9 (32%) | 1 | 9 (0%) |
-| SaveBlock1 | 15752 | 108146 | 13519 | 2233 (14%) | 1 | 2233 (68%) |
+| SaveBlock1 | 15752 | 110962 | 13871 | 1881 (11%) | 1 | 1881 (70%) |
 | SaveBlock2 | 3912 | 28018 | 3503 | 409 (10%) | 1 | 409 (17%) |
 | SecretBase | 160 | 1181 | 148 | 12 (7%) | 20 | 240 (15%) |
 | SecretBaseParty | 108 | 786 | 99 | 9 (8%) | 20 | 180 (10%) |
