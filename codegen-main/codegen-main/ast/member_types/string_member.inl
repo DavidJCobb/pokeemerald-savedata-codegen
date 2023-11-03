@@ -59,9 +59,6 @@ namespace ast{
       }
       size_t bitcount_per_char = ast::bitcount_of(this->char_type.value_or(integral_type::u8));
       size_t buffer_length     = this->max_length.value;
-      size_t length_prefix     = 0;
-      if (!this->only_early_terminator)
-         length_prefix = std::bit_width(this->max_length.value);
-      return bitcount_per_char * buffer_length + length_prefix;
+      return bitcount_per_char * buffer_length;
    }
 }

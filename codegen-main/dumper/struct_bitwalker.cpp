@@ -75,15 +75,6 @@ std::string struct_bitwalker::_pull_value(const std::string& accessor, const ast
       auto char_type = casted->char_type.value_or(ast::integral_type::u8);
 
       std::string out;
-
-      size_t length_prefix = 0;
-      if (!casted->only_early_terminator) {
-         length_prefix = this->reader.stream_bits(std::bit_width(casted->max_length.value));
-         out += "<length: ";
-         out += lu::strings::from_integer(length_prefix);
-         out += "> ";
-      }
-
       size_t buffer_len = casted->max_length.value;
       for (size_t i = 0; i < buffer_len; ++i) {
          auto ch = this->reader.stream_bits(ast::bitcount_of(char_type));

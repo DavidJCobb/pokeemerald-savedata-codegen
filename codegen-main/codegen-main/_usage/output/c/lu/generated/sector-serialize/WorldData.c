@@ -262,6 +262,7 @@ void lu_ReadSaveSector_WorldData02(const u8* src, struct SaveBlock1* p_SaveBlock
    p_SaveBlock1->mysteryGift.card.sendType = lu_BitstreamRead_u8(&state, 2);
    p_SaveBlock1->mysteryGift.card.maxStamps = lu_BitstreamRead_u8(&state, 8);
    lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.titleText, WONDER_CARD_TEXT_LENGTH);
+   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
 };
 
 void lu_ReadSaveSector_WorldData03(const u8* src, struct SaveBlock1* p_SaveBlock1) {
@@ -269,8 +270,7 @@ void lu_ReadSaveSector_WorldData03(const u8* src, struct SaveBlock1* p_SaveBlock
    struct lu_BitstreamState state;
    lu_BitstreamInitialize(&state, (u8*)src); // need to cast away constness to store it here
 
-   lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
-   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+   for (i = 0; i < 4; ++i) {
       lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.bodyText[i], WONDER_CARD_TEXT_LENGTH);
    }
    lu_BitstreamRead_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.footerLine1Text, WONDER_CARD_TEXT_LENGTH);
@@ -860,6 +860,10 @@ void lu_WriteSaveSector_WorldData02(u8* dst, const struct SaveBlock1* p_SaveBloc
       DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.titleText", 0);
    #endif
    lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.titleText, WONDER_CARD_TEXT_LENGTH);
+   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
+      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.subtitleText", 0);
+   #endif
+   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
 };
 
 void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBlock1) {
@@ -868,13 +872,9 @@ void lu_WriteSaveSector_WorldData03(u8* dst, const struct SaveBlock1* p_SaveBloc
    lu_BitstreamInitialize(&state, dst);
 
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
-      DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.subtitleText", 0);
-   #endif
-   lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.subtitleText, WONDER_CARD_TEXT_LENGTH);
-   #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE
       DebugPrintf("Writing field: p_SaveBlock1->mysteryGift.card.bodyText", 0);
    #endif
-   for (i = 0; i < WONDER_CARD_BODY_TEXT_LINES; ++i) {
+   for (i = 0; i < 4; ++i) {
       lu_BitstreamWrite_string_optional_terminator(&state, p_SaveBlock1->mysteryGift.card.bodyText[i], WONDER_CARD_TEXT_LENGTH);
    }
    #ifdef LOG_FIELD_NAMES_FOR_SAVEGAME_SERIALIZE

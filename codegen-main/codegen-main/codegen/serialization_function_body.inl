@@ -262,10 +262,6 @@ namespace codegen {
                common += computed_accessor;
                common += ", ";
                common += casted->max_length.as_c_expression();
-               if (!casted->only_early_terminator) {
-                  common += ", ";
-                  common += lu::strings::from_integer(std::bit_width(casted->max_length.value));
-               }
                common += ");\n";
 
                out += common;

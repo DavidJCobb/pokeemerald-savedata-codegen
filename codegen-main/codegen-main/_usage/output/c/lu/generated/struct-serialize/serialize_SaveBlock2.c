@@ -53,7 +53,7 @@
 
 void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, struct SaveBlock2* v) {
    u8 i, j, k;
-   lu_BitstreamRead_string(state, v->playerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->playerName, PLAYER_NAME_LENGTH);
    v->playerGender = lu_BitstreamRead_bool(state);
    v->specialSaveWarpFlags = lu_BitstreamRead_u8(state, 8);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
@@ -105,7 +105,7 @@ void lu_BitstreamRead_SaveBlock2(struct lu_BitstreamState* state, struct SaveBlo
 
 void lu_BitstreamWrite_SaveBlock2(struct lu_BitstreamState* state, const struct SaveBlock2* v) {
    u8 i, j, k;
-   lu_BitstreamWrite_string(state, v->playerName, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->playerName, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_bool(state, v->playerGender);
    lu_BitstreamWrite_u8(state, v->specialSaveWarpFlags, 8);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {

@@ -20,7 +20,7 @@ void lu_BitstreamRead_RankingHall1P(struct lu_BitstreamState* state, struct Rank
       v->id[i] = lu_BitstreamRead_u8(state, 8);
    }
    v->winStreak = lu_BitstreamRead_u16(state, 16);
-   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH);
    v->language = lu_BitstreamRead_u8(state, 3);
 }
 
@@ -30,6 +30,6 @@ void lu_BitstreamWrite_RankingHall1P(struct lu_BitstreamState* state, const stru
       lu_BitstreamWrite_u8(state, v->id[i], 8);
    }
    lu_BitstreamWrite_u16(state, v->winStreak, 16);
-   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->language, 3);
 }

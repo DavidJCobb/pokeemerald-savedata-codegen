@@ -28,7 +28,7 @@ void lu_BitstreamRead_EmeraldBattleTowerRecord(struct lu_BitstreamState* state, 
    v->lvlMode = lu_BitstreamRead_u8(state, 8);
    v->facilityClass = lu_BitstreamRead_u8(state, 8);
    v->winStreak = lu_BitstreamRead_u16(state, 16);
-   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamRead_string(state, v->name, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
       v->trainerId[i] = lu_BitstreamRead_u8(state, 8);
    }
@@ -53,7 +53,7 @@ void lu_BitstreamWrite_EmeraldBattleTowerRecord(struct lu_BitstreamState* state,
    lu_BitstreamWrite_u8(state, v->lvlMode, 8);
    lu_BitstreamWrite_u8(state, v->facilityClass, 8);
    lu_BitstreamWrite_u16(state, v->winStreak, 16);
-   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH, 3);
+   lu_BitstreamWrite_string(state, v->name, PLAYER_NAME_LENGTH);
    for (i = 0; i < TRAINER_ID_LENGTH; ++i) {
       lu_BitstreamWrite_u8(state, v->trainerId[i], 8);
    }

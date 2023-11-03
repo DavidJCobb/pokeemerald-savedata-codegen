@@ -38,7 +38,7 @@ void lu_BitstreamRead_BattleTowerPokemon(struct lu_BitstreamState* state, struct
    v->spDefenseIV = lu_BitstreamRead_u8(state, 5);
    v->abilityNum = lu_BitstreamRead_bool(state);
    v->personality = lu_BitstreamRead_u32(state, 32);
-   lu_BitstreamRead_string(state, v->nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamRead_string(state, v->nickname, POKEMON_NAME_LENGTH);
    v->friendship = lu_BitstreamRead_u8(state, 8);
 }
 
@@ -66,6 +66,6 @@ void lu_BitstreamWrite_BattleTowerPokemon(struct lu_BitstreamState* state, const
    lu_BitstreamWrite_u8(state, v->spDefenseIV, 5);
    lu_BitstreamWrite_bool(state, v->abilityNum);
    lu_BitstreamWrite_u32(state, v->personality, 32);
-   lu_BitstreamWrite_string(state, v->nickname, POKEMON_NAME_LENGTH, 4);
+   lu_BitstreamWrite_string(state, v->nickname, POKEMON_NAME_LENGTH);
    lu_BitstreamWrite_u8(state, v->friendship, 8);
 }
