@@ -111,6 +111,7 @@ namespace codegen {
          return out;
       };
 
+      bool included_global = false;
       {
          out.header += "#ifndef GUARD_LU_SERIALIZE_SECTOR_" + this->function_name_fragment;
          out.header += "\n#define GUARD_LU_SERIALIZE_SECTOR_" + this->function_name_fragment;
@@ -119,7 +120,6 @@ namespace codegen {
          out.header += "#include \"lu/bitstreams.h\"\n\n";
 
          // need to forward-declare structs outside of parameter lists
-         bool included_global = false;
          for (auto* s_def : this->top_level_structs) {
             if (s_def->c_type_info.is_defined_via_typedef) {
                //
@@ -188,10 +188,31 @@ namespace codegen {
             }
          }
 
+         if (!included_global) {
+            out.implementation += "#include \"global.h\"\n";
+         }
          if (!dependencies.empty()) {
             auto it = std::unique(dependencies.begin(), dependencies.end());
             dependencies.erase(it, dependencies.end());
+         }
+         for (auto* s_def : top_level_structs) {
+            if (s_def->header == "global.h")
+               continue;
 
+            bool included_via_serialize = false;
+            for (auto* d : dependencies) {
+               if (d == s_def) {
+                  included_via_serialize = true;
+                  break;
+               }
+            }
+            if (!included_via_serialize) {
+               out.implementation += "#include \"";
+               out.implementation += s_def->header;
+               out.implementation += "\"\n";
+            }
+         }
+         if (!dependencies.empty()) {
             out.implementation += "// whole-struct serialize funcs:\n";
             for (const auto* structure : dependencies) {
                out.implementation += "#include \"";

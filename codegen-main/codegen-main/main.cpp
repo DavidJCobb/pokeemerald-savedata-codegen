@@ -131,6 +131,11 @@ int main(int argcount, char* args[]) {
          .top_level_struct_names = { "SaveBlock1" },
          .max_sector_count = 4,
       });
+      list.push_back({
+         .function_name_fragment = "PokemonStorage",
+         .top_level_struct_names = { "PokemonStorage" },
+         .max_sector_count = 9,
+      });
       if (reg.generate_all_files(list)) {
          std::cout << "Packed all sectors! See report for information.";
       } else {

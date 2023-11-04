@@ -169,7 +169,12 @@ std::vector<std::string> registry_ex::_dump_from_sav(const void* sav, size_t sav
       auto& world_data      = slots[i].stitchings.world_data;
 
       if (pokemon_storage.is_complete()) {
-         out.push_back("## Pokemon Storage\n\nDump not implemented!");
+         out.push_back("## Pokemon Storage\n\n" + dump(
+            packed,
+            pokemon_storage.buffer,
+            pokemon_storage.size_if_complete(),
+            { "PokemonStorage" }
+         ));
       } else {
          out.push_back("## Pokemon Storage\n\nIncomplete/missing!");
       }

@@ -53,6 +53,11 @@
          
          <constant name="UNION_ROOM_KB_ROW_COUNT" value="10" />
       </header>
+      <header path="constants/items.h">
+         <constant name="MAX_BAG_ITEM_CAPACITY" value="99" />
+         <constant name="MAX_PC_ITEM_CAPACITY"  value="999" />
+         <constant name="MAX_BERRY_CAPACITY"    value="999" />
+      </header>
       <header path="constants/trainer_hill.h">
          <constant name="NUM_TRAINER_HILL_MODES" value="4" />
       </header>
@@ -62,8 +67,12 @@
       <struct name="ItemSlot" header="global.h">
          <fields>
             <u16 name="itemId" inherit="$global-item-id" />
-            <u16 name="quantity" min="0" max="99">
-               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToBagItems_` in `item.c`</line-comment>
+            <u16 name="quantity" min="0" max="MAX_PC_ITEM_CAPACITY">
+               <line-comment>Encrypted using SaveBlock2::encryptionKey; see `ApplyNewEncryptionKeyToBagItems` in `item.c`</line-comment>
+               <!--
+                  If we update the bitcount for this value, we also need to update the 
+                  code for managing its encryption, in `ApplyNewEncryptionKeyToBagItems`.
+               -->
             </u16>
          </fields>
       </struct>
