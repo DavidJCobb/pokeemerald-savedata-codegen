@@ -1150,6 +1150,10 @@ void registry::_parse_sector_group(parse_wrapper& scaffold, rapidxml::xml_node<>
             entry.c_variable.is_pointer = false;
             return;
          }
+         if (attr_name == "var-header" || attr_name == "ptr-header") {
+            entry.c_variable.header = attr_value;
+            return;
+         }
          scaffold.warn("Unrecognized attribute `"s + std::string(attr_name) + "` on a struct reference in a sector group element", attr);
       });
       if (!entry.definition) {
@@ -1157,6 +1161,9 @@ void registry::_parse_sector_group(parse_wrapper& scaffold, rapidxml::xml_node<>
       }
       if (entry.c_variable.name.empty()) {
          scaffold.error("Struct reference in a sector group element didn't specify a global variable name to serialize.", node);
+      }
+      if (entry.c_variable.header.empty()) {
+         scaffold.error("Struct reference in a sector group element didn't specify what header declares the global variable it wants to serialize.", node);
       }
    });
 
@@ -1354,8 +1361,8 @@ bool registry::generate_all_files() {
       auto& gen  = generators[i];
 
       gen.function_name_fragment               = info.name;
-      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.string().c_str();
-      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.string().c_str();
+      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.generic_string();
+      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.generic_string();
       
       std::vector<const ast::structure*> structures;
       for (auto& entry : info.top_level_structs) {
@@ -1830,7 +1837,7 @@ void registry::generate_whole_struct_serialization_code() {
          std::ofstream stream(out_folder_c / std::filesystem::path("serialize_"s + pair.first + ".c"));
          assert(!!stream);
 
-         stream << "#include \"" << this->paths.output_paths.struct_serialize.string() << "/serialize_" << pair.first << ".h\"\n\n";
+         stream << "#include \"" << this->paths.output_paths.struct_serialize.generic_string() << "/serialize_" << pair.first << ".h\"\n\n";
 
          stream << "#include \"global.h\"\n"; // lots of pokeemerald stuff breaks if this isn't included first/at all
          if (!s_def->header.empty() && s_def->header != "global.h") {
@@ -1848,7 +1855,7 @@ void registry::generate_whole_struct_serialization_code() {
             stream << "// dependencies\n";
             for (const auto& name : dependencies) {
                stream << "#include \"";
-               stream << this->paths.output_paths.struct_serialize.string();
+               stream << this->paths.output_paths.struct_serialize.generic_string();
                stream << "/serialize_" << name << ".h\"\n";
             }
             stream << '\n';
@@ -1927,8 +1934,8 @@ void registry::generate_sector_code() {
    for (auto& info : this->sector_groups) {
       codegen::sector_generator gen;
       gen.function_name_fragment = info.name;
-      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.string().c_str();
-      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.string().c_str();
+      gen.sector_serialize_header_folder       = this->paths.output_paths.sector_serialize.generic_string();
+      gen.whole_struct_serialize_header_folder = this->paths.output_paths.struct_serialize.generic_string();
 
       std::vector<const ast::structure*> structures;
       for (auto& entry : info.top_level_structs) {
@@ -1965,7 +1972,7 @@ void registry::generate_save_functors() {
    auto out_folder_c = this->paths.output_paths.c / this->paths.output_paths.save_functors;
 
    {
-      std::ofstream stream(out_folder_c / "save_functor_table.c");
+      std::ofstream stream(out_folder_h / "save_functor_table.inl");
       assert(!!stream);
 
       size_t sector = 0;
@@ -1999,13 +2006,46 @@ void registry::generate_save_functors() {
          stream << "(u8 sliceNum, const u8* src);\n";
          stream << "extern bool8 WriteSector_";
          stream << group.name;
-         stream << "(u8 sliceNum, const u8* src);\n";
+         stream << "(u8 sliceNum, u8* dst);\n";
       }
    }
    {
       std::ofstream stream(out_folder_c / "save_functors.c");
       assert(!!stream);
       stream << "#include \"global.h\"\n\n";
+
+      stream << "// sector-group serialize functions: \n";
+      for (auto& group : this->sector_groups) {
+         auto str = this->paths.output_paths.sector_serialize.generic_string();
+
+         stream << "#include \"";
+         stream << str;
+         if (!str.empty() && str.back() != '/')
+            stream << "/";
+         stream << group.name;
+         stream << ".h\"\n";
+      }
+      stream << '\n';
+
+      {
+         std::vector<std::string> headers;
+         for (auto& group : this->sector_groups) {
+            for (auto& entry : group.top_level_structs) {
+               if (entry.c_variable.header != "global.h")
+                  headers.push_back(entry.c_variable.header);
+            }
+         }
+         if (!headers.empty()) {
+            headers.erase(std::unique(headers.begin(), headers.end()), headers.end());
+            stream << "// globals to serialize:\n";
+            for (auto& header : headers) {
+               stream << "#include \"";
+               stream << header;
+               stream << "\"\n";
+            }
+            stream << '\n';
+         }
+      }
 
       for (auto& group : this->sector_groups) {
          codegen::serialization_function_body::function_pair pair;

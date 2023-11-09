@@ -52,6 +52,7 @@ class registry : public lu::singleton<registry> {
             const ast::structure* definition = nullptr;
             struct {
                std::string name; // e.g. gSaveBlock1Ptr
+               std::string header;
                bool is_pointer = false;
             } c_variable;
          };

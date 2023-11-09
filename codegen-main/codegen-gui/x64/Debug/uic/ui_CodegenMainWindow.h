@@ -18,11 +18,8 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -34,6 +31,7 @@ public:
     QGridLayout *gridLayout_3;
     QGroupBox *groupBox;
     QGridLayout *gridLayout;
+    QLabel *label_11;
     QLabel *label_3;
     QLabel *label_5;
     QLabel *label_9;
@@ -48,6 +46,7 @@ public:
     QLabel *label_6;
     QLineEdit *pathOutputRelStructSerialize;
     QLineEdit *codegenReportPath;
+    QLineEdit *pathOutputRelSaveFunctors;
     QLineEdit *pathOutputC;
     QLineEdit *pathInputXML;
     QFrame *line;
@@ -57,7 +56,7 @@ public:
     QLabel *label;
     QLabel *label_4;
     QLabel *label_10;
-    QLineEdit *pathOutputRelSaveFunctors;
+    QFrame *line_4;
     QGroupBox *groupBox_2;
     QGridLayout *gridLayout_2;
     QPushButton *dumpSavBrowse;
@@ -71,15 +70,12 @@ public:
     QSpacerItem *horizontalSpacer_3;
     QPushButton *buttonDoDump;
     QSpacerItem *horizontalSpacer_4;
-    QMenuBar *menuBar;
-    QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *CodegenMainWindowClass)
     {
         if (CodegenMainWindowClass->objectName().isEmpty())
             CodegenMainWindowClass->setObjectName(QString::fromUtf8("CodegenMainWindowClass"));
-        CodegenMainWindowClass->resize(600, 492);
+        CodegenMainWindowClass->resize(600, 480);
         centralWidget = new QWidget(CodegenMainWindowClass);
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         gridLayout_3 = new QGridLayout(centralWidget);
@@ -92,20 +88,26 @@ public:
         gridLayout->setSpacing(6);
         gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
+        label_11 = new QLabel(groupBox);
+        label_11->setObjectName(QString::fromUtf8("label_11"));
+        label_11->setWordWrap(true);
+
+        gridLayout->addWidget(label_11, 2, 0, 1, 2);
+
         label_3 = new QLabel(groupBox);
         label_3->setObjectName(QString::fromUtf8("label_3"));
 
-        gridLayout->addWidget(label_3, 3, 0, 1, 1);
+        gridLayout->addWidget(label_3, 4, 0, 1, 1);
 
         label_5 = new QLabel(groupBox);
         label_5->setObjectName(QString::fromUtf8("label_5"));
 
-        gridLayout->addWidget(label_5, 5, 0, 1, 1);
+        gridLayout->addWidget(label_5, 6, 0, 1, 1);
 
         label_9 = new QLabel(groupBox);
         label_9->setObjectName(QString::fromUtf8("label_9"));
 
-        gridLayout->addWidget(label_9, 8, 0, 1, 1);
+        gridLayout->addWidget(label_9, 10, 0, 1, 1);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
@@ -129,41 +131,46 @@ public:
         horizontalLayout->addItem(horizontalSpacer_2);
 
 
-        gridLayout->addLayout(horizontalLayout, 10, 0, 1, 2);
+        gridLayout->addLayout(horizontalLayout, 12, 0, 1, 2);
 
         verticalSpacer = new QSpacerItem(8, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-        gridLayout->addItem(verticalSpacer, 11, 0, 1, 2);
+        gridLayout->addItem(verticalSpacer, 13, 0, 1, 2);
 
         pathOutputH = new QLineEdit(groupBox);
         pathOutputH->setObjectName(QString::fromUtf8("pathOutputH"));
 
-        gridLayout->addWidget(pathOutputH, 2, 1, 1, 1);
+        gridLayout->addWidget(pathOutputH, 3, 1, 1, 1);
 
         pathOutputRelStructMembers = new QLineEdit(groupBox);
         pathOutputRelStructMembers->setObjectName(QString::fromUtf8("pathOutputRelStructMembers"));
 
-        gridLayout->addWidget(pathOutputRelStructMembers, 4, 1, 1, 1);
+        gridLayout->addWidget(pathOutputRelStructMembers, 5, 1, 1, 1);
 
         label_6 = new QLabel(groupBox);
         label_6->setObjectName(QString::fromUtf8("label_6"));
 
-        gridLayout->addWidget(label_6, 6, 0, 1, 1);
+        gridLayout->addWidget(label_6, 7, 0, 1, 1);
 
         pathOutputRelStructSerialize = new QLineEdit(groupBox);
         pathOutputRelStructSerialize->setObjectName(QString::fromUtf8("pathOutputRelStructSerialize"));
 
-        gridLayout->addWidget(pathOutputRelStructSerialize, 5, 1, 1, 1);
+        gridLayout->addWidget(pathOutputRelStructSerialize, 6, 1, 1, 1);
 
         codegenReportPath = new QLineEdit(groupBox);
         codegenReportPath->setObjectName(QString::fromUtf8("codegenReportPath"));
 
-        gridLayout->addWidget(codegenReportPath, 8, 1, 1, 1);
+        gridLayout->addWidget(codegenReportPath, 10, 1, 1, 1);
+
+        pathOutputRelSaveFunctors = new QLineEdit(groupBox);
+        pathOutputRelSaveFunctors->setObjectName(QString::fromUtf8("pathOutputRelSaveFunctors"));
+
+        gridLayout->addWidget(pathOutputRelSaveFunctors, 8, 1, 1, 1);
 
         pathOutputC = new QLineEdit(groupBox);
         pathOutputC->setObjectName(QString::fromUtf8("pathOutputC"));
 
-        gridLayout->addWidget(pathOutputC, 3, 1, 1, 1);
+        gridLayout->addWidget(pathOutputC, 4, 1, 1, 1);
 
         pathInputXML = new QLineEdit(groupBox);
         pathInputXML->setObjectName(QString::fromUtf8("pathInputXML"));
@@ -180,19 +187,19 @@ public:
         label_2 = new QLabel(groupBox);
         label_2->setObjectName(QString::fromUtf8("label_2"));
 
-        gridLayout->addWidget(label_2, 2, 0, 1, 1);
+        gridLayout->addWidget(label_2, 3, 0, 1, 1);
 
         pathOutputRelSectorSerialize = new QLineEdit(groupBox);
         pathOutputRelSectorSerialize->setObjectName(QString::fromUtf8("pathOutputRelSectorSerialize"));
 
-        gridLayout->addWidget(pathOutputRelSectorSerialize, 6, 1, 1, 1);
+        gridLayout->addWidget(pathOutputRelSectorSerialize, 7, 1, 1, 1);
 
         line_2 = new QFrame(groupBox);
         line_2->setObjectName(QString::fromUtf8("line_2"));
         line_2->setFrameShape(QFrame::HLine);
         line_2->setFrameShadow(QFrame::Sunken);
 
-        gridLayout->addWidget(line_2, 9, 0, 1, 2);
+        gridLayout->addWidget(line_2, 11, 0, 1, 2);
 
         label = new QLabel(groupBox);
         label->setObjectName(QString::fromUtf8("label"));
@@ -202,17 +209,19 @@ public:
         label_4 = new QLabel(groupBox);
         label_4->setObjectName(QString::fromUtf8("label_4"));
 
-        gridLayout->addWidget(label_4, 4, 0, 1, 1);
+        gridLayout->addWidget(label_4, 5, 0, 1, 1);
 
         label_10 = new QLabel(groupBox);
         label_10->setObjectName(QString::fromUtf8("label_10"));
 
-        gridLayout->addWidget(label_10, 7, 0, 1, 1);
+        gridLayout->addWidget(label_10, 8, 0, 1, 1);
 
-        pathOutputRelSaveFunctors = new QLineEdit(groupBox);
-        pathOutputRelSaveFunctors->setObjectName(QString::fromUtf8("pathOutputRelSaveFunctors"));
+        line_4 = new QFrame(groupBox);
+        line_4->setObjectName(QString::fromUtf8("line_4"));
+        line_4->setFrameShape(QFrame::HLine);
+        line_4->setFrameShadow(QFrame::Sunken);
 
-        gridLayout->addWidget(pathOutputRelSaveFunctors, 7, 1, 1, 1);
+        gridLayout->addWidget(line_4, 9, 0, 1, 2);
 
 
         gridLayout_3->addWidget(groupBox, 0, 0, 1, 1);
@@ -283,16 +292,6 @@ public:
         gridLayout_3->addWidget(groupBox_2, 1, 0, 1, 1);
 
         CodegenMainWindowClass->setCentralWidget(centralWidget);
-        menuBar = new QMenuBar(CodegenMainWindowClass);
-        menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 600, 21));
-        CodegenMainWindowClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(CodegenMainWindowClass);
-        mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
-        CodegenMainWindowClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(CodegenMainWindowClass);
-        statusBar->setObjectName(QString::fromUtf8("statusBar"));
-        CodegenMainWindowClass->setStatusBar(statusBar);
 
         retranslateUi(CodegenMainWindowClass);
 
@@ -303,6 +302,7 @@ public:
     {
         CodegenMainWindowClass->setWindowTitle(QCoreApplication::translate("CodegenMainWindowClass", "CodegenMainWindow", nullptr));
         groupBox->setTitle(QCoreApplication::translate("CodegenMainWindowClass", "Data definition and output paths", nullptr));
+        label_11->setText(QCoreApplication::translate("CodegenMainWindowClass", "Specify output paths for code generation. The \"base output paths\" would typically be absolute paths to your \"include\" and \"src\" folders. All other codegen paths should be relative to those.", nullptr));
         label_3->setText(QCoreApplication::translate("CodegenMainWindowClass", "Base output path (*.c):", nullptr));
         label_5->setText(QCoreApplication::translate("CodegenMainWindowClass", "Whole-struct serialize path (relative):", nullptr));
         label_9->setText(QCoreApplication::translate("CodegenMainWindowClass", "Save a report to:", nullptr));

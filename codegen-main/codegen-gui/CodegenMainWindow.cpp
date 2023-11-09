@@ -48,23 +48,7 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
    //
    QObject::connect(this->ui.buttonLoadAll, &QPushButton::clicked, this, [this]() {
       auto& reg = registry::get_or_create();
-      reg.set_paths({
-         .input_paths = {
-            .xml = this->ui.pathInputXML->text().toStdString(),
-         },
-         .output_paths = {
-            .h = this->ui.pathOutputH->text().toStdString(),
-            .c = this->ui.pathOutputC->text().toStdString(),
-            //
-            .struct_members   = this->ui.pathOutputRelStructMembers->text().toStdString(),
-            .struct_serialize = this->ui.pathOutputRelStructSerialize->text().toStdString(),
-            .sector_serialize = this->ui.pathOutputRelSectorSerialize->text().toStdString(),
-            //
-            .save_functors = this->ui.pathOutputRelSaveFunctors->text().toStdString(),
-            //
-            .codegen_report = this->ui.codegenReportPath->text().toStdString(),
-         }
-      });
+      this->_syncPathsToRegistry();
       try {
          reg.parse_all_xml_files();
       } catch (std::runtime_error& e) {
@@ -79,6 +63,7 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
 
    QObject::connect(this->ui.buttonDoCodegen, &QPushButton::clicked, this, [this]() {
       auto& reg = registry::get_or_create();
+      this->_syncPathsToRegistry();
       try {
          if (!reg.generate_all_files()) {
             QMessageBox::critical(this, "Error", QString("Failed to generate all sectors. See report for details."));
@@ -193,4 +178,25 @@ void CodegenMainWindow::_setUpPathFields() {
       field->setText(value);
       QObject::connect(field, &QLineEdit::textChanged, this, handler);
    }
+}
+
+void CodegenMainWindow::_syncPathsToRegistry() const {
+   auto& reg = registry::get_or_create();
+   reg.set_paths({
+      .input_paths = {
+         .xml = this->ui.pathInputXML->text().toStdString(),
+      },
+      .output_paths = {
+         .h = this->ui.pathOutputH->text().toStdString(),
+         .c = this->ui.pathOutputC->text().toStdString(),
+         //
+         .struct_members   = this->ui.pathOutputRelStructMembers->text().toStdString(),
+         .struct_serialize = this->ui.pathOutputRelStructSerialize->text().toStdString(),
+         .sector_serialize = this->ui.pathOutputRelSectorSerialize->text().toStdString(),
+         //
+         .save_functors = this->ui.pathOutputRelSaveFunctors->text().toStdString(),
+         //
+         .codegen_report = this->ui.codegenReportPath->text().toStdString(),
+      }
+   });
 }

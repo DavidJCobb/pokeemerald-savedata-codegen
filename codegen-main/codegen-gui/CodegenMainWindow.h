@@ -14,6 +14,8 @@ class CodegenMainWindow : public QMainWindow {
       void _setUpPathFields();
       void _persistPaths();
 
+      void _syncPathsToRegistry() const;
+
    private:
       Ui::CodegenMainWindowClass ui;
 };
