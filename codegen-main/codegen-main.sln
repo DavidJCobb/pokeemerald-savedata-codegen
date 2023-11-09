@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dumper", "dumper\dumper.vcx
 		{9D4800CC-3B12-4BA4-A07E-556C887EE3D3} = {9D4800CC-3B12-4BA4-A07E-556C887EE3D3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "codegen-gui", "codegen-gui\codegen-gui.vcxproj", "{81E4564D-E377-4399-A796-26DDE0384B0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +46,14 @@ Global
 		{00D43714-610A-41F3-A485-BD20C331D2C5}.Release|x64.Build.0 = Release|x64
 		{00D43714-610A-41F3-A485-BD20C331D2C5}.Release|x86.ActiveCfg = Release|Win32
 		{00D43714-610A-41F3-A485-BD20C331D2C5}.Release|x86.Build.0 = Release|Win32
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Debug|x64.ActiveCfg = Debug|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Debug|x64.Build.0 = Debug|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Debug|x86.ActiveCfg = Debug|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Debug|x86.Build.0 = Debug|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Release|x64.ActiveCfg = Release|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Release|x64.Build.0 = Release|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Release|x86.ActiveCfg = Release|x64
+		{81E4564D-E377-4399-A796-26DDE0384B0E}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

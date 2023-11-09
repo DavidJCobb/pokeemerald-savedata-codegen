@@ -1,0 +1,10 @@
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\_usage\xml\
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\_usage\output\include\
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\_usage\output\src\
+struct-members\
+struct-serialize\
+sector-serialize\
+save-functors\
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\_usage\report.md
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\pokeemerald.sav
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\last-sectioned-dump.txt

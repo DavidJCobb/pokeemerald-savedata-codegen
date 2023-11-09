@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+***************************************************************************************************
+ Copyright (C) 2023 The Qt Company Ltd.
+ SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+***************************************************************************************************
+-->
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{81E4564D-E377-4399-A796-26DDE0384B0E}</ProjectGuid>
+    <Keyword>QtVS_v304</Keyword>
+    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
+    <Import Project="$(QtMsBuild)\qt_defaults.props" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
+    <QtInstall>5.15.2 MSVC2019 x64</QtInstall>
+    <QtModules>core;gui;widgets</QtModules>
+    <QtBuildConfig>debug</QtBuildConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
+    <QtInstall>5.15.2 MSVC2019 x64</QtInstall>
+    <QtModules>core;gui;widgets</QtModules>
+    <QtBuildConfig>release</QtBuildConfig>
+  </PropertyGroup>
+  <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
+    <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
+  </Target>
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(QtMsBuild)\Qt.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(Qt_INCLUDEPATH_);$(SolutionDir);$(ProjectDir);</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>;$(SolutionDir);$(ProjectDir);</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
+    <ClCompile>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
+    <ClCompile>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp" />
+    <ClCompile Include="registry.cpp" />
+    <ClCompile Include="struct_bitwalker.cpp" />
+    <ClCompile Include="struct_bytewalker.cpp" />
+    <QtRcc Include="CodegenMainWindow.qrc" />
+    <QtUic Include="CodegenMainWindow.ui" />
+    <QtMoc Include="CodegenMainWindow.h" />
+    <ClCompile Include="CodegenMainWindow.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ast\blind_union.h" />
+    <ClInclude Include="ast\constant_definition.h" />
+    <ClInclude Include="ast\heritable.h" />
+    <ClInclude Include="ast\integral_constant.h" />
+    <ClInclude Include="ast\integral_type.h" />
+    <ClInclude Include="ast\member.h" />
+    <ClInclude Include="ast\member_types\blind_union_member.h" />
+    <ClInclude Include="ast\member_types\inlined_union_member.h" />
+    <ClInclude Include="ast\member_types\integral_member.h" />
+    <ClInclude Include="ast\member_types\pointer_member.h" />
+    <ClInclude Include="ast\member_types\string_member.h" />
+    <ClInclude Include="ast\member_types\struct_member.h" />
+    <ClInclude Include="ast\member_types\_all.h" />
+    <ClInclude Include="ast\structure.h" />
+    <ClInclude Include="codegen\sector_generator.h" />
+    <ClInclude Include="codegen\serialization_function_body.h" />
+    <ClInclude Include="codegen\serialization_item.h" />
+    <ClInclude Include="lu\bitstreams\bitstreamable_container.h" />
+    <ClInclude Include="lu\bitstreams\bitstreamable_primitive.h" />
+    <ClInclude Include="lu\bitstreams\bitstreamable_struct.h" />
+    <ClInclude Include="lu\bitstreams\enum_serialization_options.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\any.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\bad_enum_read.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\container_length_too_large.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\read_exception.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\read_past_end.h" />
+    <ClInclude Include="lu\bitstreams\exceptions\write_exception.h" />
+    <ClInclude Include="lu\bitstreams\override_bitcount.h" />
+    <ClInclude Include="lu\bitstreams\parse_step_info.h" />
+    <ClInclude Include="lu\bitstreams\position.h" />
+    <ClInclude Include="lu\bitstreams\reader.h" />
+    <ClInclude Include="lu\bitstreams\round_trip_test.h" />
+    <ClInclude Include="lu\bitstreams\round_trip_test_scramble.h" />
+    <ClInclude Include="lu\bitstreams\round_trip_test_with_targeted_scramble.h" />
+    <ClInclude Include="lu\bitstreams\util\bitcount_of_type.h" />
+    <ClInclude Include="lu\bitstreams\util\bitpacked_primitive_type.h" />
+    <ClInclude Include="lu\bitstreams\util\enum_has_contiguous_valid_values.h" />
+    <ClInclude Include="lu\bitstreams\util\enum_has_explicit_bitcount_override.h" />
+    <ClInclude Include="lu\bitstreams\util\enum_has_valid_values_list.h" />
+    <ClInclude Include="lu\bitstreams\util\enum_type_information.h" />
+    <ClInclude Include="lu\bitstreams\util\enum_valid_value_range.h" />
+    <ClInclude Include="lu\bitstreams\util\memcpyable_primitive_type.h" />
+    <ClInclude Include="lu\bitstreams\writer.h" />
+    <ClInclude Include="lu\bitstreams\_base.h" />
+    <ClInclude Include="lu\macros\macro_concat.h" />
+    <ClInclude Include="lu\macros\macro_concat.undef.h" />
+    <ClInclude Include="lu\macros\static_warning.h" />
+    <ClInclude Include="lu\macros\static_warning.undef.h" />
+    <ClInclude Include="lu\name_of_type.h" />
+    <ClInclude Include="lu\rapidxml_helpers\for_each_attribute.h" />
+    <ClInclude Include="lu\rapidxml_helpers\for_each_child_element.h" />
+    <ClInclude Include="lu\rapidxml_helpers\get_attribute.h" />
+    <ClInclude Include="lu\rapidxml_helpers\get_element_text_content.h" />
+    <ClInclude Include="lu\rapidxml_helpers\get_sole_child_element_of_name.h" />
+    <ClInclude Include="lu\rapidxml_helpers\parsing_scaffold.h" />
+    <ClInclude Include="lu\singleton.h" />
+    <ClInclude Include="lu\strings\char_to_integer.h" />
+    <ClInclude Include="lu\strings\from_integer.h" />
+    <ClInclude Include="lu\strings\to_integer.h" />
+    <ClInclude Include="lu\type_traits\function_traits.h" />
+    <ClInclude Include="lu\type_traits\strip_enum.h" />
+    <ClInclude Include="lu\uint_of_size.h" />
+    <ClInclude Include="registry.h" />
+    <ClInclude Include="struct_bitwalker.h" />
+    <ClInclude Include="struct_bytewalker.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ast\heritable.inl" />
+    <None Include="ast\integral_type.inl" />
+    <None Include="ast\member.inl" />
+    <None Include="ast\member_types\blind_union_member.inl" />
+    <None Include="ast\member_types\inlined_union_member.inl" />
+    <None Include="ast\member_types\integral_member.inl" />
+    <None Include="ast\member_types\pointer_member.inl" />
+    <None Include="ast\member_types\string_member.inl" />
+    <None Include="ast\member_types\struct_member.inl" />
+    <None Include="ast\structure.inl" />
+    <None Include="codegen\sector_generator.inl" />
+    <None Include="codegen\serialization_function_body.inl" />
+    <None Include="codegen\serialization_item.inl" />
+    <None Include="lu\bitstreams\position.inl" />
+    <None Include="lu\bitstreams\reader.inl" />
+    <None Include="lu\bitstreams\README.md" />
+    <None Include="lu\bitstreams\writer.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
+    <Import Project="$(QtMsBuild)\qt.targets" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
