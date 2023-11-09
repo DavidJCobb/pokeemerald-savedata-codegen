@@ -53,6 +53,8 @@ namespace ast {
 
          std::optional<size_constant> c_alignment;
          std::string c_line_comment;
+
+         const heritable* inherited_from = nullptr; // unowned
    };
 
    class integral_member;

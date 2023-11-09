@@ -696,6 +696,9 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    // parsed data.
    //
 
+   if (inherit_from)
+      field->inherited_from = inherit_from;
+
    field->name = attributes.name;
    if (attributes.do_not_serialize.has_value()) {
       field->skip_when_serializing = attributes.do_not_serialize.value();
@@ -1249,6 +1252,7 @@ bool registry::generate_all_files() {
       std::string struct_table;
       std::vector<std::string> by_sector;
       std::string every_struct;
+      std::string every_heritable;
    } report;
    report.by_sector.resize(this->sector_groups.size());
 
@@ -1256,7 +1260,7 @@ bool registry::generate_all_files() {
    std::vector<const ast::structure*> top_level_structures;
    size_t total_bytes_in_ram = 0;
 
-   // Generate report tables for overall stats and struct stats
+   #pragma region Report tables: overall stats; per-struct stats
    {
       size_t sector_count = 0;
       for (auto& info : this->sector_groups) {
@@ -1341,6 +1345,7 @@ bool registry::generate_all_files() {
       }
       report.overall_stats += "% space usage)  \n";
    }
+   #pragma endregion
 
    std::vector<codegen::sector_generator> generators;
    generators.resize(this->sector_groups.size());
@@ -1473,6 +1478,7 @@ bool registry::generate_all_files() {
       }
    }
 
+   #pragma region Report table: every struct
    {
       struct struct_info {
          size_t count       = 0;
@@ -1558,6 +1564,86 @@ bool registry::generate_all_files() {
    }
    #pragma endregion
 
+   #pragma region Report table: heritables
+   {
+      struct heritable_count_set {
+         std::vector<size_t> by_sector_group;
+      };
+      std::unordered_map<const ast::heritable*, heritable_count_set> heritable_counts;
+      
+      auto _walk_struct = [&heritable_counts](this auto&& recurse, size_t sector_group_idx, const ast::structure& s, const ast::member* m, size_t containing_array_count) -> void {
+         size_t total_count = 1;
+         if (m) {
+            for (auto& rank : m->array_extents)
+               total_count *= rank.extent.value;
+         }
+         total_count *= containing_array_count;
+
+         for (auto& member_ptr : s.members) {
+            auto* member = member_ptr.get();
+            while (auto* casted = dynamic_cast<ast::inlined_union_member*>(member)) {
+               member = &casted->get_member_to_serialize();
+            }
+            if (member->inherited_from) {
+               auto& list = heritable_counts[member->inherited_from].by_sector_group;
+               if (list.size() < sector_group_idx + 1)
+                  list.resize(sector_group_idx + 1);
+               list[sector_group_idx] += total_count;
+            }
+            if (auto* casted = dynamic_cast<ast::struct_member*>(member)) {
+               recurse(sector_group_idx, *casted->type_def, casted, total_count);
+            }
+         }
+      };
+      for (size_t i = 0; i < this->sector_groups.size(); ++i) {
+         const auto& group = this->sector_groups[i];
+         for (const auto& entry : group.top_level_structs) {
+            _walk_struct(i, *entry.definition, nullptr, 1);
+         }
+      }
+
+      report.every_heritable += "\n"; // GitHub Markdown tables require a blank line above them.
+      report.every_heritable += "| Name";
+      for (auto& group : this->sector_groups) {
+         report.every_heritable += " | Uses in ";
+         report.every_heritable += group.name;
+      }
+      report.every_heritable += " | Total uses |\n";
+      //
+      report.every_heritable += "| -";
+      for (auto& group : this->sector_groups) {
+         report.every_heritable += " | -: ";
+      }
+      report.every_heritable += " | -: |\n";
+      //
+      for (const auto& pair : this->heritables) {
+         const auto* heritable = pair.second.get();
+
+         heritable_count_set counts;
+         {
+            auto it = heritable_counts.find(heritable);
+            if (it != heritable_counts.end())
+               counts = it->second;
+         }
+         counts.by_sector_group.resize(this->sector_groups.size());
+         //
+         report.every_heritable += "| ";
+         report.every_heritable += heritable->name;
+         size_t total = 0;
+         for (auto count : counts.by_sector_group) {
+            report.every_heritable += " | ";
+            report.every_heritable += lu::strings::from_integer(count);
+            total += count;
+         }
+         report.every_heritable += " | ";
+         report.every_heritable += lu::strings::from_integer(total);
+         report.every_heritable += " |\n";
+      }
+      report.every_heritable += '\n';
+   }
+   #pragma endregion
+   #pragma endregion
+
    if (failed) {
       auto out_path = this->paths.output_paths.codegen_report;
       if (out_path.empty()) {
@@ -1589,6 +1675,8 @@ bool registry::generate_all_files() {
                 "total\" column indicates by how much the total size of all serialized data has been made smaller as a "
                 "result of bitpacking that row's specific struct type.\n";
       stream << report.every_struct;
+      stream << "\n\n## Every heritable data definition\n";
+      stream << report.every_heritable;
    } else {
       {  // Create all paths
          std::error_code error;
@@ -1652,6 +1740,8 @@ bool registry::generate_all_files() {
                    "total\" column indicates by how much the total size of all serialized data has been made smaller as a "
                    "result of bitpacking that row's specific struct type.\n";
          stream << report.every_struct;
+         stream << "\n\n## Every heritable data definition\n";
+         stream << report.every_heritable;
       }
       this->generate_all_struct_body_files();
       this->generate_whole_struct_serialization_code();
