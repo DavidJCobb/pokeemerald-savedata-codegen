@@ -6,5 +6,5 @@ lu\generated\struct-serialize\
 lu\generated\sector-serialize\
 lu\generated\save-functors\
 D:\Github\pokeemerald\include\lu\generated\sector-serialize\README.md
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\pokeemerald.sav
+D:\Github\pokeemerald\pokeemerald.sav
 D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\last-sectioned-dump.txt

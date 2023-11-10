@@ -230,6 +230,7 @@ The following child elements are valid:
 
 ## Known issues
 
+* The savegame dumper mishandles data at some point prior to PC box names. Box names that appear normal (i.e. unnamed) after reloading in-game will appear garbled in the dump.
 * If a sector group ends up using fewer sectors than you've allotted to it (e.g. only using 3 out of 4), then the generated code will likely break. Nothing exists to handle this case. Using our "three out of four" example, we may generate function calls to serialize all four sectors yet only generate actual functions for the first three; and other issues like that.
    * Error reporting does exist for if a sector group consumes more sectors than it is allowed to.
 * Line breaks in a `line-comment` element are not stripped or otherwise handled gracefully.
