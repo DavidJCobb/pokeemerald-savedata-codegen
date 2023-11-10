@@ -8,19 +8,19 @@
          sector-count="1"
          sector-base-id="0"
       >
-         <struct name="SaveBlock2" ptr="gSaveBlock2Ptr" />
+         <struct name="SaveBlock2" ptr="gSaveBlock2Ptr" var-header="global.h" />
       </group>
       <group name="WorldData"
          sector-count="4"
          sector-base-id="1"
       >
-         <struct name="SaveBlock1" ptr="gSaveBlock1Ptr" />
+         <struct name="SaveBlock1" ptr="gSaveBlock1Ptr" var-header="global.h" />
       </group>
       <group name="PokemonStorage"
          sector-count="9"
          sector-base-id="5"
       >
-         <struct name="PokemonStorage" ptr="gPokemonStoragePtr" />
+         <struct name="PokemonStorage" ptr="gPokemonStoragePtr" var-header="pokemon_storage_system.h" />
       </group>
    </sector-groups>
 </data>

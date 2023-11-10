@@ -1,14 +1,11 @@
-﻿  uic CodegenMainWindow.ui
-  rcc CodegenMainWindow.qrc
-  moc CodegenMainWindow.h
-   RCC: Warning: No resources in 'D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\CodegenMainWindow.qrc'.
-  parsing_scaffold.cpp
+﻿  parsing_scaffold.cpp
   registry.cpp
   struct_bitwalker.cpp
   struct_bytewalker.cpp
   CodegenMainWindow.cpp
   main.cpp
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\CodegenMainWindow.h(3,10): fatal  error C1083: Cannot open include file: 'QtWidgets/QMainWindow': No such file or directory (compiling source file CodegenMainWindow.cpp)
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\CodegenMainWindow.h(3,10): fatal  error C1083: Cannot open include file: 'QtWidgets/QMainWindow': No such file or directory (compiling source file main.cpp)
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\lu\bitstreams\reader.h(16,13): fatal  error C1083: Cannot open include file: 'QString': No such file or directory (compiling source file struct_bitwalker.cpp)
-D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\lu\bitstreams\reader.h(16,13): fatal  error C1083: Cannot open include file: 'QString': No such file or directory (compiling source file registry.cpp)
+  qrc_CodegenMainWindow.cpp
+  moc_CodegenMainWindow.cpp
+  codegen-gui.vcxproj -> D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\codegen-gui.exe
+  windeployqt: "D:/Programs/Qt/5.15.2/msvc2019_64/bin\windeployqt.exe" --list target --dir D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\ D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\codegen-gui.exe
+EXEC : warning : Cannot find Visual Studio installation directory, VCINSTALLDIR is not set.
