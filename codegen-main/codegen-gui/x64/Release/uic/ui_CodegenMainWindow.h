@@ -292,6 +292,32 @@ public:
         gridLayout_3->addWidget(groupBox_2, 1, 0, 1, 1);
 
         CodegenMainWindowClass->setCentralWidget(centralWidget);
+#if QT_CONFIG(shortcut)
+        label_3->setBuddy(pathOutputC);
+        label_5->setBuddy(pathOutputRelStructSerialize);
+        label_9->setBuddy(codegenReportPath);
+        label_6->setBuddy(pathOutputRelSectorSerialize);
+        label_2->setBuddy(pathOutputH);
+        label->setBuddy(pathInputXML);
+        label_4->setBuddy(pathOutputRelStructMembers);
+        label_10->setBuddy(pathOutputRelSaveFunctors);
+        label_7->setBuddy(dumpSavPath);
+        label_8->setBuddy(dumpOutPath);
+#endif // QT_CONFIG(shortcut)
+        QWidget::setTabOrder(pathInputXML, pathOutputH);
+        QWidget::setTabOrder(pathOutputH, pathOutputC);
+        QWidget::setTabOrder(pathOutputC, pathOutputRelStructMembers);
+        QWidget::setTabOrder(pathOutputRelStructMembers, pathOutputRelStructSerialize);
+        QWidget::setTabOrder(pathOutputRelStructSerialize, pathOutputRelSectorSerialize);
+        QWidget::setTabOrder(pathOutputRelSectorSerialize, pathOutputRelSaveFunctors);
+        QWidget::setTabOrder(pathOutputRelSaveFunctors, codegenReportPath);
+        QWidget::setTabOrder(codegenReportPath, buttonLoadAll);
+        QWidget::setTabOrder(buttonLoadAll, buttonDoCodegen);
+        QWidget::setTabOrder(buttonDoCodegen, dumpSavPath);
+        QWidget::setTabOrder(dumpSavPath, dumpSavBrowse);
+        QWidget::setTabOrder(dumpSavBrowse, dumpOutPath);
+        QWidget::setTabOrder(dumpOutPath, dumpOutBrowse);
+        QWidget::setTabOrder(dumpOutBrowse, buttonDoDump);
 
         retranslateUi(CodegenMainWindowClass);
 

@@ -1,0 +1,29 @@
+﻿  parsing_scaffold.cpp
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\lu\rapidxml_helpers\parsing_scaffold.cpp(13,21): warning C4018: '<': signed/unsigned mismatch
+  registry.cpp
+  main.cpp
+  registry_ex.cpp
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(9,27): warning C4267: '+=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(38,27): warning C4267: '-=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(48,25): warning C4267: '=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(21,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(25,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(216,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  struct_bitwalker.cpp
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(9,27): warning C4267: '+=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(38,27): warning C4267: '-=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\position.inl(48,25): warning C4267: '=': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(21,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(25,21): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-main\cobb\bitstreams\reader.inl(216,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bitwalker.cpp(71,18): warning C4244: 'initializing': conversion from 'uintmax_t' to 'uint32_t', possible loss of data
+  struct_bytewalker.cpp
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bytewalker.cpp(37,17): warning C4267: 'initializing': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bytewalker.cpp(50,48): warning C4267: 'argument': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bytewalker.cpp(52,23): warning C4267: 'initializing': conversion from 'size_t' to 'uint8_t', possible loss of data
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\dumper\struct_bytewalker.cpp(117,28): warning C4804: '<': unsafe use of type 'bool' in operation
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 2578 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  dumper.vcxproj -> D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\dumper.exe
