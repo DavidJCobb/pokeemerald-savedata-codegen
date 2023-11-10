@@ -20,6 +20,13 @@ struct Foo {
 };
 ```
 
+## Build info
+
+* Visual Studio 2022
+* Qt VS Tools
+* Qt v5.15.2, with version name defined as "5.15.2 MSVC2019 x64" in Qt VS Tools
+** License for this is LGPL per the Qt VS Tools license at the time I downloaded it
+
 ## Feature set
 
 * Structs and their members are defined in XML
