@@ -31,6 +31,19 @@ struct Foo {
    * Code to serialize a sector group one sector at a time
    * Function tables and definitions referenced from `save.c`
 
+## Usage
+
+The `pokeemerald` branch I've set up to use this generated code has an altered `save.h` and `save.c`, and as such requires specific folder paths. Additionally, all savedata-related structs have been hollowed out and pointed at generated member lists. You'll therefore need to use the following paths:
+
+| Purpose | Path |
+| - | - |
+| Sector group serialize | lu/generated/sector-serialize/ |
+| Struct members | lu/generated/struct-members/ |
+| Struct serialize | lu/generated/struct-serialize/ |
+| Save functors | lu/generated/save-functors/ |
+
+Additionally, the bitstream read/write functions are stored in `lu/bitstreams.h` / `lu/bitstreams.c`, and some changes are made to `item.c` to ensure that saving a 10-bit item quantity (for the range [0, 999]) doesn't break the game's inventory encryption when the unused upper bits get truncated.
+
 ## The XML format
 
 * `data` element

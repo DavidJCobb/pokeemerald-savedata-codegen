@@ -1779,6 +1779,18 @@ bool registry::generate_all_files() {
    return !failed;
 }
 
+
+void registry::clear() {
+   this->sector_groups.clear();
+   this->blind_unions.clear();
+   this->structs.clear();
+   this->constants.clear();
+   this->heritables.clear();
+   this->seen_files.clear();
+   this->load_state.unions.clear();
+}
+
+
 void registry::generate_all_struct_body_files() {
    auto base_path = this->paths.output_paths.h / this->paths.output_paths.struct_members;
    for (auto& pair : this->structs) {

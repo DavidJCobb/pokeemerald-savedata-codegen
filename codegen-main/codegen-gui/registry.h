@@ -117,6 +117,8 @@ class registry : public lu::singleton<registry> {
 
       bool generate_all_files();
 
+      void clear();
+
    protected:
       void generate_all_struct_body_files();
       void generate_whole_struct_serialization_code();

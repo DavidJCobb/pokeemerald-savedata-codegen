@@ -49,6 +49,7 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
    QObject::connect(this->ui.buttonLoadAll, &QPushButton::clicked, this, [this]() {
       auto& reg = registry::get_or_create();
       this->_syncPathsToRegistry();
+      reg.clear();
       try {
          reg.parse_all_xml_files();
       } catch (std::runtime_error& e) {
