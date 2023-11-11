@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include "RapidXml/rapidxml.hpp"
 #include "lu/rapidxml_helpers/parsing_scaffold.h"
@@ -115,24 +116,14 @@ class registry : public lu::singleton<registry> {
 
       void parse_all_xml_files();
 
-      bool generate_all_files();
+      const ast::constant_definition* constant_by_name(const std::string_view) const;
+
+      constexpr std::add_lvalue_reference_t<std::add_const_t<decltype(sector_groups)>> all_sector_groups() const {
+         return this->sector_groups;
+      }
+      constexpr std::add_lvalue_reference_t<std::add_const_t<decltype(structs)>> all_structs() const {
+         return this->structs;
+      }
 
       void clear();
-
-   protected:
-      void generate_all_struct_body_files();
-      void generate_whole_struct_serialization_code();
-      void generate_sector_code();
-      void generate_save_functors();
-
-   protected:
-      std::string _dump_unpacked(const void* data, size_t max_size, const std::vector<std::string>& structures);
-      std::string _dump_packed(const void* data, size_t max_size, const std::vector<std::string>& structures);
-      std::string _dump(bool bitpacked, const void* data, size_t max_size, const std::vector<std::string>& structures);
-
-      std::vector<std::string> _dump_from_sav(const void* sav, size_t sav_size, bool packed);
-
-   public:
-      std::vector<std::string> dump_unpacked_from_sav(const void* sav, size_t sav_size);
-      std::vector<std::string> dump_packed_from_sav(const void* sav, size_t sav_size);
 };

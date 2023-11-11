@@ -7,6 +7,9 @@
 #include <QTextStream>
 #include "./registry.h"
 
+#include "./codegen/generate_all.h"
+#include "./dumper/dump_sav.h"
+
 namespace {
    constexpr const bool dumps_are_of_packed_data = true;
 }
@@ -66,10 +69,16 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
       auto& reg = registry::get_or_create();
       this->_syncPathsToRegistry();
       try {
-         if (!reg.generate_all_files()) {
-            QMessageBox::critical(this, "Error", QString("Failed to generate all sectors. See report for details."));
-            return;
-         }
+         codegen::generate_all(
+            this->ui.pathOutputH->text().toStdString(),
+            this->ui.pathOutputC->text().toStdString(),
+            //
+            this->ui.pathOutputRelStructMembers->text().toStdString(),
+            this->ui.pathOutputRelStructSerialize->text().toStdString(),
+            this->ui.pathOutputRelSectorSerialize->text().toStdString(),
+            //
+            this->ui.pathOutputRelSaveFunctors->text().toStdString()
+         );
          QMessageBox::critical(this, "Success", QString("Packed all sectors! See report for information."));
          return;
       } catch (std::runtime_error& e) {
@@ -115,11 +124,7 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
       auto& reg = registry::get_or_create();
 
       std::vector<std::string> sectioned_dump;
-      if (dumps_are_of_packed_data) {
-         sectioned_dump = reg.dump_packed_from_sav(buffer.data(), buffer.size());
-      } else {
-         sectioned_dump = reg.dump_unpacked_from_sav(buffer.data(), buffer.size());
-      }
+      sectioned_dump = dump_sav(buffer.data(), buffer.size(), dumps_are_of_packed_data);
 
       for (const auto& item : sectioned_dump) {
          out_stream << item << "\n\n";
