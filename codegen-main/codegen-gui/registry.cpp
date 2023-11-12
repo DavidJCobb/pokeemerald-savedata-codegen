@@ -428,6 +428,15 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       attrval_integral = ast::integral_type_from_string(c_type_attrval);
    }
 
+   const ast::heritable* inherit_from = nullptr;
+   if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "inherit")) {
+      std::string value = std::string(attr->value(), attr->value_size());
+      if (!this->heritables.contains(value)) {
+         scaffold.error("Field: `inherit` attribute did not refer to a known heritable (seen: "s + value + ").", node);
+      }
+      inherit_from = this->heritables[value].get();
+   }
+
    if (tagname == "string") {
       fundamental_type = fundamental_member_type::string;
    } else if (tagname == "pointer") {
@@ -448,7 +457,13 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    }
 
    if (!fundamental_type.has_value()) {
-      scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
+      if (inherit_from->is_integral()) {
+         fundamental_type = fundamental_member_type::number;
+      } else if (inherit_from->is_string()) {
+         fundamental_type = fundamental_member_type::string;
+      } else {
+         scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
+      }
    }
 
    std::unique_ptr<ast::member> field;
@@ -471,15 +486,6 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
       case fundamental_member_type::union_bespoke:
          field = std::make_unique<ast::inlined_union_member>();
          break;
-   }
-
-   const ast::heritable* inherit_from = nullptr;
-   if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "inherit")) {
-      std::string value = std::string(attr->value(), attr->value_size());
-      if (!this->heritables.contains(value)) {
-         scaffold.error("Field: `inherit` attribute did not refer to a known heritable (seen: "s + value + ").", node);
-      }
-      inherit_from = this->heritables[value].get();
    }
 
    if (inherit_from) {
