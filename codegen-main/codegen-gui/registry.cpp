@@ -399,7 +399,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
             }
          }
          if (!found) {
-            scaffold.error("Field: You must specify a union member to serialize (member \""s + field->member_to_serialize + "\") was not found.", node);
+            scaffold.error("Field: You must specify a union member to serialize (member \""s + field->member_to_serialize + "\" was not found).", node);
          }
       } else {
          if (!field->member_to_serialize.empty()) {
@@ -527,7 +527,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    // Attributes common to all members
    {
       if (auto* attr = lu::rapidxml_helpers::get_attribute(node, "name")) {
-         std::string_view name(attr->name(), attr->name_size());
+         std::string_view name(attr->value(), attr->value_size());
          field->name = name;
          if (name.empty())
             scaffold.error("Field has a blank name.", node);
@@ -696,15 +696,11 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    if (mt == fundamental_member_type::structure) {
       auto& casted = *(ast::struct_member*)field.get();
 
-      std::string type_name;
-      //
-      if (inherit_from) {
-         type_name = inherit_from->attributes.c_type;
-      }
-      if (type_name.empty())
-         type_name = c_type_attrval;
-
-      if (type_name.empty())
+      if (inherit_from)
+         casted.type_name = inherit_from->attributes.c_type;
+      if (!c_type_attrval.empty())
+         casted.type_name = c_type_attrval;
+      if (casted.type_name.empty())
          scaffold.error("Field: Struct-type member's `c-type` attribute is missing or empty.", node);
       assert(!attrval_integral.has_value());
 
@@ -728,8 +724,12 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    }
    if (mt == fundamental_member_type::union_blind) {
       auto& casted = *(ast::blind_union_member*)field.get();
-      
-      if (c_type_attrval.empty())
+      //
+      if (inherit_from)
+         casted.type_name = inherit_from->attributes.c_type;
+      if (!c_type_attrval.empty())
+         casted.type_name = c_type_attrval;
+      if (casted.type_name.empty())
          scaffold.error("Field: Union-type member's `c-type` attribute is missing or empty.", node);
       assert(!attrval_integral.has_value());
 
@@ -841,14 +841,15 @@ void registry::_parse_types(parse_wrapper& scaffold, rapidxml::xml_node<>& base_
 
          size_t size_in_bytes = 0;
          if (auto* attr = lu::rapidxml_helpers::get_attribute(*node, "sizeof")) {
-            bool ok;
-            size_in_bytes = lu::strings::to_integer<size_t>(attr->value(), attr->value_size(), &ok);
-            if (!ok) {
-               scaffold.error("Blind union: `sizeof` attribute is not a valid unsigned integral.", *node);
+            auto attr_value  = std::string_view(attr->value(), attr->value_size());
+            auto interpreted = interpret_size_constant(attr_value);
+            if (!interpreted.has_value()) {
+               scaffold.error("Blind union: `sizeof` attribute is not a valid unsigned integral or known-to-XML preprocessor constant.", *attr);
             }
-            if (size_in_bytes <= 0) {
-               scaffold.error("Blind union: `sizeof` attribute value cannot be zero or a negative number", *node);
+            if (interpreted.value().value <= 0) {
+               scaffold.error("Blind union: `sizeof` attribute value cannot be zero or a negative number", *attr);
             }
+            size_in_bytes = interpreted.value().value;
          } else {
             scaffold.error("A blind union must provide its size in bytes via the `sizeof` attribute", *node);
          }
