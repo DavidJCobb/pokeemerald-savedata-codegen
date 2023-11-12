@@ -561,6 +561,9 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          }
       }
 
+      if (tagname_integral.has_value())
+         casted.value_type = tagname_integral.value();
+
       if (!c_type_attrval.empty()) {
          if (!attrval_integral.has_value())
             scaffold.error("Field: `c-type` attribute value is not a valid integral type (seen: "s + std::string(c_type_attrval) + ")", node);
@@ -569,6 +572,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
                scaffold.error("Field: This numeric field specifies different types via its tagname (seen: "s + std::string(tagname) + ") and `c-type` attribute (seen: " + std::string(c_type_attrval) + ").", node);
             }
          }
+         casted.value_type = attrval_integral.value();
       } else {
          if (!casted.value_type.has_value())
             scaffold.error("Field: This numeric member's C language value type is unknown. Specify it via the `c-type` attribute.", node);

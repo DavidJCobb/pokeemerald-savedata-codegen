@@ -58,6 +58,12 @@
     <ClCompile Include="dumper\dump_sav.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="codegen\struct_serialization_function_generator.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="codegen\results_report.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codegen\sector_generator.h">
@@ -267,6 +273,9 @@
     <ClInclude Include="dumper\dump_sav.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="codegen\results_report.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="codegen\sector_generator.inl">
@@ -319,9 +328,6 @@
     </None>
     <None Include="lu\bitstreams\README.md" />
     <None Include="codegen\struct_body_serializer.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="codegen\struct_serialization_function_generator.cpp">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>
