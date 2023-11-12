@@ -1,4 +1,6 @@
-﻿  registry.cpp
-  codegen-gui.vcxproj -> D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\codegen-gui.exe
-  windeployqt: "D:/Programs/Qt/5.15.2/msvc2019_64/bin\windeployqt.exe" --list target --dir D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\ D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\x64\Release\codegen-gui.exe
-EXEC : warning : Cannot find Visual Studio installation directory, VCINSTALLDIR is not set.
+﻿  generate_all.cpp
+  registry.cpp
+  struct_bitwalker.cpp
+  struct_bytewalker.cpp
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\codegen\generate_all.cpp(224,19): fatal  error C1075: '{': no matching token found
+D:\Github\lu-pokeemerald-savedata-codegen\codegen-main\codegen-gui\registry.cpp(508): warning C4172: returning address of local variable or temporary: constant
