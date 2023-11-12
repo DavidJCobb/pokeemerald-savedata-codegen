@@ -64,6 +64,7 @@ namespace {
          }
          {  // Whole-struct serialization functions
             codegen::struct_serialization_function_generator generator(definition);
+            generator.destination_folder = paths.struct_serialize.rel.generic_string();
             {
                std::ofstream stream(paths.struct_serialize.h / std::filesystem::path("serialize_"s + definition.name + ".h"));
                assert(!!stream);
