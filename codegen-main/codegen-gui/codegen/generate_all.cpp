@@ -296,7 +296,8 @@ namespace codegen {
             out_path = paths.sector_serialize.h / "README.md";
          }
          {
-            auto out_folder = out_path.remove_filename();
+            auto out_folder = out_path;
+            out_folder.remove_filename();
             std::error_code error;
             if (!std::filesystem::create_directories(out_folder, error))
                assert(!error);

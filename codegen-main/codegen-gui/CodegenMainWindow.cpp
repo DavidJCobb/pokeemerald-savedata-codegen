@@ -162,11 +162,6 @@ void CodegenMainWindow::_persistPaths() {
    }
 }
 void CodegenMainWindow::_setUpPathFields() {
-   QFile file(_persistLocation());
-   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      return;
-   }
-
    auto handler = [this](const QString&) { this->_persistPaths(); };
    
    auto path_fields = std::array{
@@ -181,9 +176,15 @@ void CodegenMainWindow::_setUpPathFields() {
       this->ui.dumpSavPath,
       this->ui.dumpOutPath,
    };
+
+   QFile file(_persistLocation());
+   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      for (auto* field : path_fields) {
+         auto value = file.readLine().trimmed();
+         field->setText(value);
+      }
+   }
    for (auto* field : path_fields) {
-      auto value = file.readLine().trimmed();
-      field->setText(value);
       QObject::connect(field, &QLineEdit::textChanged, this, handler);
    }
 }

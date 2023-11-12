@@ -451,7 +451,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          assert(it_u == this->blind_unions.end());
          fundamental_type = fundamental_member_type::structure;
       } else if (it_u != this->blind_unions.end()) {
-         assert(it_s == this->blind_unions.end());
+         assert(it_s == this->structs.end());
          fundamental_type = fundamental_member_type::union_blind;
       }
    }
@@ -490,6 +490,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          field = std::make_unique<ast::inlined_union_member>();
          break;
    }
+   assert(field != nullptr);
+   field->inherited_from = inherit_from;
 
    if (inherit_from) {
       if (auto& v = inherit_from->attributes.do_not_serialize; v.has_value())
@@ -501,8 +503,8 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    }
 
    auto _handle_size_t_attribute = [this, &scaffold](xml_attribute<>& attr) -> ast::size_constant {
-      std::string_view name  = std::string(attr.name(), attr.name_size());
-      std::string_view value = std::string(attr.value(), attr.value_size());
+      auto name  = std::string_view(attr.name(), attr.name_size());
+      auto value = std::string_view(attr.value(), attr.value_size());
 
       auto constant = interpret_size_constant(value);
       if (!constant.has_value()) {
@@ -679,7 +681,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
             casted.pointed_to_type = it_s->second.get();
             fundamental_type = fundamental_member_type::structure;
          } else if (it_u != this->blind_unions.end()) {
-            assert(it_s == this->blind_unions.end());
+            assert(it_s == this->structs.end());
             casted.pointed_to_type = it_u->second.get();
          }
       }
@@ -704,12 +706,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.error("Field: Struct-type member's `c-type` attribute is missing or empty.", node);
       assert(!attrval_integral.has_value());
 
-      if (!this->_in_inactive_union_member(field->name)) {
-         if (this->structs.contains(casted.type_name)) {
-            casted.type_def = this->structs[casted.type_name].get();
-         } else {
-            scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted.type_name + ").", node);
-         }
+      if (this->structs.contains(casted.type_name)) {
+         casted.type_def = this->structs[casted.type_name].get();
+      } else {
+         scaffold.error("Field: struct typename is not known/defined yet (seen: "s + casted.type_name + ").", node);
       }
 
       lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &casted, &_handle_size_t_attribute](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
@@ -733,12 +733,10 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          scaffold.error("Field: Union-type member's `c-type` attribute is missing or empty.", node);
       assert(!attrval_integral.has_value());
 
-      if (!this->_in_inactive_union_member(field->name)) {
-         if (this->blind_unions.contains(casted.type_name)) {
-            casted.type_def = this->blind_unions[casted.type_name].get();
-         } else {
-            scaffold.error("Field: blind-union-type member's typename is not known/defined yet (seen: "s + casted.type_name + ").", node);
-         }
+      if (this->blind_unions.contains(casted.type_name)) {
+         casted.type_def = this->blind_unions[casted.type_name].get();
+      } else {
+         scaffold.error("Field: blind-union-type member's typename is not known/defined yet (seen: "s + casted.type_name + ").", node);
       }
 
       lu::rapidxml_helpers::for_each_attribute(node, [this, &scaffold, &casted, &_handle_size_t_attribute](std::string_view attr_name, std::string_view attr_value, xml_attribute<>& attr) {
