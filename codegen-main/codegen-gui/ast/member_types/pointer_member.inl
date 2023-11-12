@@ -3,6 +3,13 @@
 
 namespace ast {
    /*virtual*/ constexpr const std::string pointer_member::as_c_type_specifier() const /*override*/ {
+      return this->pointed_to_type_to_string() + "*";
+   }
+   /*virtual*/ constexpr std::size_t pointer_member::compute_single_element_bitcount() const /*override*/ {
+      return 32;
+   }
+
+   constexpr std::string pointer_member::pointed_to_type_to_string() const {
       std::string out;
       if (auto* casted = std::get_if<const ast::structure*>(&this->pointed_to_type)) {
          auto& dfn = **casted;
@@ -19,9 +26,6 @@ namespace ast {
       } else {
          out = "?";
       }
-      return out + "*";
-   }
-   /*virtual*/ constexpr std::size_t pointer_member::compute_single_element_bitcount() const /*override*/ {
-      return 32;
+      return out;
    }
 }

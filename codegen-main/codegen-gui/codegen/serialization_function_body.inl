@@ -340,7 +340,9 @@ namespace codegen {
 
             out.read += computed_accessor;
             out.read += " = (";
-            out.read += ast::integral_type_to_string(casted->pointed_to_type.value());
+            if (casted->is_const)
+               out.read += "const ";
+            out.read += casted->pointed_to_type_to_string();
             out.read += "*) ";
 
             out.read  += "lu_BitstreamRead_u32(";

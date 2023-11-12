@@ -491,7 +491,7 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
          field->is_const = v.value();
    }
 
-   auto _handle_size_t_attribute = [this, &scaffold](xml_attribute<>& attr) -> const ast::size_constant& {
+   auto _handle_size_t_attribute = [this, &scaffold](xml_attribute<>& attr) -> ast::size_constant {
       std::string_view name  = std::string(attr.name(), attr.name_size());
       std::string_view value = std::string(attr.value(), attr.value_size());
 

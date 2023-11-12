@@ -26,6 +26,8 @@ namespace ast {
             const ast::structure*,
             const ast::blind_union*
          > pointed_to_type; // integral type or struct/union typename
+
+         constexpr std::string pointed_to_type_to_string() const;
    };
 }
 

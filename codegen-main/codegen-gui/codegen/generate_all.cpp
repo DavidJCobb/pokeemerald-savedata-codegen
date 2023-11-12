@@ -271,4 +271,5 @@ namespace codegen {
       }
 
       _generate_sector_group_savegame_functors(paths);
+   }
 }
