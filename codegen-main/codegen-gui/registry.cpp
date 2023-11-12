@@ -1108,6 +1108,14 @@ void registry::parse_all_xml_files() {
    }
 }
 
+const ast::constant_definition* registry::constant_by_name(const std::string_view name) const {
+   std::string name_s(name);
+   auto it = this->constants.find(name_s);
+   if (it == this->constants.end())
+      return nullptr;
+   return it->second.get();
+}
+
 void registry::clear() {
    this->sector_groups.clear();
    this->blind_unions.clear();

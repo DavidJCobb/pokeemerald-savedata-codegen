@@ -52,6 +52,12 @@
     <ClCompile Include="struct_bytewalker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="codegen\generate_all.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dumper\dump_sav.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codegen\sector_generator.h">
@@ -249,6 +255,18 @@
     <ClInclude Include="lu\macros\static_warning.undef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="codegen\struct_body_serializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen\struct_serialization_function_generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen\generate_all.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dumper\dump_sav.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="codegen\sector_generator.inl">
@@ -300,5 +318,11 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="lu\bitstreams\README.md" />
+    <None Include="codegen\struct_body_serializer.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="codegen\struct_serialization_function_generator.cpp">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

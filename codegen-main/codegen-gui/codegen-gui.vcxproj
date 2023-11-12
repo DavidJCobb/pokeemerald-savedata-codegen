@@ -104,6 +104,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="codegen\generate_all.cpp" />
+    <ClCompile Include="dumper\dump_sav.cpp" />
     <ClCompile Include="lu\rapidxml_helpers\parsing_scaffold.cpp" />
     <ClCompile Include="registry.cpp" />
     <ClCompile Include="struct_bitwalker.cpp" />
@@ -129,9 +131,13 @@
     <ClInclude Include="ast\member_types\struct_member.h" />
     <ClInclude Include="ast\member_types\_all.h" />
     <ClInclude Include="ast\structure.h" />
+    <ClInclude Include="codegen\generate_all.h" />
     <ClInclude Include="codegen\sector_generator.h" />
     <ClInclude Include="codegen\serialization_function_body.h" />
     <ClInclude Include="codegen\serialization_item.h" />
+    <ClInclude Include="codegen\struct_body_serializer.h" />
+    <ClInclude Include="codegen\struct_serialization_function_generator.h" />
+    <ClInclude Include="dumper\dump_sav.h" />
     <ClInclude Include="lu\bitstreams\bitstreamable_container.h" />
     <ClInclude Include="lu\bitstreams\bitstreamable_primitive.h" />
     <ClInclude Include="lu\bitstreams\bitstreamable_struct.h" />
@@ -195,6 +201,8 @@
     <None Include="codegen\sector_generator.inl" />
     <None Include="codegen\serialization_function_body.inl" />
     <None Include="codegen\serialization_item.inl" />
+    <None Include="codegen\struct_body_serializer.inl" />
+    <None Include="codegen\struct_serialization_function_generator.cpp" />
     <None Include="lu\bitstreams\position.inl" />
     <None Include="lu\bitstreams\reader.inl" />
     <None Include="lu\bitstreams\README.md" />
