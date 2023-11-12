@@ -457,11 +457,14 @@ std::unique_ptr<ast::member> registry::_parse_member(parse_wrapper& scaffold, ra
    }
 
    if (!fundamental_type.has_value()) {
-      if (inherit_from->is_integral()) {
-         fundamental_type = fundamental_member_type::number;
-      } else if (inherit_from->is_string()) {
-         fundamental_type = fundamental_member_type::string;
-      } else {
+      if (inherit_from) {
+         if (inherit_from->is_integral()) {
+            fundamental_type = fundamental_member_type::number;
+         } else if (inherit_from->is_string()) {
+            fundamental_type = fundamental_member_type::string;
+         }
+      }
+      if (!fundamental_type.has_value()) {
          scaffold.error("Field: Unable to identify fundamental type (integral? string? struct? inlined union?).", node);
       }
    }
