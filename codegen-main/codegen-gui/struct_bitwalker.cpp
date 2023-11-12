@@ -72,12 +72,10 @@ std::string struct_bitwalker::_pull_value(const std::string& accessor, const ast
       return lu::strings::from_integer(v);
    }
    if (auto* casted = dynamic_cast<const ast::string_member*>(&m_def)) { // NOTE: this'll be in GF encoding for now
-      auto char_type = casted->char_type.value_or(ast::integral_type::u8);
-
       std::string out;
       size_t buffer_len = casted->max_length.value;
       for (size_t i = 0; i < buffer_len; ++i) {
-         auto ch = this->reader.stream_bits(ast::bitcount_of(char_type));
+         auto ch = this->reader.stream_bits(ast::bitcount_of(ast::string_member::char_type));
          if (ch >= 0xBB && ch <= 0xD4) {
             out += '\'';
             out += ((char)(ch - 0xBB) + 'A');

@@ -5,12 +5,8 @@
 namespace ast {
    /*virtual*/ constexpr const std::string blind_union_member::as_c_type_specifier() const /*override*/ {
       std::string out;
-      switch (this->decl.value_or(decl::blank)) {
-         case decl::c_union:
-            out = "union ";
-            break;
-         case decl::blank:
-            break;
+      if (!this->type_def->c_type_info.is_defined_via_typedef) {
+         out = "union ";
       }
       out += this->type_name;
       return out;

@@ -1,7 +1,12 @@
 #pragma once
 #include <cstdint>
-#include <optional>
+#include <variant>
 #include "../member.h"
+
+namespace ast {
+   class blind_union;
+   class structure;
+}
 
 namespace ast {
    // Savedata may include pointers within ROM.
@@ -15,7 +20,12 @@ namespace ast {
          virtual constexpr size_t _compute_single_element_unpacked_bytecount() const override { return 4; }
 
       public:
-         std::optional<integral_type> pointed_to_type;
+         std::variant<
+            std::monostate,
+            integral_type,
+            const ast::structure*,
+            const ast::blind_union*
+         > pointed_to_type; // integral type or struct/union typename
    };
 }
 

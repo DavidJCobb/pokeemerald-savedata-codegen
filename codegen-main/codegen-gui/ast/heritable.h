@@ -18,10 +18,10 @@ namespace ast {
          std::string tagname;
          struct {
             std::optional<bool> do_not_serialize;
+            std::optional<bool> is_const;
             std::optional<size_constant> c_alignment;
 
             std::string c_type;
-            std::optional<std::string> c_type_decl;
 
             // attributes for numbers
             std::optional<std::intmax_t>  min;
@@ -31,8 +31,8 @@ namespace ast {
             std::optional<bool> is_checksum;
 
             // attributes for strings
-            std::optional<integral_type> char_type;
             std::optional<size_constant> length;
+            std::optional<bool> only_early_terminator;
          } attributes;
          std::optional<integral_type> integral_type;
 

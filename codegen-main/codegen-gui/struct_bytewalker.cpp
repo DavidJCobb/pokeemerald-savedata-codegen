@@ -159,15 +159,13 @@ std::string struct_bytewalker::_pull_value(const std::string& accessor, const as
       return lu::strings::from_integer(v);
    }
    if (auto* casted = dynamic_cast<const ast::string_member*>(&m_def)) { // NOTE: this'll be in GF encoding for now
-      auto char_type = casted->char_type.value_or(ast::integral_type::u8);
-
       size_t buffer_len = casted->max_length.value;
       if (!casted->only_early_terminator)
          ++buffer_len;
 
       std::string out;
       for (size_t i = 0; i < buffer_len; ++i) {
-         auto ch = this->_read(char_type);
+         auto ch = this->_read(ast::string_member::char_type);
          out += lu::strings::from_integer(ch);
 
          if (i + 1 < buffer_len) {

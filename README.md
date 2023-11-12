@@ -190,7 +190,6 @@ For strings, the following attributes are valid:
 
 | Attribute | Details |
 | - | - |
-| `char-type` | Required. Can be any of the following: `u8`; `u16`; `u32`; `s8`; `s16`; `s32`; `int`. However, currently only `u8` will serialize properly, and Game Freak exclusively uses `u8` as their character type anyway. |
 | `length` | The maximum length of the string, not including a terminator byte if one is mandatory. This can be the name of a `<constant />`. |
 | `only-early-terminator` | If `true`, then the string doesn't require a terminator byte, and only includes one if it uses fewer than the allotted number of characters. Defaults to `false`. If you see a string in C source code that's declared as `u8 otName[PLAYER_NAME_LENGTH]` and not `u8 otName[PLAYER_NAME_LENGTH + 1]`, then set this attribute to `true` for it. |
 
@@ -201,7 +200,6 @@ For struct or blind-union members, the following attributes are valid:
 | Attribute | Details |
 | - | - |
 | `c-type` | Required. The typename of the struct or union. |
-| `c-type-decl` | The keyword to use when specifying the type; allowed values are `struct`, `union`, or blank. (A future update to the codegen system may remove this attribute, since it can theoretically be deduced from whether the typename is a struct or union, and whether it was declared with `typedef`.) Defaults to `struct` if unspecified. |
 
 ###### Inlined union
 
@@ -242,7 +240,6 @@ The following child elements are valid:
    * Error reporting does exist for if a sector group consumes more sectors than it is allowed to.
 * Line breaks in a `line-comment` element are not stripped or otherwise handled gracefully.
 * XML parse warnings (e.g. on unrecognized attributes) are currently not displayed in the UI.
-* The `c-type-decl` attribute should be removed everywhere it appears; we should deduce its value based on whether the typename is a `struct` or `union`, and whether the entity was declared via `typedef`. We already require those facts for other reasons.
 * We require a `char-type` for strings, but the serialization code only supports `u8` strings. We don't generate different code for other character types, so they would just produce broken code. We should remove the `char-type` attribute and explicitly only support `u8` strings.
 * The program contains several `assert`s instead of proper error handling and reporting, e.g. if directory creation fails during codegen.
 * Code exists to dump bitpacked or bytepacked savegames. The latter code is unreachable (I used it when testing and debugging my changes to Emerald's save code), which is good because IIRC it doesn't bounds-check.

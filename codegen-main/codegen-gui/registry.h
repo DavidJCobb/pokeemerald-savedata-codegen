@@ -27,9 +27,9 @@ namespace ast {
 
 class registry;
 class registry : public lu::singleton<registry> {
-   protected:
-      using parse_wrapper = lu::rapidxml_helpers::parsing_scaffold;
    public:
+      using parse_wrapper = lu::rapidxml_helpers::parsing_scaffold;
+
       struct path_set {
          struct {
             std::filesystem::path xml;
