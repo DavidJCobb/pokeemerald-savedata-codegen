@@ -36,7 +36,7 @@ namespace ast{
       return out;
    }
    /*virtual*/ constexpr size_t string_member::_get_alignment_impl() const /*override*/ {
-      auto bc = bitcount_of(char_type);
+      constexpr auto bc = bitcount_of(char_type);
       if (bc < 8)
          return 8;
       return bc / 8 + ((bc % 8) ? 1 : 0);
@@ -53,8 +53,6 @@ namespace ast{
       return (bc / 8 + ((bc % 8) ? 1 : 0)) * buffer;
    }
    /*virtual*/ constexpr std::size_t string_member::compute_single_element_bitcount() const /*override*/ {
-      size_t bitcount_per_char = ast::bitcount_of(char_type);
-      size_t buffer_length     = this->max_length.value;
-      return bitcount_per_char * buffer_length;
+      return ast::bitcount_of(char_type) * this->max_length.value;
    }
 }

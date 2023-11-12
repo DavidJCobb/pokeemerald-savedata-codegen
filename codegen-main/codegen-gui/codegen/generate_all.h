@@ -8,6 +8,7 @@ namespace codegen {
       std::filesystem::path rel_struct_members,
       std::filesystem::path rel_struct_serialize,
       std::filesystem::path rel_sector_serialize,
-      std::filesystem::path rel_save_integrations
+      std::filesystem::path rel_save_integrations,
+      std::filesystem::path results_report_path
    );
 }

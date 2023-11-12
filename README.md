@@ -240,9 +240,6 @@ The following child elements are valid:
    * Error reporting does exist for if a sector group consumes more sectors than it is allowed to.
 * Line breaks in a `line-comment` element are not stripped or otherwise handled gracefully.
 * XML parse warnings (e.g. on unrecognized attributes) are currently not displayed in the UI.
-* We require a `char-type` for strings, but the serialization code only supports `u8` strings. We don't generate different code for other character types, so they would just produce broken code. We should remove the `char-type` attribute and explicitly only support `u8` strings.
 * The program contains several `assert`s instead of proper error handling and reporting, e.g. if directory creation fails during codegen.
 * Code exists to dump bitpacked or bytepacked savegames. The latter code is unreachable (I used it when testing and debugging my changes to Emerald's save code), which is good because IIRC it doesn't bounds-check.
 * The code for dumping bitpacked savegames will display dialog boxes upon hitting a bitstream read exception, but the dialog boxes don't show the type of exception reached or any information specific to each exception type.
-* The code for loading data from XML is very messy, even with helper functions to remove boilerplate.
-* The `registry` should be split apart: the `registry` should only handle loading and remembering XML definitions, and codegen and savegame dumping should go through separate singletons/structs that communicate with the `registry` to read the loaded struct and sector-group definitions as needed.

@@ -118,6 +118,9 @@ class registry : public lu::singleton<registry> {
 
       const ast::constant_definition* constant_by_name(const std::string_view) const;
 
+      constexpr std::add_lvalue_reference_t<std::add_const_t<decltype(heritables)>> all_heritables() const {
+         return this->heritables;
+      }
       constexpr std::add_lvalue_reference_t<std::add_const_t<decltype(sector_groups)>> all_sector_groups() const {
          return this->sector_groups;
       }

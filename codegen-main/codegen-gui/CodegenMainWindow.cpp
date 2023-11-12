@@ -77,7 +77,9 @@ CodegenMainWindow::CodegenMainWindow(QWidget *parent) : QMainWindow(parent) {
             this->ui.pathOutputRelStructSerialize->text().toStdString(),
             this->ui.pathOutputRelSectorSerialize->text().toStdString(),
             //
-            this->ui.pathOutputRelSaveFunctors->text().toStdString()
+            this->ui.pathOutputRelSaveFunctors->text().toStdString(),
+            //
+            this->ui.codegenReportPath->text().toStdString()
          );
          QMessageBox::critical(this, "Success", QString("Packed all sectors! See report for information."));
          return;
