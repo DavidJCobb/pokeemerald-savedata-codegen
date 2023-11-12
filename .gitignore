@@ -5,3 +5,4 @@
 
 codegen-main/.vs/
 codegen-main/codegen-main/x64/
+codegen-main/codegen-main/*/x64/
